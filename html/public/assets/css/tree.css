@@ -1,0 +1,80 @@
+/* (A) LIST TO MENU */
+.tree, .section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.tree {
+/*  background: #fbfbfb;
+  border: 1px solid #d2d2d2;*/
+  border-radius: 5px;
+}
+.tree li {
+  border-bottom: 1px solid #d2d2d2;
+  padding:5px;
+}
+.tree li:last-child {
+  border: 0;
+}
+
+/* (B) SUB-SECTIONS */
+/* (B1) TOGGLE SHOW/HIDE */
+.section ul, .section ul ul { display: none; }
+.section input:checked ~ ul,.section ul input:checked ~ ul { display: block; }
+
+/* (B2) HIDE CHECKBOX */
+.section input[type=checkbox] { display: none; }
+
+/* (B3) ADD EXPAND/COLLAPSE ICON  */
+.section { 
+  position: relative; 
+  padding-left: 25px !important;
+}
+.section ul {
+    /*padding: 0 0 0 10px;*/
+}
+.section label {
+    margin: 0;
+    font-size: 15px;
+    color: #007bff;
+}
+
+.section label.tree_label {
+    position: absolute;
+    left: 4px;
+/*    background: #3866c8;
+    padding: 0;
+    display: block;
+    padding: 1px 5px;
+    color: #fff;*/
+}
+.tree_icon {
+    font-size: 15px;
+    line-height: 15px;
+}
+.section .tree_link.active {
+    font-weight: bold;
+}
+/*.section label:after {
+  content: "\0002B";
+  position: absolute;
+  top: -5px; left: 0;
+  padding: 0px 10px;
+  text-align: center;
+  font-size: 30px;
+  color: #007bff;
+  transition: all 0.5s;
+}
+.section input:checked ~ label .tree_icon { 
+  color: #23c37a;
+  transform: rotate(45deg);
+}
+*/
+
+/* (B4) SUB-SECTION ITEMS */
+.section ul li.active { color: #007bff; }
+
+/* DOES NOT MATTER */
+.tree {
+   font-size: 15px;
+}

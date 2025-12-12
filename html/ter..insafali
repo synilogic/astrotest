@@ -1,0 +1,72 @@
+[33mcommit 8c2c70d2bd7249f032c4c62ca3b45a6ec141a493[m[33m ([m[1;36mHEAD -> [m[1;32minsafali[m[33m, [m[1;31morigin/insafali[m[33m)[m
+Author: Insaf Ali <insaf.ali0825@gmail.com>
+Date:   Tue May 20 17:19:22 2025 +0530
+
+    Razorpay paymentgateway completed
+
+[33mcommit 4e4c900864ee667cbc337ea471f1df25cd0cf123[m
+Author: Insaf Ali <insaf.ali0825@gmail.com>
+Date:   Mon May 19 14:27:41 2025 +0530
+
+    Working on Razorpay
+
+[33mcommit 182344260605095728b94894487b44845a26daf8[m
+Author: Insaf Ali <insaf.ali0825@gmail.com>
+Date:   Mon May 19 11:33:23 2025 +0530
+
+    worked till currencyInfo in proceedPaymentRequest API
+
+[33mcommit 27aee2683f94047f4fc9fea5efa7e1c0c388bef6[m
+Author: Insaf Ali <insaf.ali0825@gmail.com>
+Date:   Sat May 17 19:49:07 2025 +0530
+
+    getCurrency helper needed
+
+[33mcommit f79e8d673c2bba7731d406cf8277d99617d64ee6[m
+Author: Insaf Ali <insaf.ali0825@gmail.com>
+Date:   Sat May 17 18:41:28 2025 +0530
+
+    proceedPayment code done tll total amount
+
+[33mcommit a7c7afc4d169388023ef08008020ed23ed3076ae[m
+Author: Insaf Ali <insaf.ali0825@gmail.com>
+Date:   Fri May 16 18:55:33 2025 +0530
+
+    refactor rchargeVoucher
+
+[33mcommit 8b26c96552f2f9dc6ef2c96503935344603174ab[m
+Author: Insaf Ali <insaf.ali0825@gmail.com>
+Date:   Fri May 16 18:10:10 2025 +0530
+
+    rechargeWallet Completed
+
+[33mcommit c2ad92b5ef5fb2f60e46daf8bb7dab1788ce388a[m
+Author: Insaf Ali <insaf.ali0825@gmail.com>
+Date:   Thu May 15 19:28:46 2025 +0530
+
+    rechargeVoucer started
+
+[33mcommit 7997f61c7ba737730e7edf0a9037bfbd0e89c16f[m
+Merge: c1b158a fc6cb7b
+Author: Insaf Ali <insaf.ali0825@gmail.com>
+Date:   Thu May 15 17:37:05 2025 +0530
+
+    master branch merged
+
+[33mcommit c1b158ac7df98e509fff57bb7921fc2b8af387f3[m
+Author: Insaf Ali <insaf.ali0825@gmail.com>
+Date:   Thu May 15 15:51:20 2025 +0530
+
+    getWalletBalance api created
+
+[33mcommit 8ee0df2953bb892ee4ce8300a5661b6ac7a0f1f7[m
+Author: Insaf Ali <insaf.ali0825@gmail.com>
+Date:   Wed May 14 19:39:51 2025 +0530
+
+    wallet module started - balance logic setup
+
+[33mcommit 439222bf366e663a6cec61a69ed4386fb4238cda[m
+Author: Insaf Ali <insaf.ali0825@gmail.com>
+Date:   Tue May 13 19:16:56 2025 +0530
+
+    Followers Model completed

@@ -1,0 +1,46 @@
+server {
+    listen 80;
+    server_name 123.45.67.89;
+
+    location /users/ {
+        proxy_pass http://localhost:3001/;
+        rewrite ^/users(/.*)$ $1 break;
+        include proxy_params;
+    }
+
+    location /astrologer/ {
+        proxy_pass http://localhost:3002/;
+        rewrite ^/astrologer(/.*)$ $1 break;
+        include proxy_params;
+    }
+
+    location /banner/ {
+        proxy_pass http://localhost:3003/;
+        rewrite ^/banner(/.*)$ $1 break;
+        include proxy_params;
+    }
+
+    location /vendor/ {
+        proxy_pass http://localhost:3004/;
+        rewrite ^/vendor(/.*)$ $1 break;
+        include proxy_params;
+    }
+
+    location /wallet/ {
+        proxy_pass http://localhost:3005/;
+        rewrite ^/wallet(/.*)$ $1 break;
+        include proxy_params;
+    }
+
+    location /communication/ {
+        proxy_pass http://localhost:3006/;
+        rewrite ^/communication(/.*)$ $1 break;
+        include proxy_params;
+    }
+
+    location /welcome/ {
+        proxy_pass http://localhost:3007/;
+        rewrite ^/welcome(/.*)$ $1 break;
+        include proxy_params;
+    }
+}

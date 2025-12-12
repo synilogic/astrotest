@@ -1,0 +1,8338 @@
+/* Base Styles */
+
+:root {
+  --react-primary: #ee5a24;
+  --react-astro-purple: #ee5a24;
+  --react-astro-indigo: #ff6b6b;
+  --react-gradient: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  --react-astro-gold: #f59e0b;
+  --react-foreground: #1a1a1a;
+  --react-muted: #f1f5f9;
+  --react-muted-foreground: #64748b;
+  --react-border: #e2e8f0;
+  --react-radius: 0.5rem;
+  --react-transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  --react-light: #000000;
+  --react-text-muted: #e4e7ea;
+  --react-gold-accent: #ffd700;
+  --react-darker-bg: #0a0d11;
+  --react-new-bread-accent-color: #f59e0b;
+  --react-secondary-orange: #FFB347;
+  --react-light-orange: #FFF8DC;
+  --react-dark-text: #2C2C2C;
+  --react-medium-text: #666666;
+  --react-border-color: #E0E0E0;
+  --react-white: #FFFFFF;
+  --react-green-verified: #4CAF50;
+  --react-star-color: #FF8C00;
+  --react-front-section: linear-gradient(135deg, var(--react-light-orange) 0%, #fff5f5 50%, #fef7ed 100%);
+  /* rgba(30, 41, 59, 0.05) */
+  
+  /* My Account specific variables */
+  --react-account-bg: #f8fafc;
+  --react-card-bg: #ffffff;
+  --react-sidebar-bg: #ffffff;
+  --react-sidebar-border: #e2e8f0;
+  --react-text-primary: #1e293b;
+  --react-text-secondary: #64748b;
+  /* --react-text-muted: #94a3b8; */
+  --react-success-color: #10b981;
+  --react-warning-color: #f59e0b;
+  --react-error-color: #ef4444;
+  --react-info-color: #3b82f6;
+  
+  /* Mobile specific variables */
+  --react-mobile-touch-target: 44px;
+  --react-mobile-spacing: 0.5rem;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif !important;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  color: inherit;
+  text-decoration: none !important;
+  
+}
+
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+}
+
+p {
+  margin-bottom: 1rem;
+}
+
+/* Typography */
+.react-purple-text {
+  color: var(--react-astro-purple);
+}
+
+.react-light-text {
+  color: var(--react-foreground);
+}
+
+/* Buttons */
+.react-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  border-radius: var(--react-radius);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  line-height: 1;
+  min-height: var(--react-mobile-touch-target);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.react-btn-primary {
+  background-color: var(--react-primary) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.react-btn-primary:hover {
+  background-color: var(--react-astro-indigo);
+}
+
+.react-btn-outline {
+  background-color: transparent !important;
+  color: var(--react-primary) !important;
+  border: 1px solid var(--react-primary) !important;
+}
+
+.react-btn-outline:hover {
+  background-color: rgba(109, 40, 217, 0.1);
+}
+
+/* Icons */
+.react-gold-icon {
+  /* color: var(--react-astro-gold); */
+  color: var(--react-primary);
+}
+
+.react-purple-icon {
+  color: var(--react-astro-purple);
+}
+
+/* Section Styles */
+section {
+  padding: 5rem 0;
+}
+
+.react-section-header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.react-section-title {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.react-section-description {
+  max-width: 768px;
+  margin: 0 auto;
+  color: #222;
+  font-size: 17px;
+}
+
+.react-section-action {
+  text-align: center;
+  margin-top: 3rem;
+}
+
+@media (max-width: 768px) {
+  .react-section-title {
+    font-size: 1.5rem;
+  }
+
+  .react-section-description {
+    font-size: 0.9rem;
+  }
+}
+
+/* Background Styles */
+.react-cosmos-bg {
+  position: relative;
+}
+
+/* .react-cosmos-bg::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.1), transparent 60%);
+    pointer-events: none;
+    z-index: -1;
+  } */
+
+/* Card Styles */
+.react-cosmic-card,
+.react-step-card,
+.react-feature-card,
+.react-service-card,
+.react-astrologer-card,
+.react-blog-card,
+.react-testimonial-card {
+  background-color: white;
+  border: 1px solid rgba(238, 90, 36, 0.1);
+  border-radius: var(--react-radius);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.react-cosmic-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.1;
+  background-image: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.1) 1px,
+    transparent 1px
+  );
+  background-size: 20px 20px;
+  z-index: 0;
+}
+
+.react-star {
+  position: absolute;
+  border-radius: 50%;
+  background-color: white;
+  opacity: 0.6;
+  animation: twinkle 3s infinite ease-in-out;
+}
+
+/* Custom Announcement Bar */
+.react-custom-announcement-bar {
+  background: var(--react-gradient);
+  color: #fff;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  flex-wrap: wrap;
+}
+
+.react-custom-left-contact,
+.react-custom-right-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.react-custom-contact-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.react-custom-contact-item i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  color: var(--react-white);
+  transition: var(--react-transition);
+  font-size: 11px;
+}
+
+.react-custom-contact-item i:hover {
+  background-color: var(--react-primary-dark);
+  color: var(--react-white);
+}
+
+.react-custom-contact-item a {
+  color: white;
+}
+
+.react-custom-social-icons {
+  display: flex;
+  gap: 5px;
+}
+
+.react-custom-social-icons a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  color: var(--react-white);
+  transition: var(--react-transition);
+  font-size: 11px;
+}
+
+.react-custom-social-icons a:hover {
+  background-color: var(--react-primary-dark);
+  color: var(--react-white);
+}
+
+/* Navbar */
+.react-container-navbar {
+  width: 100%;
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.react-navbar-own {
+  padding: 0.75rem 0;
+  position: sticky;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+  transition: var(--react-transition);
+  /* background-color: rgba(255, 255, 255, 0.8); */
+  background: white;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.react-navbar-own.react-scrolled {
+  border-radius: 70px;
+}
+
+.react-navbar-own .react-container-navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.react-logo {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--react-light);
+  display: flex;
+  align-items: center;
+}
+
+.react-logo img {
+  width: 90px;
+}
+
+.react-logo span {
+  color: #f59e0b;
+}
+
+.react-nav-links {
+  display: flex;
+  list-style: none;
+  align-items: center;
+  margin: 0;
+}
+
+.react-nav-links li {
+  margin-left: 2.5rem;
+}
+
+.react-nav-links a {
+  color: #222;
+  font-weight: 500;
+  position: relative;
+  padding: 5px 0;
+  font-size: 17px;
+}
+
+.react-nav-links a:hover {
+  color: var(--react-primary);
+}
+
+.react-nav-links a::before {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background-color: var(--react-primary);
+  transition: var(--react-transition);
+}
+
+.react-nav-links a:hover::before {
+  width: 100%;
+}
+
+.react-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem !important;
+  font-weight: 600;
+  border-radius: var(--react-radius);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  line-height: 1;
+  background-color: var(--react-primary);
+  color: white !important;
+  border: none;
+}
+
+.react-nav-btn:hover {
+  background-color: var(--react-astro-indigo);
+}
+
+.react-nav-links .react-nav-btn:hover::before {
+  width: 0;
+}
+
+.react-hamburger {
+  display: none;
+  cursor: pointer;
+  color: white !important;
+  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--react-primary);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Dropdown Menu Styles */
+/* Unique Dropdown Styling */
+.react-custom-dropdown {
+  position: relative;
+}
+
+.react-custom-dropdown a {
+  cursor: pointer;
+}
+
+.react-custom-dropdown-menu {
+  position: absolute;
+  top: 30px;
+  left: 0;
+  background-color: white;
+  min-width: 180px;
+  display: none;
+  flex-direction: column;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  z-index: 1000;
+  padding: 10px 0;
+  transition: var(--react-transition);
+}
+
+.react-custom-dropdown-menu li {
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.react-custom-dropdown-menu li a {
+  padding: 10px 20px;
+  display: block;
+  color: var(--react-light);
+  font-size: 15px;
+  transition: var(--react-transition);
+  position: relative;
+}
+.react-dropdown-Icon {
+  margin-left: 5px;
+}
+
+.react-custom-dropdown-menu li a:hover {
+  background-color: #f3f3f3;
+  color: var(--react-primary);
+}
+
+.react-custom-dropdown-menu a:hover::before {
+  width: 0;
+}
+
+
+/* Show dropdown on hover for desktop */
+.react-custom-dropdown:hover .react-custom-dropdown-menu {
+  display: flex;
+}
+
+/* Responsive Mobile Dropdown */
+@media (max-width: 768px) {
+  .react-custom-dropdown-menu {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    pointer-events: none;
+    padding: 10px 30px;
+  }
+
+  .react-custom-dropdown.active .react-custom-dropdown-menu {
+    max-height: 500px; /* Adjust based on content */
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .react-custom-dropdown-menu li a {
+    padding: 5px 0px;
+
+    font-size: 15px;
+    margin-bottom: -50px;
+    margin-top: -20px;
+  }
+
+  .react-custom-dropdown-menu li a:hover {
+    background-color: transparent;
+    color: var(--react-primary);
+  }
+
+  .react-custom-dropdown-menu a:hover::before {
+    width: 100%;
+  }
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+  .react-custom-announcement-bar {
+    display: none;
+  }
+
+  .react-hamburger {
+    display: flex;
+  }
+
+  .react-nav-links {
+    position: fixed;
+    top: 0px;
+    left: -100%;
+    width: 250px;
+    height: 100%;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+
+    background-color: rgba(255, 255, 255, 0.8);
+    flex-direction: column;
+    align-items: start !important;
+    justify-content: flex-start !important;
+    padding-top: 3rem;
+    transition: var(--react-transition);
+    z-index: 999;
+  }
+
+  .react-nav-links.active {
+    left: 0;
+  }
+
+  .react-nav-links li {
+    margin: 1.5rem 0;
+  }
+}
+.swiper-slide {
+ 
+  padding-bottom: 30px;
+}
+
+/* hero section */
+.react-hero-slider {
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+}
+
+.swiper-slide img {
+  width: 100%;
+  object-fit: cover;
+}
+
+/* Custom button base styles */
+.react-custom-nav-button {
+  position: absolute;
+  top: 50%;
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  /* background-color: rgba(0, 0, 0, 0.5); */
+  background-color: var(--react-primary);
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 1.8rem;
+  border-radius: 15px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.4s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-50%);
+}
+
+.react-custom-nav-button i {
+  font-size: 13px;
+}
+
+/* Slide-in from left/right setup */
+.react-custom-nav-button.react-prev {
+  left: 0;
+  transform: translate(-100%, -50%);
+}
+
+.react-custom-nav-button.react-next {
+  right: 0;
+  transform: translate(100%, -50%);
+}
+
+/* Hover state to reveal buttons */
+.react-hero-slider:hover .react-custom-nav-button {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.react-hero-slider:hover .react-custom-nav-button.react-prev {
+  transform: translate(20px, -50%);
+}
+
+.react-hero-slider:hover .react-custom-nav-button.react-next {
+  transform: translate(-20px, -50%);
+}
+
+/* Button hover effect */
+.react-custom-nav-button:hover {
+  /* background-color: rgba(0, 0, 0, 0.8); */
+  background-color: var(--react-primary) !important;
+  transform: scale(1.05) translateY(-50%);
+}
+
+/* Steps Section */
+.react-steps-container {
+  display: grid;
+
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.react-step-card {
+  padding: 2rem;
+  text-align: center;
+  animation: float 6s ease-in-out infinite;
+}
+
+.react-step-icon-container {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 6rem;
+  height: 6rem;
+  border-radius: 50%;
+  /* background-color: rgba(30, 41, 59, 0.5); */
+  border: 1px solid var(--react-primary);
+  margin-bottom: 1.5rem;
+}
+
+.react-step-icon-container i {
+  font-size: 3rem;
+}
+
+.react-step-number {
+  position: absolute;
+  top: -0.75rem;
+  right: -0.75rem;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--react-astro-purple);
+  color: white;
+  font-weight: 700;
+  border-radius: 50%;
+}
+
+.react-step-title {
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  color: var(--react-foreground);
+}
+
+.react-step-description {
+  color: var(--react-muted-foreground);
+}
+
+/* Animations */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.react-animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@media (max-width: 768px) {
+  .react-steps-container {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .react-step-card {
+    padding: 1.5rem;
+  }
+
+  .react-step-icon-container {
+    width: 5rem;
+    height: 5rem;
+    margin-bottom: 1rem;
+  }
+
+  .react-step-icon-container i {
+    font-size: 2.5rem;
+  }
+
+  .react-step-number {
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: 0.75rem;
+    top: -0.5rem;
+    right: -0.5rem;
+  }
+
+  .react-step-title {
+    font-size: 1.1rem;
+  }
+
+  .react-step-description {
+    font-size: 0.95rem;
+  }
+}
+
+/* Why Choose Us Section */
+.react-why-choose-us {
+  background: var(--react-front-section);
+  border-radius: 70px;
+}
+
+.react-why-us-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  align-items: center;
+}
+
+.react-why-us-content {
+  flex: 1;
+  min-width: 300px;
+}
+
+.react-why-us-image {
+  flex: 1;
+  min-width: 300px;
+  overflow: hidden;
+  position: relative;
+  border-radius: 10px;
+}
+
+.react-why-us-image img {
+  border-radius: 10px;
+  box-shadow: var(--react-box-shadow);
+  max-width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.5s;
+}
+
+.react-why-us-item {
+  display: flex;
+  margin-bottom: 15px;
+  align-items: flex-start;
+}
+
+.react-why-us-icon {
+  font-size: 1.3rem;
+  color: white !important;
+  margin-right: 20px;
+  min-width: 50px;
+  height: 50px;
+  /* background: rgba(106, 48, 147, 0.1); */
+  background: var(--react-primary);
+
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--react-primary);
+}
+
+.react-why-us-text h3 {
+  margin-bottom: 5px;
+  font-size: 1.3rem;
+ ;
+}
+.react-why-us-text p {
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .react-why-us-container {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .react-why-us-text h3 {
+    font-size: 1rem;
+  }
+
+  .react-why-us-text p {
+    font-size: 0.9rem;
+  }
+
+  .react-why-us-image img {
+    width: 100%;
+    height: auto;
+  }
+}
+
+/* Services Section */
+
+.react-services-section {
+  background: var(--react-front-section);
+  border-radius: 70px;
+}
+.react-card-service {
+  padding: 2em 1.5em;
+  cursor: pointer;
+  transition: 0.5s;
+  background-color: white;
+  border: 1px solid rgba(238, 90, 36, 0.1);
+  border-radius: var(--react-radius);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.react-card-service::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.1;
+  background-image: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.1) 1px,
+    transparent 1px
+  );
+  background-size: 20px 20px;
+  z-index: 0;
+}
+
+.react-card-service h3 {
+  font-size: 25px;
+  font-weight: 600;
+  text-align: center;
+  margin: 0.5em 0;
+  color: var(--react-dark-text) !important;
+}
+.react-card-service p {
+  color: #575a7b;
+  font-size: 15px;
+  line-height: 1.6;
+  letter-spacing: 0.03em;
+}
+.react-card-service .react-icon-wrapper {
+  /* background-color: var(--react-primary); */
+  position: relative;
+  /* margin: auto; */
+  font-size: 30px;
+  /* height: 2.5em; */
+  /* width: 2.5em; */
+  color: #ffffff;
+  border-radius: 50%;
+  /* display: grid; */
+  place-items: center;
+  transition: 0.5s;
+}
+
+.react-icon-wrapper img {
+  height: 80px;
+  width: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+/* .react-card-service:hover {
+    background-position: 0 100%;
+  } */
+/* .react-card-service:hover .react-icon-wrapper {
+
+    color: var(--react-primary);
+  } */
+/* .react-card-service:hover h3 {
+    color: #ffffff;
+  }
+  .react-card-service:hover p {
+    color: #f0f0f0;
+  } */
+
+@media (max-width: 768px) {
+  .react-card-service h3 {
+    font-size: 20px;
+  }
+
+  .react-card-service p {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}
+
+.react-custom-prev2,
+.react-custom-next2 {
+  background-color: var(--react-primary);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.8rem;
+  position: absolute;
+  top: 65%;
+  z-index: 10;
+  transition: all 0.4s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-50%);
+}
+
+.react-custom-prev2 {
+  left: 185px;
+}
+
+.react-custom-next2 {
+  right: 185px;
+}
+
+.react-custom-prev2 i,
+.react-custom-next2 i {
+  font-size: 13px;
+}
+
+/* #custom-prev2:hover, #custom-next2:hover {
+    background-color: #0056b3;
+  } */
+
+@media (max-width: 768px) {
+  .react-custom-prev2 {
+    left: 10px;
+  }
+
+  .react-custom-next2 {
+    right: 10px;
+  }
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+  background: var(--react-primary); /* Custom color */
+  color: white !important; /* Text color */
+  padding: 10px 20px; /* Button padding */
+  border-radius: 15px; /* Optional, for round buttons */
+  font-size: 12px; /* Font size */
+  border: 1px solid var(--react-primary);
+  transition: var(--react-transition);
+}
+
+.swiper-button-next:hover,
+.swiper-button-prev:hover {
+  opacity: 90%;
+}
+
+.swiper-button-next::after,
+.swiper-button-prev::after {
+  font-size: 13px !important; /* Adjust the size of the arrows */
+  color: white;
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+  top: 55%;
+}
+
+@media (max-width: 768px) {
+  .swiper-button-next,
+  .swiper-button-prev {
+    padding: 10px 20px; /* Smaller padding for mobile */
+    font-size: 12px; /* Smaller font size */
+    width: 40px; /* Set a specific width */
+    height: 40px; /* Set a specific height */
+  }
+
+  .swiper-button-next::after,
+  .swiper-button-prev::after {
+    font-size: 10px !important; /* Smaller arrow size */
+  }
+}
+
+/* Astrologers Section */
+.react-astrologers-section {
+  /* background-color: rgba(30, 41, 59, 0.05); */
+  position: relative;
+}
+
+.react-astrologers-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .react-astrologers-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .react-astrologers-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.react-astrologer-card {
+  transition: border-color 0.3s ease;
+}
+
+.react-astrologer-card:hover {
+  border-color: var(--react-astro-purple);
+}
+
+.react-astrologer-image-container {
+  position: relative;
+}
+
+.react-astrologer-image {
+  width: 100%;
+  height: 256px;
+  object-fit: cover;
+}
+
+.react-astrologer-rating {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  align-items: center;
+  background: var(--react-gradient);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+}
+
+.react-rating-star {
+  color: var(--react-astro-gold);
+  margin-right: 0.25rem;
+  fill: currentColor;
+}
+
+.react-astrologer-content {
+  padding: 1.5rem;
+}
+
+.react-astrologer-name {
+  font-size: 1.25rem;
+  margin-bottom: 0.25rem;
+  color: var(--react-foreground);
+}
+
+.react-astrologer-specialty {
+  color: var(--react-astro-purple);
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+.react-astrologer-details {
+  margin-bottom: 1rem;
+}
+
+.react-astrologer-detail {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.react-detail-label {
+  color: var(--react-muted-foreground);
+}
+
+.react-detail-value {
+  color: var(--react-foreground);
+}
+
+.react-detail-value.react-price {
+  color: var(--react-astro-gold);
+  font-weight: 700;
+}
+
+.react-astrologer-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: space-between;
+  }
+   
+   @media (max-width: 768px) {
+   
+  
+    .react-astrologer-name {
+      font-size: 1.125rem; /* slightly smaller */
+    }
+  
+    .react-astrologer-specialty {
+      font-size: 0.95rem;
+    }
+  
+    .react-astrologer-detail {
+      font-size: 0.8125rem; /* reduced font */
+    }
+  
+    .react-astrologer-rating {
+      font-size: 0.75rem;
+     
+    }
+  
+    .react-astrologer-image {
+      height: 320px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+  
+  
+    .react-astrologer-name {
+      font-size: 1rem;
+    }
+  
+    .react-astrologer-specialty {
+      font-size: 0.875rem;
+    }
+  
+    .react-astrologer-detail {
+      font-size: 0.75rem;
+    }
+  
+    .react-astrologer-rating {
+      font-size: 0.7rem;
+  
+    }
+  
+    .react-astrologer-image {
+      height: 280px;
+    }
+  }
+  
+/* Blogs Section */
+
+.react-blogs-section {
+  background:var(--react-front-section);
+  border-radius: 70px;
+}
+.react-blogs-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .react-blogs-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.react-blog-card {
+  height: 100%;
+  transition: border-color 0.3s ease;
+}
+
+.react-blog-card:hover {
+  border-color: var(--react-astro-purple);
+}
+
+.react-blog-image-container {
+  position: relative;
+}
+
+.react-blog-image {
+  width: 100%;
+  height: 192px;
+  object-fit: cover;
+}
+
+.react-blog-category {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: var(--react-gradient);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+}
+
+.react-blog-content {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 192px);
+}
+
+.react-blog-title {
+  font-size: 1.25rem;
+  margin-bottom: 0.75rem;
+  color: var(--react-foreground);
+}
+
+.react-blog-excerpt {
+  color: var(--react-muted-foreground);
+  margin-bottom: 1rem;
+  flex-grow: 1;
+}
+
+.react-blog-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  color: var(--react-muted-foreground);
+  margin-bottom: 1rem;
+}
+
+.react-meta-item {
+  display: flex;
+  align-items: center;
+}
+
+.react-meta-item i {
+  margin-right: 0.5rem;
+  color: var(--react-primary);
+}
+
+.react-blog-link {
+  align-self: flex-start;
+  color: var(--react-astro-purple);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  transition: color 0.3s ease;
+}
+
+.react-blog-link:hover {
+  color: var(--react-astro-gold);
+}
+
+.react-blog-link i {
+  margin-left: 0.5rem;
+}
+
+
+@media (max-width: 768px) {
+
+  /* .react-blog-content {
+    padding: 1rem;
+  } */
+
+  .react-blog-title {
+    font-size: 1.125rem;
+  }
+
+  .react-blog-category {
+    font-size: 0.75rem;
+ 
+  }
+
+  .react-blog-meta {
+    font-size: 0.8125rem;
+  }
+
+  
+}
+
+@media (max-width: 480px) {
+ 
+
+  /* .react-blog-content {
+    padding: 0.75rem;
+  } */
+
+  .react-blog-title {
+    font-size: 1rem;
+  }
+
+  .react-blog-category {
+    font-size: 0.7rem;
+   
+  }
+
+  .react-blog-meta {
+    font-size: 0.75rem;
+  }
+
+  .react-blog-link {
+    font-size: 0.875rem;
+  }
+
+  /* .react-blog-image {
+
+    height: 240px;
+   
+  } */
+ 
+}
+
+
+/* Products Section */
+.react-products-section {
+  /* background-color: rgba(30, 41, 59, 0.05); */
+  position: relative;
+}
+
+.react-products-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 640px) {
+  .react-products-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .react-products-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.react-product-category-card {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: var(--react-radius);
+  height: 16rem;
+  transition: box-shadow 0.3s ease;
+}
+
+.react-product-category-card:hover {
+  box-shadow: 0 0 20px rgba(109, 40, 217, 0.2);
+}
+
+.react-product-category-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.react-product-category-card:hover .react-product-category-image {
+  transform: scale(1.1);
+}
+
+.react-product-category-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 70%;
+  background: linear-gradient(to top, #1e293b, transparent);
+}
+
+.react-product-category-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1.5rem;
+}
+
+.react-product-category-title {
+  font-size: 1.25rem;
+  color: white;
+  margin-bottom: 0.25rem;
+}
+
+.react-product-category-count {
+  color: var(--react-astro-gold);
+}
+
+@media (max-width: 768px) {
+ 
+
+
+  .react-product-category-title {
+    font-size: 1.125rem;
+  }
+
+  .react-product-category-count {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+ 
+
+
+  .react-product-category-title {
+    font-size: 1rem;
+  }
+
+  .react-product-category-count {
+    font-size: 0.75rem;
+  }
+}
+
+/* Testimonials Section */
+
+.react-testimonials-section {
+  background:var(--react-front-section);
+  border-radius: 70px;
+}
+
+.react-testimonials-slider {
+  position: relative;
+  max-width: 1024px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.react-testimonial-slide {
+  display: none;
+  padding: 0 1rem;
+}
+
+.react-testimonial-slide.active {
+  display: block;
+}
+
+.react-testimonial-card {
+  padding: 2rem;
+}
+
+.react-testimonial-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .react-testimonial-content {
+    flex-direction: row;
+  }
+}
+
+.react-testimonial-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .react-testimonial-profile {
+    width: 33.333333%;
+  }
+}
+
+.react-testimonial-image-container {
+  width: 6rem;
+  height: 6rem;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.react-testimonial-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.react-testimonial-name {
+  font-size: 1.25rem;
+  margin-bottom: 0.25rem;
+  color: var(--react-foreground);
+}
+
+.react-testimonial-location {
+  color: var(--react-muted-foreground);
+  margin-bottom: 0.75rem;
+}
+
+.react-testimonial-rating {
+  display: flex;
+  margin-bottom: 0.75rem;
+}
+
+.react-testimonial-rating i {
+  color: var(--react-muted-foreground);
+  margin: 0 0.125rem;
+}
+
+.react-testimonial-rating i.react-filled {
+  color: var(--react-astro-gold);
+}
+
+.react-testimonial-date {
+  font-size: 0.875rem;
+  color: var(--react-muted-foreground);
+}
+
+.react-testimonial-text {
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .react-testimonial-text {
+    width: 66.666667%;
+  }
+}
+
+.react-testimonial-quote-icon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 2.5rem;
+  color: rgba(109, 40, 217, 0.2);
+}
+
+.react-testimonial-message {
+  padding: 3rem 1rem 1rem 2rem;
+  font-style: italic;
+  color: var(--react-foreground);
+}
+
+.react-testimonials-navigation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1.5rem;
+}
+
+.react-testimonial-nav-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background-color: var(--react-astro-purple);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.react-testimonial-nav-button:hover {
+  background-color: var(--react-astro-indigo);
+}
+
+.react-testimonials-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  /* background-color: var(--react-muted) !important; */
+  color: var(--react-muted) !important;
+  border: none;
+  /* margin: 0 0.25rem; */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.react-testimonial-dot.active {
+  background-color: var(--react-astro-purple);
+}
+
+/* Custom Navigation Styles */
+.react-slider-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  gap: 8px; /* Reduced gap between elements */
+  max-width: 180px; /* Control the overall width of the controls */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.react-slider-controls i {
+  color: var(--react-primary);
+  transition: var(--react-transition);
+}
+
+.react-custom-prev-btn,
+.react-custom-next-btn {
+  background-color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  color: #333;
+  transition: var(--react-transition);
+  flex-shrink: 0;
+  z-index: 2;
+  font-size: 13px;
+}
+
+.react-custom-prev-btn:hover,
+.react-custom-next-btn:hover {
+  background-color: var(--react-primary);
+  color: white;
+}
+
+.react-custom-prev-btn:hover i,
+.react-custom-next-btn:hover i {
+  color: white;
+}
+
+.react-custom-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 5px; /* Reduced margin */
+  flex-grow: 1;
+}
+
+.react-custom-pagination .swiper-pagination-bullet {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #ddd;
+  margin: 0 3px; /* Reduced margin between bullets */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 1;
+}
+
+.react-custom-pagination .swiper-pagination-bullet-active {
+  background-color: var(--react-primary);
+  width: 30px;
+  border-radius: 10px;
+}
+@media (max-width: 768px) {
+  .react-testimonial-content {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .react-testimonial-profile {
+    width: 100%;
+  }
+
+  .react-testimonial-text {
+    width: 100%;
+  }
+
+  .react-testimonial-message {
+    padding: 2rem 1rem 1rem 2rem;
+    font-size: 0.95rem;
+  }
+
+  .react-testimonial-name {
+    font-size: 1.125rem;
+  }
+
+  .react-testimonial-location,
+  .react-testimonial-date {
+    font-size: 0.8125rem;
+  }
+
+  .react-testimonial-rating i {
+    font-size: 0.875rem;
+  }
+
+  .react-testimonial-quote-icon {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .react-testimonial-message {
+    padding: 1.5rem 0.75rem 1rem 1.5rem;
+    font-size: 0.875rem;
+  }
+
+  .react-testimonial-name {
+    font-size: 1rem;
+  }
+
+  .react-testimonial-location,
+  .react-testimonial-date {
+    font-size: 0.75rem;
+  }
+
+  .react-testimonial-rating i {
+    font-size: 0.75rem;
+  }
+
+  .react-testimonial-image-container {
+    width: 5rem;
+    height: 5rem;
+  }
+
+  .react-testimonial-quote-icon {
+    font-size: 1.75rem;
+  }
+
+  .react-testimonial-card {
+    padding: 1.25rem;
+  }
+
+  .react-slider-controls {
+    gap: 6px;
+    max-width: 140px;
+  }
+
+  .react-custom-prev-btn,
+  .react-custom-next-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 12px;
+  }
+
+  .react-custom-pagination .swiper-pagination-bullet-active {
+    width: 20px;
+  }
+}
+
+/* free service */
+
+.react-free-services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+}
+
+.react-free-service-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.react-free-card-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.react-free-icon-wrapper {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  box-shadow: 0 8px 16px rgba(238, 90, 36, 0.3);
+}
+
+.react-free-icon-wrapper i {
+  font-size: 1.5rem;
+  color: white;
+}
+
+.react-free-card-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--react-light);
+  margin-bottom: 0.5rem;
+}
+
+.react-free-card-header p {
+  color: var(--react-muted-foreground);
+  font-size: 0.9rem;
+}
+
+.react-free-current-date {
+  font-weight: 600;
+  color: #e74c3c !important;
+}
+
+.react-free-service-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.react-free-form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.react-free-form-group label {
+  font-weight: 500;
+  color: var(--react-foreground);
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.react-free-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.react-free-form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e1e8ed;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: white;
+}
+.react-input[type="date"],
+input[type="time"] {
+  -webkit-appearance: none;
+  appearance: auto; /* Let browser decide */
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e1e8ed;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.react-free-form-input:focus {
+  outline: none;
+  border-color: #ee5a24;
+  /* box-shadow: 0 8px 16px rgba(238, 90, 36, 0.3); */
+}
+input:focus {
+  outline: none;
+  border-color: #ee5a24;
+  
+}
+
+.react-free-form-input::placeholder {
+  color: #95a5a6;
+}
+
+.react-free-info-note {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.9rem;
+  background: #e8f4fd;
+  border-radius: 8px;
+  background: var(--react-front-section);
+  color: var(--react-primary);
+  font-size: 0.85rem;
+}
+
+.react-free-btn-primary {
+  /* background: linear-gradient(135deg, #ffd700, #ffed4e); */
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  color: white;
+  border: none;
+  padding: 0.875rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  /* box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3); */
+  box-shadow: 0 8px 16px rgba(238, 90, 36, 0.3);
+}
+
+.react-free-btn-primary:hover {
+  transform: translateY(-2px);
+
+  background: linear-gradient(135deg, #ee5a24, #ff6b6b);
+}
+
+.react-free-btn-full {
+  width: 100%;
+}
+
+.react-free-panchang-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.react-free-panchang-item {
+  /* padding: 1rem; */
+  padding-left: 1rem;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border-left: 4px solid #e74c3c;
+}
+
+.react-free-panchang-item .react-free-label {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-right: 0.5rem;
+}
+
+.react-free-panchang-item .react-free-value {
+  font-weight: 600;
+}
+
+.react-free-highlight-red {
+  color: #e74c3c;
+}
+
+.react-free-time-range {
+  font-size: 0.8rem;
+  color: #7f8c8d;
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
+.react-free-panchang-card {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.95),
+    rgba(248, 249, 250, 0.95)
+  );
+}
+
+@media (max-width: 768px) {
+  .react-free-services-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .react-free-main-title {
+    font-size: 2rem;
+  }
+
+  .react-free-service-card {
+    padding: 1.5rem;
+  }
+
+  .react-free-form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .react-free-service-card {
+    padding: 1rem;
+  }
+
+  .react-free-main-title {
+    font-size: 1.75rem;
+  }
+}
+
+
+
+/* Footer Styles */
+.react-new-footer {
+  background: linear-gradient(
+    135deg,
+    var(--react-darker-bg) 0%,
+    rgba(26, 27, 58, 0.95) 100%
+  );
+  position: relative;
+}
+
+.react-new-footer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--react-primary) 50%,
+    transparent 100%
+  );
+  opacity: 0.6;
+}
+
+.react-new-footer-container {
+  padding: 3rem 0rem 2rem;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.5fr;
+  gap: 3rem;
+}
+
+/* Brand Section */
+.react-new-footer-brand {
+  padding-right: 2rem;
+}
+
+.react-new-footer-brand img{
+  width: 90px;
+  margin-bottom: 1rem;
+}
+
+.react-new-brand-name {
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--react-primary), var(--react-gold-accent));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
+}
+
+.react-new-brand-tagline {
+  font-size: 1rem;
+  color: var(--react-primary);
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+.react-new-brand-description {
+  color: var(--react-text-muted);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+}
+
+/* Social Links */
+.react-new-social-links {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.react-new-social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: rgba(244, 162, 97, 0.1);
+  border: 1px solid rgba(244, 162, 97, 0.3);
+  border-radius: 12px;
+  color: var(--react-text-muted);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.react-new-social-link::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(238, 90, 36, 0.2),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.react-new-social-link:hover::before {
+  left: 100%;
+}
+
+.react-new-social-link:hover {
+  border-color: var(--react-primary);
+  color: var(--react-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(238, 90, 36, 0.3);
+  background: rgba(238, 90, 36, 0.2);
+}
+
+.react-new-social-link i {
+  font-size: 1.2rem;
+  z-index: 1;
+  position: relative;
+}
+
+/* Footer Sections */
+.react-new-footer-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.react-new-section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--react-primary);
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.react-new-section-title::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 30px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--react-primary), var(--react-gold-accent));
+  border-radius: 2px;
+}
+
+.react-new-footer-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-left: 0;
+}
+
+.react-new-footer-links a {
+  color: var(--react-text-muted);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  padding: 0.25rem 0;
+  position: relative;
+  display: inline-block;
+}
+
+.react-new-footer-links a::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--react-primary);
+  transition: width 0.3s ease;
+}
+
+.react-new-footer-links a:hover {
+  color: var(--react-primary);
+  /* transform: translateX(5px); */
+}
+
+.react-new-footer-links a:hover::before {
+  width: 100%;
+}
+
+.react-vendor-BTn {
+  padding: 5px 10px !important;
+  border-radius: 10px;
+  border: 0px;
+  color: black !important;
+  background-color: white;
+}
+
+.react-new-footer-links .react-vendor-BTn:hover::before {
+  width: 0;
+}
+
+/* Contact Info */
+.react-new-contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.react-new-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+}
+
+.react-new-contact-item i {
+  color: var(--react-primary);
+  font-size: 1.1rem;
+  width: 20px;
+}
+
+.react-new-contact-item a {
+  color: var(--react-text-muted);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.react-new-contact-item a:hover {
+  color: var(--react-primary);
+}
+
+/* Footer Bottom */
+.react-new-footer-bottom {
+  border-top: 1px solid rgba(244, 162, 97, 0.1);
+  background: rgba(10, 13, 17, 0.5);
+}
+
+.react-new-footer-bottom-content {
+  padding-top: 1rem;
+  padding-bottom: 0.3rem !important;
+
+  text-align: center;
+}
+
+.react-new-copyright {
+  color: var(--react-text-muted);
+  font-size: 0.9rem;
+}
+
+.react-new-powered-by {
+  color: var(--react-text-muted);
+  font-size: 0.9rem;
+}
+
+.react-new-tech-partner {
+  color: var(--react-primary);
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .react-new-footer-container {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  .react-new-footer-brand {
+    grid-column: 1 / -1;
+    padding-right: 0;
+    margin-bottom: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .react-new-footer-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 2rem 0rem 1rem;
+  }
+
+  .react-new-footer-brand {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .react-new-social-links {
+    justify-content: center;
+  }
+
+  .react-new-footer-bottom-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .react-new-footer-container {
+    padding: 1.5rem 0rem 1rem;
+  }
+
+  .react-new-social-link {
+    width: 40px;
+    height: 40px;
+  }
+
+  .react-new-social-link i {
+    font-size: 1.1rem;
+  }
+}
+
+/* talk to astrologer page */
+
+/* breadcrumbs */
+
+.react-new-bread-hero-container {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--react-gradient);
+  color: white;
+  padding: 1rem 2rem;
+}
+
+.react-new-bread-hero-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+.react-new-bread-hero-bg-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(
+      circle at 25% 25%,
+      rgba(165, 180, 252, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 75% 75%,
+      rgba(245, 158, 11, 0.1) 0%,
+      transparent 50%
+    );
+  z-index: 1;
+}
+
+.react-new-bread-hero-stars {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.react-new-bread-star {
+  position: absolute;
+  background-color: white;
+  border-radius: 50%;
+  animation: new-bread-twinkle var(--react-duration) infinite ease-in-out;
+  opacity: 0;
+}
+
+@keyframes new-bread-twinkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  50% {
+    opacity: var(--react-opacity);
+    transform: scale(1);
+  }
+}
+
+.react-new-bread-breadcrumbs {
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: white;
+}
+
+.react-new-bread-breadcrumbs a {
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.react-new-bread-breadcrumbs a:hover {
+  color: white;
+  text-decoration: underline;
+}
+
+.react-new-bread-breadcrumb-separator {
+  margin: 0 0.5rem;
+  color: white;
+}
+
+.react-new-bread-hero-title {
+  font-size: 3rem;
+  font-weight: 800 !important;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+
+  color: white;
+}
+
+.react-new-bread-astrology-icon {
+  font-size: 2rem;
+  color: var(--react-new-bread-accent-color);
+  animation: new-bread-float 3s ease-in-out infinite;
+}
+
+@keyframes new-bread-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .react-new-bread-hero-title {
+    font-size: 2.5rem;
+  }
+
+  .react-new-bread-hero-subtitle {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .react-new-bread-hero-title {
+    font-size: 2rem;
+  }
+
+  .react-new-bread-breadcrumbs {
+    font-size: 0.8rem;
+  }
+}
+
+/* new */
+
+.react-talkTo-main {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.react-own-container {
+  width: 100%;
+  max-width: 400px;
+}
+.react-own-profile-card {
+  background: #ffffff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid rgba(67, 67, 67, 0.125);
+  position: relative;
+}
+.react-own-profile-card:hover {
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+/* Top Rated Badge */
+.react-own-rated-badge {
+  width: 80px;
+  left: -15px;
+
+  height: 18px;
+  font-size: 11px;
+  transform: rotate(-41deg);
+  z-index: 1;
+  top: 12px;
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  
+}
+
+.react-top-rated{
+  background: #ee4e5e;
+  color: white;
+}
+.react-new-rated{
+  background: var(--react-green-verified);
+  color: white;
+}
+.react-vip-rated{
+  background: #00bcd4; 
+  color: white;
+}
+
+/* Header Section */
+.react-own-card-header {
+  padding: 24px;
+/* background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); */
+/* border-bottom: 1px solid rgba(67, 67, 67, 0.125); */
+/* background-color: #FCFAF2; */
+background: var(--react-front-section);
+
+
+
+  
+}
+.react-own-profile-info {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  margin-bottom: 20px;
+}
+.react-own-avatar-container {
+  position: relative;
+}
+.react-own-avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.react-own-online-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -8px;
+ 
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+}
+
+.react-own-online{
+  /* background: #10b981;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3); */
+  background-color: #10b981; /* Emerald (green) */
+box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3); /* Matching green shadow */
+
+}
+.react-own-offline{
+  background-color: #9ca3af; /* Gray-400 */
+  box-shadow: 0 2px 8px rgba(156, 163, 175, 0.2); /* Soft gray shadow */
+  
+}
+.react-own-busy{
+  background-color: #f43f5e; /* Rose-500 (red-ish) */
+box-shadow: 0 2px 8px rgba(244, 63, 94, 0.3); /* Subtle red shadow */
+
+}
+
+.react-own-status-dot {
+  width: 8px;
+  height: 8px;
+  background: #ffffff;
+  border-radius: 50%;
+  animation: own-pulse 2s infinite;
+}
+@keyframes own-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+.react-own-profile-details {
+  flex: 1;
+}
+.react-own-name {
+  font-size: 25px;
+  font-weight: 600;
+  /* color: #1a202c; */
+  margin-bottom: 2px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--react-primary), var(--react-gold-accent));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.react-own-icOn{
+  background: linear-gradient(135deg, var(--react-primary), var(--react-gold-accent));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-right: 5px;
+}
+.react-own-title {
+  font-size: 14px;
+  color: #718096;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+.react-own-rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.react-own-stars {
+  display: flex;
+  gap: 2px;
+}
+.react-own-stars i {
+  color: #fbbf24;
+  font-size: 16px;
+}
+.react-own-rating-count {
+  font-size: 15px;
+  font-weight: 600;
+  color: #4a5568;
+}
+.react-own-quick-info {
+  display: flex;
+  gap: 20px;
+}
+.react-own-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+}
+.react-own-info-label {
+  font-size: 14px;
+  color: #a0aec0;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.react-own-info-value {
+  font-size: 15px;
+  color: #2d3748;
+  font-weight: 600;
+}
+/* Services Section */
+.react-own-services {
+
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  background:var(--react-front-section);
+}
+.react-own-service-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex: 1;
+  padding: 12px 0px;
+
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+.react-own-service-item:hover {
+  /* background: #f7fafc; */
+  transform: translateY(-2px);
+}
+.react-own-service-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+  margin-bottom: 4px;
+  transition: transform 0.3s ease;
+}
+.react-own-service-item:hover .react-own-service-icon {
+  transform: scale(1.1);
+}
+.react-own-service-icon.react-chat {
+  background: linear-gradient(135deg, #48bb78, #38a169);
+
+}
+.react-own-service-icon.react-video {
+  background: linear-gradient(135deg, #4299e1, #3182ce);
+
+}
+.react-own-service-icon.react-voice {
+  /* background: linear-gradient(135deg, #ed8936, #dd6b20); */
+  background: var(--react-gradient);
+}
+.react-own-service-details {
+  text-align: center;
+}
+.react-own-service-name {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #4a5568;
+  margin-bottom: 2px;
+}
+.react-own-service-price {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a202c;
+}
+
+/* Medium screens (tablets) */
+@media (max-width: 768px) {
+  .react-talkTo-main {
+    gap: 1.5rem;
+  }
+
+  .react-own-container {
+    max-width: 100%;
+  }
+
+
+
+  .react-own-name {
+    font-size: 22px;
+  }
+
+  .react-own-title {
+    font-size: 13px;
+  }
+
+  
+
+  .react-own-service-item {
+    padding: 12px 6px;
+  }
+
+  .react-own-service-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+
+  .react-own-service-name {
+    font-size: 11px;
+  }
+
+  .react-own-service-price {
+    font-size: 13px;
+  }
+}
+
+/* Small screens (phones) */
+@media (max-width: 480px) {
+  .react-talkTo-main {
+    flex-direction: column;
+    gap: 1rem;
+   
+  }
+
+  .react-own-profile-info {
+    gap: 12px;
+  }
+
+  .react-own-avatar {
+    width: 60px;
+    height: 60px;
+  }
+
+  .react-own-name {
+    font-size: 20px;
+  }
+
+  .react-own-title {
+    font-size: 12px;
+  }
+
+  .react-own-rating-count {
+    font-size: 13px;
+  }
+
+  .react-own-info-label {
+    font-size: 12px;
+  }
+
+  .react-own-info-value {
+    font-size: 14px;
+  }
+
+  .react-own-service-item {
+    padding: 10px 4px;
+  }
+
+  .react-own-service-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+
+  .react-own-service-name {
+    font-size: 10px;
+  }
+
+  .react-own-service-price {
+    font-size: 12px;
+  }
+}
+
+/* inner astrologer page */
+.react-inner-Icon{
+  color: var(--react-secondary-orange);
+  margin-right: 5px;
+  margin-left: 10px;
+}
+
+/* Profile Card */
+.react-astrologers-profile-card {
+  /* background-color: #FCFAF2; */
+  background: var(--react-front-section);
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(67, 67, 67, 0.125);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.react-astrologers-profile-header {
+  padding: 24px;
+  display: flex;
+  gap: 34px;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.react-astrologers-profile-image-container {
+  flex-shrink: 0;
+  position: relative;
+}
+
+.react-astrologers-profile-image {
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.react-astrologers-status {
+  position: absolute;
+  bottom: 25px;
+  right: 25px;
+  width: 20px;
+  height: 20px;
+ 
+  border: 3px solid var(--react-white);
+  border-radius: 50%;
+  
+}
+
+.react-astrologer-online{
+  animation: pulse 2s infinite;
+  box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+  background: #4CAF50;
+}
+/* Additional ripple animation */
+.react-astrologer-online::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border: 2px solid rgba(76, 175, 80, 0.3);
+  border-radius: 50%;
+  animation: ripple 2s infinite;
+}
+
+@keyframes ripple {
+  0% {
+      transform: scale(0.8);
+      opacity: 1;
+  }
+  100% {
+      transform: scale(1.4);
+      opacity: 0;
+  }
+}
+.react-astrologer-busy {
+  animation: pulse-busy 2s infinite;
+  box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.7); /* orange */
+  background: #FF9800;
+ 
+}
+
+.react-astrologer-busy::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border: 2px solid rgba(255, 152, 0, 0.3);
+  border-radius: 50%;
+  animation: ripple 2s infinite;
+}
+
+.react-astrologer-offline {
+  animation: pulse-offline 2s infinite;
+  box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7); /* red */
+  background: #F44336;
+ 
+}
+
+.react-astrologer-offline::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border: 2px solid rgba(244, 67, 54, 0.3); /* light red border */
+  border-radius: 50%;
+  animation: ripple 2s infinite;
+}
+
+
+
+
+@keyframes pulse {
+  0% {
+      box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+  }
+  70% {
+      box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+  }
+  100% {
+      box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+  }
+}
+
+@keyframes pulse-busy {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.7);
+  }
+  70% {
+      box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+  }
+  100% {
+      box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+  }
+}
+@keyframes pulse-offline {
+  0% {
+    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7); 
+  }
+  70% {
+      box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+  }
+  100% {
+      box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+  }
+}
+
+
+
+.react-astrologers-profile-info {
+  flex: 1;
+  min-width: 0;
+  
+}
+
+.react-astrologers-name-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.react-astrologers-astrologer-name {
+  font-size: 32px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--react-primary), var(--react-gold-accent));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+ 
+}
+
+.react-astrologers-verified-badge {
+  background: var(--react-green-verified);
+  color: var(--react-white);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+}
+
+.react-astrologers-specializations {
+  margin-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.react-astrologers-spec-tag {
+  background: var(--react-light-orange);
+  color: var(--react-dark-text);
+  padding: 4px 15px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid var(--react-secondary-orange);
+}
+
+.react-astrologers-basic-info {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 24px;
+}
+
+.react-astrologers-info-item {
+  display: flex;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.react-astrologers-info-label {
+  color: var(--react-medium-text);
+  font-weight: 500;
+}
+
+.react-astrologers-info-value {
+  color: var(--react-dark-text);
+  font-weight: 600;
+}
+
+.react-astrologers-consultation-buttons {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.react-astrologers-consult-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--react-white);
+  border: none;
+  padding: 12px 50px;
+  border-radius: 24px;
+  font-size: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+ 
+  min-width: 120px;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.react-astrologers-consult-btn i {
+  display: inline-block;
+  vertical-align: middle !important;
+  font-size: 20px;
+}
+
+.react-astrologers-consult-btn:hover {
+  transform: scale(1.1);
+ 
+ 
+
+}
+
+.react-astrologers-call-btn{
+  background: var(--react-gradient);
+
+  
+}
+.react-astrologers-chat-btn{
+
+  background: var(--react-gradient);
+  background: linear-gradient(135deg, #48bb78, #38a169);
+ 
+}
+.react-astrologers-video-btn{
+
+  background: var(--react-gradient);
+  background: linear-gradient(135deg, #4299e1, #3182ce);
+}
+
+
+.react-astrologers-consult-btn:active {
+  transform: translateY(0);
+}
+
+/* About Section */
+.react-astrologers-about-section {
+  padding: 0 24px 24px;
+  border-top: 1px solid rgba(67, 67, 67, 0.125);
+ 
+  padding-top: 20px;
+  text-align: center;
+}
+
+.react-astrologers-section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--react-dark-text);
+  margin-bottom: 16px;
+ 
+}
+
+.react-astrologers-about-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #444;
+  margin-bottom: 12px;
+  text-align: justify;
+}
+
+.react-astrologers-about-text:last-child {
+  margin-bottom: 0;
+}
+
+/* Bottom Section */
+.react-astrologers-bottom-section {
+  display: grid;
+  grid-template-columns: 1fr 390px;
+  gap: 20px;
+}
+
+/* Reviews Card */
+.react-astrologers-reviews-card {
+  /* background-color: #FCFAF2; */
+  background: var(--react-front-section);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(67, 67, 67, 0.125);
+}
+
+.react-astrologers-rating-summary {
+  display: flex;
+  gap: 32px;
+  margin-top: 30px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--react-border-color);
+}
+
+.react-astrologers-rating-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 100px;
+}
+
+.react-astrologers-score-number {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--react-dark-text);
+  line-height: 1;
+}
+
+.react-astrologers-rating-stars {
+  display: flex;
+  gap: 2px;
+  margin: 8px 0;
+}
+
+.react-astrologers-star {
+  font-size: 16px;
+  color: #DDD;
+}
+
+.react-astrologers-star.react-astrologers-filled {
+  color: var(--react-star-color);
+}
+
+.react-astrologers-star.react-astrologers-half {
+  background: linear-gradient(90deg, var(--react-star-color) 50%, #DDD 50%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.react-astrologers-total-reviews {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--react-medium-text);
+  font-weight: 500;
+}
+
+.react-astrologers-rating-bars {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.react-astrologers-rating-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.react-astrologers-bar-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--react-dark-text);
+  min-width: 12px;
+}
+
+.react-astrologers-bar-container {
+  flex: 1;
+  height: 6px;
+  background: #F0F0F0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+
+
+.react-astrologers-bar-fill {
+  height: 100%;
+  background: var(--react-primary);
+  border-radius: 3px;
+  transition: width 0.8s ease;
+}
+
+/* Reviews List */
+.react-astrologers-reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  height: 500px;
+  
+}
+
+
+
+.react-astrologers-review-item {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--react-border-color);
+  border-radius: 8px;
+  transition: var(--react-transition);
+  /* background: #FAFAFA; */
+}
+
+.react-astrologers-reviewer-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--react-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.react-astrologers-avatar-initial {
+  color: var(--react-white);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.react-astrologers-review-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.react-astrologers-review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.react-astrologers-reviewer-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--react-dark-text);
+}
+
+.react-astrologers-review-stars {
+  display: flex;
+  gap: 1px;
+}
+
+.react-astrologers-review-stars .react-astrologers-star {
+  font-size: 12px;
+}
+
+.react-astrologers-review-date {
+  font-size: 12px;
+  color: #999999;
+  margin-bottom: 8px;
+}
+
+.react-astrologers-review-text {
+  font-size: 14px;
+  color: var(--react-medium-text);
+  line-height: 1.4;
+}
+
+/* Blogs Card */
+.react-astrologers-blogs-card {
+  /* background-color: #FCFAF2; */
+  background: var(--react-front-section);
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(67, 67, 67, 0.125);
+  padding: 24px;
+  height: fit-content;
+}
+
+.react-astrologers-blogs-header {
+  margin-bottom: 20px;
+}
+
+.react-astrologers-blogs-title {
+  background: var(--react-primary);
+  color: var(--react-white);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 16px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.react-astrologers-blog-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--react-border-color);
+  cursor: pointer;
+  transition: var(--react-transition);
+}
+
+.react-astrologers-blog-item:last-child {
+  border-bottom: none;
+}
+
+.react-astrologers-blog-item:hover {
+  background: #FCFAF2;
+  margin: 0 -12px;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.react-astrologers-blog-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.react-astrologers-blog-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.react-astrologers-blog-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--react-dark-text);
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.react-astrologers-blog-date {
+  font-size: 12px;
+  color: #999999;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .react-astrologers-bottom-section {
+      grid-template-columns: 1fr;
+  }
+
+  .react-astrologers-blogs-card {
+      order: -1;
+  }
+}
+
+@media (max-width: 768px) {
+  
+  .react-astrologers-profile-header {
+      flex-direction: column;
+      text-align: center;
+      gap: 16px;
+  }
+
+  .react-astrologers-profile-image-container {
+    margin: 0 auto;
+  }
+  .react-astrologers-online-status {
+    width: 16%;
+    height: 16%;
+    bottom: 4%;
+    right: 12%;
+  }
+  .react-astrologers-profile-image {
+      width: 130px;
+      height: 130px;
+  }
+
+  .react-astrologers-name-section {
+      justify-content: center;
+  }
+
+  .react-astrologers-basic-info {
+      justify-content: center;
+      flex-wrap: wrap;
+  }
+
+  .react-astrologers-consultation-buttons {
+      justify-content: center;
+  }
+
+  .react-astrologers-rating-summary {
+      flex-direction: column;
+      gap: 20px;
+      text-align: center;
+  }
+
+  .react-astrologers-astrologer-name {
+      font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .react-astrologers-consultation-buttons {
+      flex-direction: column;
+  }
+
+  .react-astrologers-consult-btn {
+      min-width: 100%;
+      font-size: 15px;
+      
+  }
+
+  .react-astrologers-specializations {
+      justify-content: center;
+  }
+
+  .react-astrologers-profile-card,
+  .react-astrologers-reviews-card,
+  .react-astrologers-blogs-card {
+      padding: 10px;
+  }
+
+  .react-astrologers-about-section {
+      padding: 0px;
+  }
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+      opacity: 0;
+      transform: translateY(20px);
+  }
+  to {
+      opacity: 1;
+      transform: translateY(0);
+  }
+}
+
+.react-astrologers-profile-card,
+.react-astrologers-reviews-card,
+.react-astrologers-blogs-card {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+.react-astrologers-reviews-card {
+  animation-delay: 0.1s;
+}
+
+.react-astrologers-blogs-card {
+  animation-delay: 0.2s;
+}
+
+/* Interactive Elements */
+
+.react-astrologers-review-item:hover {
+  border-color: var(--react-primary);
+  
+}
+
+
+
+
+/* blog page */
+
+.react-blog-Page{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+
+
+}
+
+.react-blog-card-shadow{
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1) !important;
+  /* box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); */
+}
+
+    /* Responsive grid */
+    @media (min-width: 768px) {
+      .react-blog-Page {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .react-blog-Page {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    /* shop page */
+
+
+    .react-shop-container {
+    display: flex;
+
+    gap: 30px;
+}
+
+/* Sidebar Styles */
+.react-shop-sidebar {
+    width: 350px;
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+    position: sticky !important;
+    top: 20px;
+}
+
+.react-shop-search-section {
+    margin-bottom: 30px;
+
+}
+
+.react-shop-search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.react-shop-search-input {
+    width: 100%;
+    padding: 12px 50px 12px 16px;
+    border: 2px solid #e1e5e9;
+    border-radius: 12px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+}
+
+.react-shop-search-input:focus {
+    outline: none;
+    border-color: var(--react-primary);
+    background: white;
+   
+}
+
+.react-shop-search-btn {
+    position: absolute;
+    right: 0px;
+    background: var(--react-gradient);
+    border: 1px solid var(--react-primary);
+    padding: 11px 15px;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.4s ease;
+}
+
+.react-shop-search-btn:hover {
+  background: #f8f9fa;
+  color: var(--react-primary);
+  
+}
+
+.react-shop-filter-section {
+    margin-bottom: 20px;
+   
+}
+
+.react-shop-filter-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #2d3748;
+    position: relative;
+}
+
+.react-shop-filter-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 80px;
+    height: 3px;
+    background:var(--react-gradient);
+    border-radius: 2px;
+}
+
+.react-shop-filter-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.react-shop-filter-option {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 8px 0px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.react-shop-filter-option:hover {
+    background: #f7fafc;
+
+}
+
+.react-shop-filter-option input {
+    display: none;
+}
+
+.react-shop-checkmark, .react-shop-checkbox {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #cbd5e0;
+    margin-right: 12px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.react-shop-checkmark {
+    border-radius: 50%;
+}
+
+.react-shop-checkbox {
+    border-radius: 4px;
+}
+
+.react-shop-filter-option input:checked + .react-shop-checkmark,
+.react-shop-filter-option input:checked + .react-shop-checkbox {
+    background: var(--react-gradient);
+    border-color: var(--react-primary);
+}
+
+.react-shop-filter-option input:checked + .react-shop-checkmark::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 10px;
+    height: 10px;
+    background: white;
+    border-radius: 50%;
+}
+
+.react-shop-filter-option input:checked + .react-shop-checkbox::after {
+    content: '✓';
+    position: absolute;
+    top: -2px;
+    left: 2px;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.react-shop-reset-btn {
+    width: 100%;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.react-shop-reset-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+}
+
+/* Products Section */
+.react-shop-products-section {
+    flex: 1;
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+
+}
+
+.react-shop-products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 25px;
+    margin-top: 40px;
+}
+
+.react-shop-product-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    height: fit-content;
+}
+
+
+
+.react-shop-product-image {
+    position: relative;
+    overflow: hidden;
+    height: 220px;
+}
+
+.react-shop-product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: all 0.3s ease;
+}
+
+.react-shop-product-card:hover .react-shop-product-image img {
+    transform: scale(1.1);
+}
+
+.react-shop-product-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.react-shop-product-card:hover .react-shop-product-overlay {
+    opacity: 1;
+}
+
+.react-shop-quick-view-btn {
+    background: white;
+    color: #333;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.react-shop-quick-view-btn:hover {
+    background: var(--react-gradient);
+    color: white;
+}
+
+.react-shop-product-info {
+    padding: 20px;
+}
+
+.react-shop-product-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #2d3748;
+    line-height: 1.4;
+}
+
+.react-shop-product-price {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--react-primary);
+    margin-bottom: 15px;
+}
+
+.react-shop-Icon{
+  color: var(--react-primary);
+  margin-right: 5px;
+}
+
+.react-shop-buy-now-btn {
+    width: 100%;
+    padding: 12px 20px;
+    background: var(--react-gradient);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.react-shop-buy-now-btn:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #ee5a24, #ff6b6b);
+  
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .react-shop-container {
+        flex-direction: column;
+        padding: 15px;
+    }
+
+    .react-shop-sidebar {
+        width: 100%;
+        position: static !important;
+    }
+
+    .react-shop-products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .react-shop-products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+    }
+
+    .react-shop-sidebar {
+        padding: 20px;
+    }
+
+    .react-shop-product-card {
+        border-radius: 15px;
+    }
+
+    .react-shop-product-image {
+        height: 180px;
+    }
+}
+
+@media (max-width: 480px) {
+    .react-shop-container {
+        padding: 10px;
+    }
+
+    .react-shop-products-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .react-shop-sidebar {
+        padding: 15px;
+    }
+}
+
+/* free kundali page */
+
+.react-body-kundliPage {
+  
+  background: linear-gradient(135deg, var(--react-light-orange) 0%, #fff5f5 50%, #fef7ed 100%);
+  position: relative;
+  overflow-x: hidden;
+  color: var(--react-foreground);
+}
+
+/* Decorative floating elements */
+.react-free-Kundli-floating-element {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.6;
+}
+
+.react-free-Kundli-float-1 {
+  top: 30rem;
+  left: 5rem;
+  width: 5rem;
+  height: 5rem;
+  background: linear-gradient(135deg, var(--react-secondary-orange), var(--react-primary));
+  animation: free-Kundli-pulse 3s infinite;
+}
+
+.react-free-Kundli-float-2 {
+  top: 30rem;
+  right: 5rem;
+  width: 5rem;
+  height: 5rem;
+  background: linear-gradient(135deg, var(--react-astro-indigo), var(--react-star-color));
+  opacity: 0.5;
+  animation: free-Kundli-bounce 2s infinite;
+}
+
+.react-free-Kundli-float-3 {
+  bottom: 35rem;
+  left: 2.5rem;
+  width: 6rem;
+  height: 6rem;
+  background: linear-gradient(135deg, var(--react-astro-gold), var(--react-gold-accent));
+  opacity: 0.7;
+  animation: free-Kundli-pulse 2.5s infinite;
+}
+
+.react-free-Kundli-float-4 {
+  bottom: 35rem;
+  right: 2.5rem;
+  width: 6rem;
+  height: 6rem;
+  background: linear-gradient(135deg, var(--react-secondary-orange), var(--react-primary));
+  opacity: 0.4;
+  animation: free-Kundli-bounce 3s infinite;
+}
+
+@keyframes free-Kundli-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+@keyframes free-Kundli-bounce {
+  0%, 100% {
+      transform: translateY(0);
+      animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+      transform: translateY(-25px);
+      animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+@keyframes free-Kundli-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.react-free-Kundli-container {
+ 
+  position: relative;
+  z-index: 10;
+  padding-bottom: 50px;
+}
+
+.react-free-Kundli-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding-top: 2rem;
+}
+
+.react-free-Kundli-icon-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 1.5rem;
+}
+
+.react-free-Kundli-icon-blur {
+  position: absolute;
+  inset: 0;
+  background: var(--react-gradient);
+  border-radius: 50%;
+  filter: blur(16px);
+  opacity: 0.3;
+  animation: free-Kundli-pulse 3s infinite;
+}
+
+.react-free-Kundli-icon-container {
+  position: relative;
+  background: var(--react-gradient);
+  padding: 1rem;
+  border-radius: 50%;
+  box-shadow: 0 10px 25px rgba(238, 90, 36, 0.3);
+}
+
+.react-free-Kundli-main-icon {
+  width: 3rem;
+  height: 3rem;
+  color: var(--react-white);
+  animation: free-Kundli-spin 10s linear infinite;
+}
+
+.react-free-Kundli-main-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  background: var(--react-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.react-free-Kundli-title-divider {
+  width: 8rem;
+  height: 3px;
+  background: var(--react-gradient);
+  margin: 0 auto 1.5rem;
+  border-radius: var(--react-radius);
+}
+
+.react-free-Kundli-subtitle {
+  color: var(--react-dark-text);
+  font-size: 1.25rem;
+  max-width: 48rem;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.react-free-Kundli-main-card {
+  background: var(--react-white);
+  border-radius: 1.5rem;
+  /* box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); */
+  box-shadow: 0 20px 60px rgba(238, 90, 36, 0.1);
+  overflow: hidden;
+  /* border: 2px solid var(--react-border-color); */
+}
+
+.react-free-Kundli-card-header {
+  background: linear-gradient(135deg, var(--react-light-orange), #fff5f5);
+  padding: 2rem;
+  text-align: center;
+  border-bottom: 1px solid var(--react-border-color);
+}
+
+.react-free-Kundli-header-icons {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.react-free-Kundli-header-icon-wrapper {
+  padding: 0.75rem;
+  border-radius: 50%;
+  background: var(--react-white);
+  box-shadow: 0 4px 12px rgba(238, 90, 36, 0.15);
+}
+
+.react-free-Kundli-header-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--react-primary);
+}
+
+.react-free-Kundli-card-title {
+  font-size: 1.875rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--react-primary), var(--react-gold-accent));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.react-free-Kundli-card-description {
+  color: var(--react-medium-text);
+  font-size: 1.125rem;
+}
+
+.react-free-Kundli-card-content {
+  padding: 2rem;
+}
+
+.react-free-Kundli-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 1024px) {
+  .react-free-Kundli-form-grid {
+      grid-template-columns: 1fr 1fr;
+  }
+}
+
+.react-free-Kundli-form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.react-free-Kundli-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.react-free-Kundli-form-label {
+  font-weight: 600;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--react-dark-text);
+  
+  letter-spacing: 0.05em;
+}
+
+.react-free-Kundli-label-icon {
+  /* width: 1rem;
+  height: 1rem; */
+  color: var(--react-primary);
+  margin-right: 5px;
+
+}
+
+.react-free-Kundli-form-input, .react-free-Kundli-form-select {
+  width: 100%;
+  height: 3rem;
+  border: 2px solid var(--react-border-color);
+  border-radius: var(--react-radius);
+  padding: 0 1rem;
+  font-size: 1rem;
+  transition: var(--react-transition);
+  background: var(--react-white);
+  color: var(--react-dark-text);
+}
+
+.react-free-Kundli-form-input:focus, .react-free-Kundli-form-select:focus {
+  outline: none;
+  border-color: var(--react-primary);
+  box-shadow: 0 0 0 3px rgba(238, 90, 36, 0.1);
+}
+
+.react-free-Kundli-form-input::placeholder {
+  color: var(--react-medium-text);
+}
+
+.react-free-Kundli-form-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.react-w3.react-org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23666666' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.75rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+}
+
+.react-free-Kundli-form-select option {
+  background: var(--react-white);
+  color: var(--react-dark-text);
+  padding: 0.5rem;
+}
+
+.react-free-Kundli-generate-btn {
+  background: var(--react-gradient);
+  color: var(--react-white);
+  font-weight: bold;
+  padding: 1rem 3rem;
+  border: none;
+  border-radius: 1rem;
+  font-size: 1.125rem;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(238, 90, 36, 0.3);
+  transition: var(--react-transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 2.5rem auto 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.react-free-Kundli-generate-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.react-free-Kundli-generate-btn:hover::before {
+  left: 100%;
+}
+
+.react-free-Kundli-generate-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 35px rgba(238, 90, 36, 0.4);
+}
+
+.react-free-Kundli-btn-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  animation: free-Kundli-pulse 2s infinite;
+}
+
+.react-free-Kundli-info-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+@media (min-width: 768px) {
+  .react-free-Kundli-info-cards {
+      grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+.react-free-Kundli-info-card {
+  padding: 1rem;
+  border-radius: var(--react-radius);
+  text-align: center;
+  border: 1px solid var(--react-border-color);
+  background: var(--react-white);
+  transition: var(--react-transition);
+}
+
+.react-free-Kundli-info-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(238, 90, 36, 0.1);
+}
+
+.react-free-Kundli-info-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 0.5rem;
+  color: var(--react-white);
+  font-size: 1rem;
+  font-weight: bold;
+  background: var(--react-gradient);
+}
+
+.react-free-Kundli-info-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--react-dark-text);
+}
+
+.react-free-Kundli-footer {
+  text-align: center;
+  margin-top: 3rem;
+  color: var(--react-medium-text);
+}
+
+.react-free-Kundli-footer-icons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.react-free-Kundli-footer-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--react-primary);
+}
+
+.react-free-Kundli-footer-text {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--react-dark-text);
+}
+
+.react-free-Kundli-footer-small {
+  font-size: 0.875rem;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .react-free-Kundli-main-title {
+      font-size: 2rem;
+  }
+
+  .react-free-Kundli-card-content {
+      padding: 1rem;
+  }
+
+  .react-free-Kundli-card-header {
+      padding: 1.5rem 1rem;
+  }
+
+  .react-free-Kundli-generate-btn {
+      padding: 0.875rem 2rem;
+      font-size: 1rem;
+  }
+
+  .react-free-Kundli-header-icons {
+      gap: 1rem;
+  }
+
+  .react-free-Kundli-floating-element{
+    display: none;
+  }
+}
+
+/* Enhanced focus styles for better accessibility */
+
+
+
+/* matching kundli page */
+
+.react-maTching-container {
+ 
+  margin: 40px 0;
+  /* background: var(--react-white); */
+ 
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(238, 90, 36, 0.1);
+  overflow: hidden;
+  position: relative;
+}
+/* .react-maTching-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: var(--react-gradient);
+} */
+.react-maTching-header {
+  text-align: center;
+  padding: 40px 20px 20px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 248, 220, 0.5) 100%);
+}
+.react-maTching-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: var(--react-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 10px;
+}
+.react-maTching-header p {
+  color: var(--react-medium-text);
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.react-maTching-form-container {
+  padding: 40px;
+}
+.react-maTching-language-section {
+  margin-bottom: 40px;
+  text-align: center;
+}
+.react-maTching-language-section h3 {
+  color: var(--react-dark-text);
+  margin-bottom: 20px;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+.react-maTching-language-select {
+  position: relative;
+  display: inline-block;
+  min-width: 500px;
+}
+.react-maTching-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 40px;
+}
+.react-maTching-details-section {
+  /* background: linear-gradient(135deg, rgba(255, 248, 220, 0.3) 0%, rgba(255, 255, 255, 0.8) 100%); */
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  border: 2px solid rgba(238, 90, 36, 0.1);
+  transition: var(--react-transition);
+  position: relative;
+  overflow: hidden;
+}
+.react-maTching-details-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--react-gradient);
+}
+/* .react-maTching-details-section:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(238, 90, 36, 0.15);
+  border-color: var(--react-primary);
+} */
+.react-maTching-section-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--react-dark-text);
+  margin-bottom: 25px;
+  text-align: center;
+  position: relative;
+}
+.react-maTching-section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 3px;
+  background: var(--react-gradient);
+  border-radius: 2px;
+}
+.react-maTching-boy-section .react-maTching-section-title {
+  color: var(--react-primary);
+}
+.react-maTching-girl-section .react-maTching-section-title {
+  color: var(--react-astro-indigo);
+}
+.react-maTching-form-group {
+  margin-bottom: 25px;
+}
+.react-maTching-form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--react-dark-text);
+  font-size: 0.95rem;
+}
+.react-maTching-form-input, .react-maTching-form-select {
+  width: 100%;
+  height: 3rem;
+  border: 2px solid var(--react-border-color);
+  border-radius: var(--react-radius);
+  padding: 0 1rem;
+  font-size: 1rem;
+  transition: var(--react-transition);
+  background: var(--react-white);
+  color: var(--react-dark-text);
+}
+.react-maTching-form-input:focus, .react-maTching-form-select:focus {
+  outline: none;
+  border-color: var(--react-primary);
+  box-shadow: 0 0 0 3px rgba(238, 90, 36, 0.1);
+  
+
+}
+.react-maTching-form-input::placeholder {
+  color: var(--react-medium-text);
+}
+.react-maTching-form-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.react-w3.react-org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  padding-right: 40px;
+}
+.react-maTching-submit-section {
+  text-align: center;
+  /* padding-top: 20px;/ */
+  /* border-top: 2px solid var(--react-border-color); */
+}
+.react-maTching-submit-btn {
+  background: var(--react-gradient);
+  color: var(--react-white);
+  border: none;
+  padding: 16px 40px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: var(--react-transition);
+  box-shadow: 0 8px 25px rgba(238, 90, 36, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+.react-maTching-submit-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+.react-maTching-submit-btn:hover::before {
+  left: 100%;
+}
+.react-maTching-submit-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 35px rgba(238, 90, 36, 0.4);
+}
+.react-maTching-submit-btn:active {
+  transform: translateY(-1px);
+}
+.react-maTching-icon {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 1.2rem;
+}
+@media (max-width: 768px) {
+  .react-maTching-details-grid {
+      grid-template-columns: 1fr;
+      gap: 30px;
+  }
+  .react-maTching-form-container {
+      padding: 20px;
+  }
+  .react-maTching-header h1 {
+      font-size: 2rem;
+  }
+  .react-maTching-details-section {
+      padding: 20px;
+  }
+  .react-maTching-language-select {
+   
+    min-width: 200px;
+  }
+}
+@media (max-width: 480px) {
+ 
+  .react-maTching-header {
+      padding: 30px 15px 15px;
+  }
+  .react-maTching-header h1 {
+      font-size: 1.8rem;
+  }
+  .react-maTching-form-container {
+      padding: 15px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .react-maTching-language-select {
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .react-maTching-details-grid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  .react-maTching-form-container {
+    padding: 20px;
+  }
+  .react-maTching-header h1 {
+    font-size: 2rem;
+  }
+  .react-maTching-details-section {
+    padding: 20px;
+  }
+  .react-maTching-language-select {
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .react-maTching-header {
+    padding: 30px 15px 15px;
+  }
+  .react-maTching-header h1 {
+    font-size: 1.6rem;
+  }
+  .react-maTching-header p {
+    font-size: 1rem;
+  }
+  .react-maTching-form-container {
+    padding: 15px;
+  }
+  .react-maTching-form-input,
+  .react-maTching-form-select {
+    font-size: 0.95rem;
+    padding: 12px 14px;
+  }
+  .react-maTching-submit-btn {
+    padding: 14px 30px;
+    font-size: 1rem;
+  }
+}
+
+
+/* services page */
+
+.react-services-container {
+ 
+  margin: 40px 0;
+  display: flex;
+  min-height: 100vh;
+  gap: 0;
+}
+
+.react-services-sidebar {
+  width: 320px;
+  background: var(--react-white);
+  border-right: 2px solid var(--react-border-color);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  border-radius: 16px;
+}
+
+.react-services-sidebar-header {
+  padding: 30px 25px 20px;
+  background: var(--react-gradient);
+  color: var(--react-white);
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 101;
+}
+
+.react-services-sidebar h2 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.react-services-sidebar-subtitle {
+  font-size: 14px;
+  opacity: 0.9;
+  font-weight: 400;
+}
+
+.react-services-sidebar-content {
+  padding: 25px 0;
+}
+
+.react-services-category-list {
+  list-style: none;
+  padding: 0 10px;
+}
+
+.react-services-category-item {
+  margin-bottom: 8px;
+  border-radius: var(--react-radius);
+  overflow: hidden;
+  transition: var(--react-transition);
+  
+  
+}
+
+.react-services-category-item a {
+  display: block;
+  padding: 16px 20px;
+  text-decoration: none;
+  
+  font-weight: 500;
+  font-size: 15px;
+  border-radius: var(--react-radius);
+  transition: var(--react-transition);
+  position: relative;
+  border-left: 4px solid transparent;
+  background: linear-gradient(90deg, rgba(238, 90, 36, 0.1), rgba(255, 107, 107, 0.05));
+  border-left-color: var(--react-primary);
+  color: var(--react-dark-text);
+}
+
+.react-services-category-item:hover a {
+  
+  color: var(--react-primary);
+ 
+  transform: translateX(8px);
+}
+
+.react-services-category-item.active a {
+  background: var(--react-gradient);
+  color: var(--react-white);
+  border-left-color: var(--react-astro-gold);
+  font-weight: 600;
+}
+
+
+
+.react-services-main-content {
+  flex: 1;
+  padding: 0 20px;
+  background: transparent;
+  overflow-y: auto;
+}
+
+
+.react-services-services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+  /* margin-top: 40px; */
+}
+
+.react-services-service-card {
+  background: var(--react-white);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  transition: var(--react-transition);
+  cursor: pointer;
+  position: relative;
+  border: 1px solid var(--react-border-color);
+}
+
+.react-services-service-card:hover {
+ 
+  border-color: var(--react-primary);
+}
+
+.react-services-card-image {
+  height: 180px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+}
+
+
+.react-services-card-image img {
+object-fit: contain;
+}
+
+
+
+
+.react-services-card-content {
+  padding: 15px;
+  text-align: center;
+}
+
+.react-services-card-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--react-dark-text);
+  margin-bottom: 12px;
+}
+
+.react-services-card-description {
+  color: var(--react-medium-text);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.react-services-card-badge {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: var(--react-astro-gold);
+  color: var(--react-white);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  z-index: 3;
+}
+
+
+
+@media (max-width: 1024px) {
+  .react-services-sidebar {
+      width: 280px;
+  }
+
+  .react-services-main-content {
+      padding: 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .react-services-container {
+      flex-direction: column;
+  }
+
+  .react-services-sidebar {
+      width: 100%;
+      height: auto;
+      position: relative;
+      border-right: none;
+      border-bottom: 2px solid var(--react-border-color);
+  }
+
+  .react-services-sidebar-content {
+      padding: 20px 0;
+  }
+
+  .react-services-category-list {
+      display: flex;
+      overflow-x: auto;
+      padding: 0 20px;
+      gap: 10px;
+      scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  }
+
+  .react-services-category-item {
+      flex-shrink: 0;
+      margin-bottom: 0;
+  }
+
+  .react-services-category-item a {
+      white-space: nowrap;
+      padding: 12px 20px;
+  }
+
+  .react-services-main-content {
+      padding: 25px 0px;
+  }
+
+  .react-services-services-grid {
+      grid-template-columns: 1fr;
+      gap: 20px;
+  }
+
+  .react-services-page-title {
+      font-size: 32px;
+  }
+}
+
+/* Scrollbar styling for sidebar */
+.react-services-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.react-services-sidebar::-webkit-scrollbar-track {
+  background: var(--react-muted);
+}
+
+.react-services-sidebar::-webkit-scrollbar-thumb {
+  background: var(--react-primary);
+  border-radius: 3px;
+}
+
+.react-services-sidebar::-webkit-scrollbar-thumb:hover {
+  background: var(--react-astro-indigo);
+}
+
+
+
+/* contact page */
+
+.react-contact-section-own {
+  padding: 30px 0;
+  display: flex;
+  align-items: center;
+}
+
+.react-contact-section-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.react-contact-section-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--react-dark-text);
+  margin-bottom: 20px;
+  letter-spacing: -0.025em;
+}
+
+.react-contact-section-header p {
+  font-size: 1rem;
+  color: var(--react-medium-text);
+  max-width: 600px;
+  margin: 0 auto;
+  font-weight: 400;
+}
+
+.react-contact-contact-wrapper {
+  display: grid;
+  grid-template-columns: 450px 1fr;
+  gap: 20px;
+}
+
+.react-contact-contact-info {
+  background: white;
+  border-radius: 20px;
+  padding: 48px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  
+}
+
+.react-contact-info-header {
+  margin-bottom: 40px;
+}
+
+.react-contact-info-header h2 {
+  font-size: 1.875rem;
+  font-weight: 600;
+  color: var(--react-primary);
+  margin-bottom: 12px;
+}
+
+.react-contact-info-header p {
+  color: var(--react-medium-text);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.react-contact-info-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.react-contact-info-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 24px;
+  /* background: linear-gradient(135deg, var(--react-light-orange) 0%, #fff5f5 50%, #fef7ed 100%); */
+  border-radius: 12px;
+  border: 1px solid var(--react-border-color);
+  transition: all 0.2s ease;
+}
+
+.react-contact-icon {
+  width: 44px;
+  height: 44px;
+  background: var(--react-primary);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--react-white);
+  flex-shrink: 0;
+}
+
+.react-contact-info-content h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--react-dark-text);
+  margin-bottom: 6px;
+}
+
+.react-contact-info-content p {
+  color: var(--react-medium-text);
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.react-contact-contact-form {
+  background: var(--react-white);
+  border-radius: 20px;
+  padding: 48px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  
+}
+
+.react-contact-form-header {
+  margin-bottom: 40px;
+}
+
+.react-contact-form-header h2 {
+  font-size: 1.875rem;
+  font-weight: 600;
+  color: var(--react-primary);
+  margin-bottom: 12px;
+}
+
+.react-contact-form-header p {
+  color: var(--react-medium-text);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.react-contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.react-contact-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.react-contact-form-group {
+  position: relative;
+}
+
+.react-contact-form-group input,
+.react-contact-form-group textarea {
+  width: 100%;
+  padding: 16px 18px;
+  border: 1px solid var(--react-border-color);
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  /* background: var(--react-muted); */
+  color: var(--react-dark-text);
+}
+
+.react-contact-form-group input:focus,
+.react-contact-form-group textarea:focus {
+  outline: none;
+  border-color: var(--react-primary);
+  background: var(--react-white);
+}
+
+.react-contact-form-group label {
+  position: absolute;
+  left: 18px;
+  top: 16px;
+  color: var(--react-muted-foreground);
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  background: transparent;
+  padding: 0 4px;
+  font-weight: 400;
+}
+
+.react-contact-form-group input:focus + label,
+.react-contact-form-group textarea:focus + label,
+.react-contact-form-group input:not(:placeholder-shown) + label,
+.react-contact-form-group textarea:not(:placeholder-shown) + label {
+  top: -10px;
+  left: 14px;
+  font-size: 0.875rem;
+  color: var(--react-primary);
+  background: var(--react-white);
+  font-weight: 500;
+}
+
+.react-contact-form-group textarea {
+  resize: vertical;
+  min-height: 120px;
+  font-family: inherit;
+}
+
+.react-contact-submit-btn {
+  background: var(--react-primary);
+  color: var(--react-white);
+  border: none;
+  padding: 16px 32px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 16px;
+  font-family: inherit;
+}
+
+.react-contact-submit-btn:hover {
+  box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+}
+
+.react-contact-submit-btn:active {
+  transform: translateY(0);
+}
+
+.react-contact-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Desktop optimized responsive design */
+@media (max-width: 768px) {
+  .react-contact-contact-wrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .react-contact-section-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .react-contact-form-row {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .react-contact-contact-info,
+  .react-contact-contact-form {
+    padding: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .react-contact-container {
+    padding: 0 20px;
+  }
+
+  .react-contact-section-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .react-contact-contact-info,
+  .react-contact-contact-form {
+    padding: 24px;
+  }
+
+  .react-contact-info-card {
+    padding: 20px;
+  }
+
+  .react-contact-form-header h2 {
+    font-size: 1.3rem;
+  }
+}
+
+/* Subtle animations */
+.react-contact-info-card,
+.react-contact-submit-btn {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.react-contact-form-group input,
+.react-contact-form-group textarea {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+
+
+/* /* popup * */
+
+
+
+.react-cusTom-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  z-index: 100000;
+}
+.react-cusTom-popup {
+  background: white;
+  border-radius: 20px;
+  padding: 1rem;
+  max-width: 450px;
+  width: 90%;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+  transform: translateY(-40px);
+  opacity: 0;
+  transition: all 0.4s ease;
+  position: relative;
+  text-align: center;
+  
+}
+.react-cusTom-overlay.react-cusTom-show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.react-cusTom-overlay.react-cusTom-show .react-cusTom-popup {
+  transform: translateY(0);
+  opacity: 1;
+}
+.react-cusTom-closeBtn {
+
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 15px;
+
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  background: #f0f0f0;
+  color: #333 !important;
+}
+.react-cusTom-closeBtn i{ 
+
+  color: #333 !important;
+}
+.react-cusTom-closeBtn:hover{
+  background-color: red;
+  color: white !important;
+}
+
+.react-cusTom-closeBtn i {
+  color: #333 !important;
+  transition: transform 0.3s ease;
+}
+
+.react-cusTom-closeBtn:hover {
+  background-color: #ffcccc; /* light red */
+  color: #333 !important;
+}
+
+.react-cusTom-closeBtn:hover i {
+  transform: rotate(90deg);
+
+}
+
+
+
+
+
+
+/* App Icon */
+.react-astro-app-icon {
+  width: 150px;
+  /* height: 80px; */
+ 
+  border-radius: 20px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  color: white;
+
+}
+/* Content Styling */
+.react-astro-popup-content h2 {
+  color: #333;
+  font-size: 24px;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+.react-astro-popup-content .react-astro-subtitle {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 20px;
+  font-style: italic;
+}
+.react-astro-popup-content p {
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 30px;
+  font-size: 16px;
+}
+/* Play Store Button */
+.react-astro-playstore-btn {
+  /* background: #000; */
+  color: white;
+  border: none;
+  /* padding: 12px 24px; */
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .react-astro-popup {
+      padding: 30px 20px;
+      margin: 20px;
+  }
+
+  .react-astro-popup-content h2 {
+      font-size: 20px;
+  }
+
+  .react-astro-main-button {
+      padding: 14px 28px;
+      font-size: 16px;
+  }
+}
+
+/* ------------------------------------------------------------
+   Vendor Registration Page (matches existing theme)
+-------------------------------------------------------------*/
+.react-vendor-card {
+  position: relative;
+  margin: 3rem auto;
+  background: #ffffff; /* light card to ensure text is visible */
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 18px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.react-vendor-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(120deg, rgba(0, 0, 0, 0.03), rgba(0, 0, 0, 0));
+  mask: linear-gradient(#000, transparent 30%);
+}
+
+.react-vendor-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.25rem;
+  background: var(--react-gradient);
+  color: #fff;
+}
+
+.react-vendor-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.react-vendor-icon-circle {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), rgba(255,255,255,0.05) 60%), var(--react-gradient);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+}
+
+.react-vendor-title {
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+
+.react-vendor-subtitle {
+  margin: 2px 0 0;
+  opacity: 0.85;
+  font-size: 0.95rem;
+}
+
+.react-vendor-badge {
+  padding: 0.35rem 0.7rem;
+  font-size: 0.8rem;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  backdrop-filter: blur(4px);
+}
+
+.react-vendor-form {
+  padding: 1.5rem;
+  color: #222;
+}
+
+.react-vendor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.1rem 1rem;
+}
+
+@media (max-width: 768px) {
+  .react-vendor-grid { grid-template-columns: 1fr; }
+}
+
+.react-vendor-field { position: relative; }
+
+.react-vendor-label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-weight: 700;
+  color: #222;
+}
+
+.react-vendor-label .react-required { color: #ff6b6b; }
+
+.react-vendor-input,
+.react-vendor-input-group .react-vendor-input {
+  width: 100%;
+  padding: 0.7rem 0.95rem;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: #ffffff;
+  color: #111;
+  outline: none;
+  transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+}
+
+.react-vendor-input::placeholder { color: #8a8f98; }
+
+
+
+.react-vendor-textarea {
+  /* min-height: px; */
+  resize: vertical;
+  line-height: 1.5;
+  border: 1px solid rgba(0,0,0,0.12);
+
+}
+
+.react-vendor-textarea:focus {
+  border-color: #ee5a24;
+ 
+}
+
+.react-vendor-input-group {
+  display: flex;
+  align-items: stretch;
+}
+
+.react-vendor-prefix {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.9rem;
+  border: 1px solid rgba(0,0,0,0.12);
+  border-right: none;
+  border-radius: 12px 0 0 12px;
+  background: #f5f7fb;
+  color: #333;
+}
+
+.react-no-left-radius { border-top-left-radius: 0 !important; border-bottom-left-radius: 0 !important; }
+
+.react-vendor-terms {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #333;
+}
+
+.react-vendor-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.5rem;
+}
+
+.react-vendor-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.9rem 1.2rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  background: var(--react-gradient);
+  transition: transform 0.15s ease, box-shadow 0.25s ease, filter 0.25s;
+}
+
+.react-vendor-submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px rgba(0,0,0,0.35);
+  filter: brightness(1.05);
+}
+
+.react-vendor-submit-btn i { font-size: 0.95rem; }
+
+/* Subtle floating decorative shapes */
+.react-vendor-card::after {
+  content: '';
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  right: -60px;
+  bottom: -60px;
+  background: radial-gradient(circle, rgba(255,255,255,0.12), rgba(255,255,255,0));
+  filter: blur(2px);
+}
+
+/* Login Popup Styles */
+.react-login-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  z-index: 100000;
+}
+.react-login-popup {
+  background: white;
+  border-radius: 20px;
+  padding: 0;
+  max-width: 450px;
+  width: 90%;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+  transform: translateY(-40px);
+  opacity: 0;
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+}
+.react-login-overlay.react-login-show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.react-login-overlay.react-login-show .react-login-popup {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.react-login-close-btn {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  color: #333;
+  z-index: 10;
+}
+
+.react-login-close-btn:hover {
+  background: #ff6b6b;
+  color: white;
+  transform: rotate(90deg);
+}
+
+.react-login-header {
+  background: var(--react-gradient);
+  color: white;
+  padding: 20px 30px;
+  text-align: left;
+  position: relative;
+}
+
+.react-login-header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+  color: white;
+}
+
+.react-login-form {
+  padding: 30px;
+}
+
+.react-login-user-type {
+  display: flex;
+  margin-bottom: 25px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e1e5e9;
+}
+
+.react-login-type-btn {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  background: white;
+  color: #666;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 16px;
+  position: relative;
+}
+
+.react-login-type-btn.active {
+  background: var(--react-gradient);
+  color: white;
+}
+
+.react-login-type-btn:not(.active) {
+  border-right: 1px solid #e1e5e9;
+}
+
+.react-login-type-btn:not(.active):hover {
+  background: #f8f9fa;
+  color: var(--react-primary);
+}
+
+.react-login-form-group {
+  margin-bottom: 25px;
+}
+
+.react-login-form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+  font-size: 16px;
+}
+
+.react-login-mobile-input {
+  display: flex;
+  border: 1px solid #e1e5e9;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.react-login-mobile-input:focus-within {
+  border-color: var(--react-primary);
+  box-shadow: 0 0 0 3px rgba(238, 90, 36, 0.1);
+}
+
+.react-login-country-code {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-right: 1px solid #e1e5e9;
+  color: #333;
+  font-weight: 500;
+  min-width: 100px;
+}
+
+.react-login-flag {
+  font-size: 18px;
+}
+
+.react-login-country-code i {
+  font-size: 12px;
+  color: #666;
+}
+
+.react-login-mobile-input input {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  background: white;
+}
+
+.react-login-mobile-input input::placeholder {
+  color: #999;
+}
+
+.react-login-terms {
+  margin-bottom: 25px;
+}
+
+.react-login-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.react-login-checkbox-label input[type="checkbox"] {
+  display: none;
+}
+
+.react-login-checkmark {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e1e5e9;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.react-login-checkbox-label input[type="checkbox"]:checked + .react-login-checkmark {
+  background: var(--react-gradient);
+  border-color: var(--react-primary);
+}
+
+.react-login-checkbox-label input[type="checkbox"]:checked + .react-login-checkmark::after {
+  content: '✓';
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.react-login-terms-text {
+  color: #333;
+}
+
+.react-login-link {
+  color: #ff6b6b;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.react-login-link:hover {
+  text-decoration: underline;
+}
+
+.react-login-submit-btn {
+  width: 100%;
+  padding: 14px 24px;
+  background: white;
+  color: #333;
+  border: 2px solid #e1e5e9;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.react-login-submit-btn:hover {
+  background: var(--react-gradient);
+  color: white;
+  border-color: var(--react-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(238, 90, 36, 0.3);
+}
+
+/* OTP Input Styles */
+.react-login-otp-info {
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.react-login-otp-info p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.react-login-otp-hint {
+  color: var(--react-primary) !important;
+  font-weight: 600;
+}
+
+.react-login-otp-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e1e5e9;
+  border-radius: 12px;
+  font-size: 18px;
+  text-align: center;
+  letter-spacing: 4px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.react-login-otp-input:focus {
+  outline: none;
+  border-color: var(--react-primary);
+  box-shadow: 0 0 0 3px rgba(238, 90, 36, 0.1);
+}
+
+.react-login-back-btn {
+  width: 100%;
+  padding: 12px 24px;
+  background: transparent;
+  color: #666;
+  border: 2px solid #e1e5e9;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.react-login-back-btn:hover {
+  background: #f8f9fa;
+  border-color: var(--react-primary);
+  color: var(--react-primary);
+}
+
+.react-login-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* User Dropdown Styles */
+.react-user-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.react-user-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--react-gradient);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.react-user-dropdown-trigger:hover {
+  /* transform: translateY(-2px); */
+  box-shadow: 0 8px 25px rgba(238, 90, 36, 0.3);
+}
+
+.react-user-avatar {
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.react-user-name {
+  font-weight: 600;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.react-dropdown-arrow {
+  font-size: 12px;
+  transition: transform 0.3s ease;
+}
+
+.react-dropdown-arrow.react-open {
+  transform: rotate(180deg);
+}
+
+.react-user-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  min-width: 280px;
+  z-index: 1000;
+  margin-top: 3px;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.react-user-dropdown:hover .react-user-dropdown-menu,
+.react-user-dropdown-menu.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Keep dropdown visible when hovering over it */
+.react-user-dropdown-menu:hover {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+  pointer-events: auto !important;
+}
+
+.react-user-dropdown-header {
+  padding: 20px;
+  background: var(--react-gradient);
+  color: white;
+}
+
+.react-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.react-user-avatar-large {
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.react-user-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.react-user-name-large {
+  font-weight: 700;
+  font-size: 16px;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.react-user-email {
+  font-size: 14px;
+  opacity: 0.9;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.react-user-dropdown-divider {
+  height: 1px;
+  background: #e1e5e9;
+  margin: 8px 0;
+}
+
+.react-user-dropdown-items {
+  padding: 8px 0;
+}
+
+.react-user-dropdown-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border: none;
+  background: none;
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.react-user-dropdown-item:hover {
+  background: #f8f9fa;
+  color: var(--react-primary);
+}
+
+.react-user-dropdown-item.react-logout {
+  color: #ff6b6b;
+}
+.react-hoveR-none::before{
+  display: none;
+}
+.react-user-dropdown-item.react-logout:hover {
+  background: #fff5f5;
+  color: #ff4757;
+}
+
+.react-user-dropdown-item i {
+  width: 16px;
+  text-align: center;
+  font-size: 16px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .react-user-dropdown-menu {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    left: 20px;
+    min-width: auto;
+    width: auto;
+    max-width: 300px;
+    margin: 0;
+    z-index: 10000;
+  }
+
+  .react-user-dropdown-trigger {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .react-user-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .react-user-name {
+    max-width: 60px;
+    font-size: 12px;
+  }
+
+  .react-dropdown-arrow {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .react-login-popup {
+    width: 95%;
+    margin: 20px;
+  }
+
+  .react-login-header {
+    padding: 20px;
+  }
+
+  .react-login-header h2 {
+    font-size: 20px;
+  }
+
+  .react-login-form {
+    padding: 20px;
+  }
+
+  .react-login-type-btn {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+
+  .react-login-mobile-input {
+    flex-direction: column;
+  }
+
+  .react-login-country-code {
+    border-right: none;
+    border-bottom: 1px solid #e1e5e9;
+    justify-content: center;
+  }
+
+  .react-login-mobile-input input {
+    text-align: center;
+  }
+
+  .react-user-dropdown-menu {
+    position: fixed;
+    top: 60px;
+    right: 10px;
+    left: 10px;
+    min-width: auto;
+    width: auto;
+    max-width: none;
+  }
+
+  .react-user-dropdown-trigger {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+
+  .react-user-avatar {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+  }
+
+  .react-user-name {
+    max-width: 50px;
+    font-size: 11px;
+  }
+
+  .react-user-dropdown-header {
+    padding: 15px;
+  }
+
+  .react-user-avatar-large {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+
+  .react-user-name-large {
+    font-size: 14px;
+  }
+
+  .react-user-email {
+    font-size: 12px;
+  }
+
+  .react-user-dropdown-item {
+    padding: 10px 15px;
+    font-size: 13px;
+  }
+}
+
+/* ========================================
+   MY ACCOUNT PAGE STYLES
+======================================== */
+
+.react-my-account-page {
+  background-color: var(--react-account-bg);
+  min-height: 100vh;
+  padding: 2rem 0;
+}
+
+/* User Profile Header */
+.react-user-profile-header {
+  background: var(--react-card-bg);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  text-align: left;
+}
+
+.react-profile-avatar {
+  width: 80px;
+  height: 80px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.react-profile-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--react-primary);
+}
+
+.react-profile-info h2 {
+  color: var(--react-text-primary);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.react-profile-info p {
+  
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+}
+
+.react-customer-id {
+  background: var(--react-gradient);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-block;
+  margin-top: 0.5rem;
+}
+
+/* Tab Navigation */
+.react-tab-navigation {
+  background: var(--react-card-bg);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  overflow: hidden;
+}
+
+.react-tab-container {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.react-tab-container::-webkit-scrollbar {
+  display: none;
+}
+
+.react-tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border: none;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  background: none;
+  color: var(--react-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--react-transition);
+  position: relative;
+  min-height: var(--react-mobile-touch-target);
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 80px;
+}
+
+.react-tab-item:hover {
+  background: var(--react-muted);
+  color: var(--react-text-primary);
+}
+
+.react-tab-item.active {
+  background: linear-gradient(135deg, var(--react-primary), var(--react-astro-indigo));
+  color: white;
+}
+
+/* .react-tab-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--react-astro-gold);
+} */
+
+.react-tab-item i {
+  font-size: 1.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.react-tab-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Main Content Styles */
+.react-account-content {
+  background: var(--react-card-bg);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  min-height: 600px;
+}
+
+.react-account-section {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade In Up utility for tab content */
+.fadeInUp {
+  animation: fadeInUp 0.35s ease both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.react-section-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--react-muted);
+}
+
+.react-section-header h2 {
+  color: var(--react-text-primary);
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.react-section-header p {
+  color: var(--react-text-secondary);
+  font-size: 1rem;
+}
+
+.react-section-subheader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.react-section-subheader h3 {
+  color: var(--react-text-primary);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* Vendor Dashboard: Cards and Layout */
+.react-grid-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.react-stat-card {
+  background: var(--react-card-bg);
+  border-radius: 12px;
+  border: 2px solid var(--react-border);
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.react-stat-info h4 {
+  color: var(--react-text-secondary);
+  font-size: 0.95rem;
+  margin-bottom: 0.35rem;
+}
+
+.react-stat-value {
+  color: var(--react-text-primary);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.react-stat-icon {
+  color: var(--react-primary);
+  font-size: 1.75rem;
+}
+
+.react-grid-rows-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.react-triple-line {
+  background: var(--react-card-bg);
+  border-radius: 12px;
+  border: 2px solid var(--react-border);
+  padding: 1rem;
+}
+
+.react-triple-line-header {
+  color: var(--react-text-primary);
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.react-triple-line-body {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.react-triple-item {
+  background: var(--react-muted);
+  border-radius: 8px;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.react-triple-label {
+  color: var(--react-text-secondary);
+  font-size: 0.8rem;
+}
+
+.react-triple-value {
+  color: var(--react-text-primary);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-top: 0.25rem;
+}
+
+.react-two-col {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 1rem;
+}
+
+.react-card {
+  background: var(--react-card-bg);
+  border-radius: 12px;
+  border: 2px solid var(--react-border);
+  padding: 1.25rem;
+}
+
+.react-muted {
+  color: var(--react-text-secondary);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 1024px) {
+  .react-grid-cards { grid-template-columns: repeat(2, 1fr); }
+  .react-grid-rows-3 { grid-template-columns: repeat(2, 1fr); }
+  .react-two-col { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .react-grid-cards { grid-template-columns: 1fr; }
+  .react-grid-rows-3 { grid-template-columns: 1fr; }
+}
+
+/* Profile Section Styles */
+.react-profile-picture-section {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: var(--react-muted);
+  border-radius: 12px;
+}
+
+.react-profile-picture {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.react-profile-picture img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--react-primary);
+}
+
+.react-profile-overlay {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 36px;
+  height: 36px;
+  background: var(--react-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: var(--react-transition);
+}
+
+.react-profile-overlay:hover {
+  background: var(--react-astro-indigo);
+  transform: scale(1.1);
+}
+
+.react-choose-file-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid var(--react-primary);
+  background: transparent;
+  color: var(--react-primary);
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--react-transition);
+}
+
+.react-choose-file-btn:hover {
+  background: var(--react-primary);
+  color: white;
+}
+
+/* Form Styles */
+.react-profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.react-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.react-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.react-form-group label {
+  color: var(--react-text-primary);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.react-form-input {
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--react-border);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: var(--react-transition);
+  background: white;
+  min-height: var(--react-mobile-touch-target);
+  appearance: none;
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.react-form-input:focus {
+  outline: none;
+  border-color: var(--react-primary);
+  box-shadow: 0 0 0 3px rgba(238, 90, 36, 0.1);
+}
+
+.react-form-textarea {
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--react-border);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: var(--react-transition);
+  background: white;
+  resize: vertical;
+  min-height: 100px;
+}
+
+.react-form-textarea:focus {
+  outline: none;
+  border-color: var(--react-primary);
+  box-shadow: 0 0 0 3px rgba(238, 90, 36, 0.1);
+}
+
+.react-phone-input-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.react-country-code {
+  padding: 0.75rem;
+  border: 2px solid var(--react-border);
+  border-radius: 8px;
+  background: white;
+  font-size: 1rem;
+  min-width: 80px;
+}
+
+.react-date-input-group,
+.react-time-input-group {
+  position: relative;
+}
+
+.react-date-input-group i,
+.react-time-input-group i {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--react-text-muted);
+  pointer-events: none;
+}
+
+.react-radio-group {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.react-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.react-radio-label input[type="radio"] {
+  display: none;
+}
+
+.react-radio-custom {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--react-border);
+  border-radius: 50%;
+  position: relative;
+  transition: var(--react-transition);
+}
+
+.react-radio-label input[type="radio"]:checked + .react-radio-custom {
+  border-color: var(--react-primary);
+  background: var(--react-primary);
+}
+
+.react-radio-label input[type="radio"]:checked + .react-radio-custom::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: white;
+  border-radius: 50%;
+}
+
+.react-update-profile-btn {
+  background: var(--react-gradient);
+  color: white;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--react-transition);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: flex-start;
+}
+
+.react-update-profile-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(238, 90, 36, 0.3);
+}
+
+/* Wallet Section Styles */
+.react-wallet-balance-card {
+  background: var(--react-gradient);
+  color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.react-balance-info h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.react-balance-amount {
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.react-balance-icon {
+  font-size: 3rem;
+  opacity: 0.8;
+}
+
+.react-recharge-section {
+  margin-bottom: 2rem;
+}
+
+.react-recharge-section h3 {
+  color: var(--react-text-primary);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.react-recharge-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.react-recharge-option {
+  padding: 1rem;
+  border: 2px solid var(--react-border);
+  background: white;
+  color: var(--react-text-primary);
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--react-transition);
+  min-height: var(--react-mobile-touch-target);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.react-recharge-option:hover {
+  border-color: var(--react-primary);
+  color: var(--react-primary);
+}
+
+.react-recharge-option.active {
+  background: var(--react-primary);
+  color: white;
+  border-color: var(--react-primary);
+}
+
+.react-custom-amount {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.react-custom-amount .react-form-input {
+  flex: 1;
+}
+
+/* Address Form Styles */
+.react-address-form-card {
+  background: var(--react-muted);
+  padding: 2rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+
+.react-form-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.react-form-header h3 {
+  color: var(--react-text-primary);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.react-form-header p {
+  color: var(--react-text-secondary);
+  font-size: 1rem;
+}
+
+.react-address-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Address grid/cards */
+.react-address-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+.react-address-card {
+  background: var(--react-card-bg);
+  border: 1px solid var(--react-border);
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.react-address-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.react-address-card-header h4 {
+  margin: 0;
+}
+
+.react-address-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.react-btn.react-small {
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+.react-address-lines p {
+  margin: 0.15rem 0;
+  color: var(--react-text-secondary);
+}
+
+.react-address-meta {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+  color: var(--react-text-secondary);
+}
+
+.react-address-meta i { margin-right: 6px; }
+
+/* Modal */
+.react-kl-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1rem;
+}
+
+.react-kl-modal {
+  background: var(--react-card-bg);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 700px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  overflow: hidden;
+}
+
+.react-kl-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--react-border);
+}
+
+.react-kl-modal-close {
+  border: none;
+  background: transparent;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.react-kl-modal-body {
+  padding: 1.25rem;
+}
+
+.react-kl-modal-footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--react-border);
+}
+
+@media (max-width: 1024px) {
+  .react-address-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .react-address-grid { grid-template-columns: 1fr; }
+}
+
+/* Table Styles */
+.react-filter-section {
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.react-filter-options {
+  display: flex;
+  gap: 1rem;
+}
+
+.react-filter-select {
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--react-border);
+  border-radius: 8px;
+  background: white;
+  color: var(--react-text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.react-table-container {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid var(--react-border);
+}
+
+.react-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.react-data-table th {
+  background: var(--react-muted);
+  color: var(--react-text-primary);
+  font-weight: 600;
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 2px solid var(--react-border);
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.react-data-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--react-border);
+  color: var(--react-text-secondary);
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.react-data-table tr:hover {
+  background: var(--react-muted);
+}
+
+.react-no-data {
+  text-align: center;
+  color: var(--react-text-muted);
+  font-style: italic;
+  padding: 3rem 1rem;
+}
+
+/* Pagination */
+.react-pagination {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0.25rem;
+}
+
+.react-page-size {
+  color: var(--react-text-secondary);
+  font-size: 0.875rem;
+}
+
+.react-page-size-select {
+  margin: 0 0.5rem;
+  padding: 0.4rem 0.75rem;
+  border: 2px solid var(--react-border);
+  border-radius: 8px;
+  background: white;
+}
+
+.react-page-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  justify-self: center;
+  overflow-x: auto;
+  padding: 0.25rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.react-page-btn {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 0.5rem;
+  border: 2px solid var(--react-border);
+  background: white;
+  color: var(--react-text-primary);
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--react-transition);
+  flex: 0 0 auto;
+}
+/* 
+.react-page-btn:hover:not(:disabled) {
+  border-color: var(--react-primary);
+  color: var(--react-primary);
+} */
+
+.react-page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.react-page-btn.active {
+  background: var(--react-primary);
+  border-color: var(--react-primary);
+  color: white;
+}
+
+.react-page-ellipsis {
+  color: var(--react-text-muted);
+  padding: 0 0.25rem;
+}
+
+.react-page-info {
+  justify-self: end;
+  color: var(--react-text-secondary);
+  font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .react-pagination {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+    
+  }
+
+  .react-page-info {
+    justify-self: center;
+  }
+
+  .react-page-btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 0.4rem;
+    border-radius: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .react-page-size {
+    order: 3;
+  }
+
+  .react-page-info {
+    order: 2;
+    font-size: 0.8rem;
+  }
+
+  .react-page-controls {
+    order: 1;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .react-page-size-select {
+    padding: 0.3rem 0.6rem;
+  }
+
+  .react-page-btn {
+    min-width: 28px;
+    height: 28px;
+    font-size: 0.85rem;
+  }
+}
+
+/* Badge Styles */
+.react-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.react-badge.react-credit {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--react-success-color);
+}
+
+.react-badge.react-pending {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--react-warning-color);
+}
+
+.react-badge.react-completed {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--react-success-color);
+}
+
+.react-badge.react-declined {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--react-error-color);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .react-my-account-page {
+    padding: 1rem 0;
+  }
+  
+
+}
+
+@media (max-width: 768px) {
+  .react-my-account-page {
+    padding: 0.5rem;
+  }
+  
+ 
+  .react-user-profile-header {
+    padding: 1.5rem;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .react-profile-avatar {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .react-profile-info h2 {
+    font-size: 1.25rem;
+  }
+  
+  .react-profile-info p {
+    font-size: 0.8rem;
+  }
+  
+  .react-tab-navigation {
+    margin-bottom: 1rem;
+  }
+  
+  .react-tab-item {
+    padding: 0.75rem 1rem;
+    min-width: 70px;
+  }
+  
+  .react-tab-item i {
+    font-size: 1rem;
+  }
+  
+  .react-tab-label {
+    font-size: 0.65rem;
+  }
+  
+  .react-account-content {
+    padding: 1rem;
+    border-radius: 8px;
+  }
+  
+  .react-form-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .react-recharge-options {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 0.5rem;
+  }
+  
+  .react-recharge-option {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.8rem;
+  }
+  
+  .react-custom-amount {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .react-profile-picture-section {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  
+  .react-profile-picture {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .react-wallet-balance-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+    padding: 1.5rem;
+  }
+  
+  .react-balance-amount {
+    font-size: 2rem;
+  }
+  
+  .react-balance-icon {
+    font-size: 2rem;
+  }
+  
+  .react-section-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .react-section-header p {
+    font-size: 0.9rem;
+  }
+  
+  .react-data-table {
+    font-size: 0.75rem;
+  }
+  
+  .react-data-table th,
+  .react-data-table td {
+    padding: 0.5rem 0.25rem;
+  }
+  
+  .react-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .react-filter-section {
+    margin-bottom: 1rem;
+  }
+  
+  .react-filter-select {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .react-my-account-page {
+    padding: 0.25rem;
+  }
+  
+ 
+  
+  .react-user-profile-header {
+    padding: 1rem;
+    gap: 1rem;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .react-profile-avatar {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .react-profile-info h2 {
+    font-size: 1.1rem;
+  }
+  
+  .react-profile-info p {
+    font-size: 0.75rem;
+  }
+  
+  .react-customer-id {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+  }
+  
+  .react-tab-item {
+    padding: 0.6rem 0.75rem;
+    min-width: 60px;
+  }
+  
+  .react-tab-item i {
+    font-size: 0.9rem;
+  }
+  
+  .react-tab-label {
+    font-size: 0.6rem;
+  }
+  
+  .react-account-content {
+    padding: 0.75rem;
+  }
+  
+  .react-section-header {
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+  }
+  
+  .react-section-header h2 {
+    font-size: 1.25rem;
+  }
+  
+  .react-section-header p {
+    font-size: 0.8rem;
+  }
+  
+  .react-profile-picture {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .react-profile-overlay {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .react-choose-file-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+  
+  .react-form-input,
+  .react-form-textarea {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+  }
+  
+  .react-form-group label {
+    font-size: 0.8rem;
+  }
+  
+  .react-radio-group {
+    gap: 1rem;
+  }
+  
+  .react-radio-label {
+    font-size: 0.8rem;
+  }
+  
+  .react-radio-custom {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .react-update-profile-btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+  }
+  
+  .react-wallet-balance-card {
+    padding: 1rem;
+  }
+  
+  .react-balance-info h3 {
+    font-size: 1rem;
+  }
+  
+  .react-balance-amount {
+    font-size: 1.5rem;
+  }
+  
+  .react-balance-icon {
+    font-size: 1.5rem;
+  }
+  
+  .react-recharge-section h3 {
+    font-size: 1rem;
+  }
+  
+  .react-recharge-options {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.4rem;
+  }
+  
+  .react-recharge-option {
+    padding: 0.6rem 0.4rem;
+    font-size: 0.75rem;
+  }
+  
+  .react-address-form-card {
+    padding: 1rem;
+  }
+  
+  .react-form-header h3 {
+    font-size: 1.25rem;
+  }
+  
+  .react-form-header p {
+    font-size: 0.8rem;
+  }
+  
+  .react-data-table {
+    font-size: 0.7rem;
+  }
+  
+  .react-data-table th,
+  .react-data-table td {
+    padding: 0.4rem 0.2rem;
+  }
+  
+  .react-badge {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.5rem;
+  }
+  
+  .react-no-data {
+    padding: 2rem 0.5rem;
+    font-size: 0.8rem;
+  }
+  
+  .react-filter-select {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+  }
+  
+  .react-phone-input-group {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .react-country-code {
+    font-size: 0.9rem;
+    padding: 0.6rem 0.8rem;
+  }
+  
+  .react-date-input-group i,
+  .react-time-input-group i {
+    right: 0.8rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* Extra small devices (320px and below) */
+@media (max-width: 320px) {
+  .react-my-account-page {
+    padding: 0.1rem;
+  }
+  
+
+  
+  .react-user-profile-header {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+  
+  .react-profile-avatar {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .react-profile-info h2 {
+    font-size: 0.9rem;
+  }
+  
+  .react-profile-info p {
+    font-size: 0.7rem;
+  }
+  
+  .react-tab-item {
+    padding: 0.5rem 0.5rem;
+    min-width: 50px;
+  }
+  
+  .react-tab-item i {
+    font-size: 0.8rem;
+  }
+  
+  .react-tab-label {
+    font-size: 0.55rem;
+  }
+  
+  .react-account-content {
+    padding: 0.5rem;
+  }
+  
+  .react-section-header h2 {
+    font-size: 1.1rem;
+  }
+  
+  .react-section-header p {
+    font-size: 0.75rem;
+  }
+  
+  .react-profile-picture {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .react-profile-overlay {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .react-choose-file-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+  }
+  
+  .react-form-input,
+  .react-form-textarea {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.8rem;
+  }
+  
+  .react-form-group label {
+    font-size: 0.75rem;
+  }
+  
+  .react-radio-group {
+    gap: 0.75rem;
+  }
+  
+  .react-radio-label {
+    font-size: 0.75rem;
+  }
+  
+  .react-radio-custom {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .react-update-profile-btn {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.8rem;
+  }
+  
+  .react-wallet-balance-card {
+    padding: 0.75rem;
+  }
+  
+  .react-balance-info h3 {
+    font-size: 0.9rem;
+  }
+  
+  .react-balance-amount {
+    font-size: 1.25rem;
+  }
+  
+  .react-balance-icon {
+    font-size: 1.25rem;
+  }
+  
+  .react-recharge-options {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.3rem;
+  }
+  
+  .react-recharge-option {
+    padding: 0.5rem 0.3rem;
+    font-size: 0.7rem;
+  }
+  
+  .react-address-form-card {
+    padding: 0.75rem;
+  }
+  
+  .react-form-header h3 {
+    font-size: 1.1rem;
+  }
+  
+  .react-form-header p {
+    font-size: 0.75rem;
+  }
+  
+  .react-data-table {
+    font-size: 0.65rem;
+  }
+  
+  .react-data-table th,
+  .react-data-table td {
+    padding: 0.3rem 0.1rem;
+  }
+  
+  .react-badge {
+    font-size: 0.6rem;
+    padding: 0.15rem 0.4rem;
+  }
+  
+  .react-no-data {
+    padding: 1.5rem 0.25rem;
+    font-size: 0.75rem;
+  }
+  
+  .react-filter-select {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+/* Filter Section Styles */
+.react-filter-section {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  padding: 2rem 0.5rem;
+  border-bottom: 1px solid var(--react-border);
+  border-radius: 10px;
+}
+
+.react-filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.react-filter-header h2 {
+  color: var(--react-text-primary);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.react-filter-toggle-btn {
+  background: var(--react-gradient);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--react-radius);
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--react-transition);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.react-filter-toggle-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.2);
+}
+
+/* Filter Sidebar */
+.react-filter-sidebar {
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 400px;
+  height: 100vh;
+  background: white;
+  box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+  z-index: 1001;
+  transition: right 0.3s ease;
+  overflow-y: auto;
+}
+
+.react-filter-sidebar.show {
+  right: 0;
+}
+
+.react-filter-sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--react-border);
+  background: var(--react-gradient);
+  color: white;
+}
+
+.react-filter-sidebar-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.react-filter-close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: var(--react-transition);
+}
+
+.react-filter-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.react-filter-content {
+  padding: 1.5rem;
+}
+
+.react-filter-group {
+  margin-bottom: 1.5rem;
+}
+
+.react-filter-label {
+  display: block;
+  font-weight: 600;
+  color: var(--react-text-primary);
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.react-filter-input,
+.react-filter-select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid var(--react-border);
+  border-radius: var(--react-radius);
+  font-size: 0.9rem;
+  transition: var(--react-transition);
+  background: white;
+}
+
+.react-filter-input:focus,
+.react-filter-select:focus {
+  outline: none;
+  border-color: var(--react-primary);
+  box-shadow: 0 0 0 3px rgba(238, 90, 36, 0.1);
+}
+
+/* Dropdown specific styles */
+.react-filter-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.react-w3.react-org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  padding-right: 2.5rem;
+}
+
+.react-filter-select:focus {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.react-w3.react-org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ee5a24' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+
+.react-filter-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--react-border);
+}
+
+.react-clear-filters-btn,
+.react-apply-filters-btn {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border-radius: var(--react-radius);
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--react-transition);
+  border: none;
+}
+
+.react-clear-filters-btn {
+  background: var(--react-muted);
+  color: var(--react-text-secondary);
+  border: 2px solid var(--react-border);
+}
+
+.react-clear-filters-btn:hover {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+
+.react-apply-filters-btn {
+  background: var(--react-gradient);
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.react-apply-filters-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.2);
+}
+
+/* Filter Overlay */
+.react-filter-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  transition: opacity 0.3s ease;
+}
+
+/* Mobile Responsive for Filter */
+@media (max-width: 768px) {
+  .react-filter-sidebar {
+    width: 100%;
+    right: -100%;
+  }
+  
+  .react-filter-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .react-filter-header h2 {
+    font-size: 1.25rem;
+  }
+  
+  .react-filter-toggle-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .react-filter-actions {
+    flex-direction: column;
+  }
+  
+  .react-clear-filters-btn,
+  .react-apply-filters-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .react-filter-content {
+    padding: 1rem;
+  }
+  
+  .react-filter-sidebar-header {
+    padding: 1rem;
+  }
+  
+  .react-filter-select {
+    font-size: 0.9rem;
+    padding: 0.6rem;
+  }
+}
+
+/* Blog Page Styles */
+.react-blog-page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.react-blog-page-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.react-blog-page-header h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--react-primary), var(--react-gold-accent));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 20px;
+  line-height: 1.2;
+}
+
+/* Main Content Layout */
+.react-blog-page-main-content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  margin-top: 40px;
+  margin-bottom: 40px;
+}
+
+/* Blog Post */
+.react-blog-page-post {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.react-blog-page-post-header {
+  margin-bottom: 30px;
+}
+
+.react-blog-page-post-title {
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--react-primary), var(--react-gold-accent));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 35px;
+  line-height: 1.2;
+}
+
+.react-blog-page-post-meta {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.react-blog-page-author-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+
+.react-blog-page-author-avatar img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.react-blog-page-author-avatar2 {
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+}
+
+.react-blog-page-author-avatar2 img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.react-blog-page-author-info a {
+  display: block;
+  font-weight: 600;
+  color: var(--react-primary);
+  margin-bottom: 2px;
+  font-size: 18px;
+  text-decoration: none;
+}
+
+.react-blog-page-author-info span {
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+.react-blog-page-featured-image {
+  width: 100%;
+  background: linear-gradient(135deg, #1a202c, #2d3748);
+  border-radius: 15px;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.react-blog-page-featured-image img {
+  width: 100%;
+  height: auto;
+  border-radius: 15px;
+  object-fit: cover;
+}
+
+.react-blog-page-post-content {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #4a5568;
+}
+
+.react-blog-page-post-content p {
+  margin-bottom: 20px;
+}
+
+.react-blog-page-section-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 30px 0 20px 0;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #667eea;
+  display: inline-block;
+}
+
+.react-blog-page-highlight-box {
+  background: linear-gradient(135deg, #667eea10, #764ba210);
+  border-left: 4px solid #667eea;
+  padding: 20px;
+  margin: 25px 0;
+  border-radius: 0 10px 10px 0;
+}
+
+.react-blog-page-highlight-box ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.react-blog-page-highlight-box li {
+  margin-bottom: 10px;
+  padding-left: 25px;
+  position: relative;
+}
+
+.react-blog-page-highlight-box li::before {
+  content: "✨";
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+/* Sidebar */
+.react-blog-page-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.react-blog-page-sidebar-card {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.react-blog-page-sidebar-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--react-primary), var(--react-gold-accent));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+.react-blog-page-author-card {
+  text-align: center;
+}
+
+.react-blog-page-author-card .react-blog-page-author-avatar {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 15px auto;
+  font-size: 2rem;
+}
+
+.react-blog-page-author-card h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 5px;
+}
+
+.react-blog-page-author-card a {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--react-primary);
+  margin-bottom: 5px;
+  text-decoration: none;
+}
+
+.react-blog-page-author-card p {
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+.react-blog-page-latest-posts {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.react-blog-page-post-item {
+  display: flex;
+  gap: 15px;
+  padding: 15px;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+
+.react-blog-page-post-item:hover {
+  background: #f7fafc;
+  transform: translateY(-2px);
+}
+
+.react-blog-page-post-thumbnail {
+  width: 60px;
+  height: 60px;
+  border-radius: 50% !important;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.react-blog-page-post-thumbnail img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.react-blog-page-post-info h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 5px;
+  line-height: 1.3;
+}
+
+.react-blog-page-post-info span {
+  font-size: 0.8rem;
+  color: #718096;
+}
+
+/* Blog Page Responsive Design */
+@media (max-width: 768px) {
+  .react-blog-page-container {
+    padding: 15px;
+  }
+  
+  .react-blog-page-header h1 {
+    font-size: 2.5rem;
+  }
+  
+  .react-blog-page-main-content {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  
+  .react-blog-page-post {
+    padding: 25px;
+  }
+  
+  .react-blog-page-post-title {
+    font-size: 2rem;
+  }
+  
+  .react-blog-page-sidebar-card {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .react-blog-page-header h1 {
+    font-size: 2rem;
+  }
+  
+  .react-blog-page-post-title {
+    font-size: 1.7rem;
+  }
+  
+  .react-blog-page-post {
+    padding: 20px;
+  }
+}
+
+/* Blog Page Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.react-blog-page-post,
+.react-blog-page-sidebar-card {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.react-blog-page-sidebar-card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+button:focus {
+  outline: none;
+}
+
+/* Booking Modal (TalkToAstrologers) */
+.react-booking-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+ 
+  
+}
+
+.react-booking-modal {
+  width: 100%;
+  max-width: 720px;
+  background: var(--react-white);
+  border-radius: 16px;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+  border: 1px solid var(--react-border-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.fade-up {
+  opacity: 0;
+  transform: translateY(24px);
+  animation: fadeUpIn 320ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes fadeUpIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.react-booking-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid var(--react-border-color);
+  background: #fff;
+  color: var(--react-dark-text);
+  cursor: pointer;
+  transition: var(--react-transition);
+  z-index: 2;
+}
+
+.react-booking-close:hover { background: var(--react-muted); }
+
+.react-booking-header {
+  padding: 28px 24px 16px 24px;
+  background: linear-gradient(180deg, rgba(255, 179, 71, 0.08), transparent);
+}
+
+.react-booking-title h3 { font-size: 20px; margin: 6px 0 4px 0; color: var(--react-dark-text); }
+.react-booking-title .react-muted { color: var(--react-medium-text); font-size: 13px; }
+
+.react-service-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-weight: 600;
+  font-size: 12px;
+  background: rgba(238, 90, 36, 0.08);
+  color: var(--react-primary);
+}
+.react-service-pill .react-pill-text { margin-left: 4px; }
+.react-service-pill.react-chat { color: var(--react-primary); background: rgba(238, 90, 36, 0.1); }
+.react-service-pill.react-voice { color: #0ea5e9; background: rgba(14,165,233,0.1); }
+.react-service-pill.react-video { color: #22c55e; background: rgba(34,197,94,0.1); }
+
+.react-booking-steps { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+.react-booking-steps .react-step {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 2px solid var(--react-border-color);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 12px; color: var(--react-medium-text);
+  background: #fff;
+}
+.react-booking-steps .react-step.react-done { border-color: var(--react-primary); color: var(--react-primary); background: #fff; }
+.react-booking-steps .react-line { flex: 1; height: 2px; background: var(--react-border-color); border-radius: 2px; }
+.react-booking-steps .react-line.active { background: var(--react-primary); }
+
+.react-booking-body { padding: 20px 24px 24px 24px; }
+
+.react-service-stats { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; }
+.react-service-stats .react-stat { background: #fff; border:1px solid var(--react-border-color); border-radius: 12px; padding: 12px 14px; }
+.react-service-stats .react-label { color: var(--react-medium-text); font-size: 12px; display:block; margin-bottom:4px; }
+.react-service-stats .react-value { color: var(--react-dark-text); font-weight: 700; }
+
+.react-how-it-works { margin-top: 16px; background: #fff; border: 1px solid var(--react-border-color); border-radius: 12px; padding: 14px; }
+.react-how-it-works h4 { font-size: 16px; margin-bottom: 6px; color: var(--react-dark-text); }
+.react-how-it-works p { margin: 0; color: var(--react-medium-text); }
+
+.react-booking-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+.react-booking-actions.react-center { justify-content: center; }
+
+.react-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; }
+.react-form-grid .react-full { grid-column: 1 / -1; }
+.react-form-group { display: flex; flex-direction: column; gap: 6px; }
+.react-form-group label { font-size: 13px; color: var(--react-medium-text); }
+.react-form-group input,
+.react-form-group select,
+.react-form-group textarea {
+  width: 100%;
+  border: 1px solid var(--react-border-color);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: var(--react-dark-text);
+  background: #fff;
+  outline: none;
+  transition: var(--react-transition);
+}
+.react-form-group input:focus,
+.react-form-group select:focus,
+.react-form-group textarea:focus { border-color: var(--react-primary); box-shadow: 0 0 0 3px rgba(238,90,36,0.12); }
+
+/* Waitlist */
+.react-waitlist { text-align: center; }
+.react-wait-illustration { display: flex; align-items: center; justify-content: center; margin: 12px 0 18px 0; }
+.react-spinner {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 3px solid var(--react-border-color);
+  border-top-color: var(--react-primary);
+  animation: spin 900ms linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Connection UIs */
+.react-connection { padding-top: 10px; }
+
+.react-chat-ui { display: flex; flex-direction: column; gap: 10px; }
+.react-chat-header { display: flex; align-items: center; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--react-border-color); }
+.react-chat-header .react-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--react-gradient); }
+.react-chat-header h4 { margin: 0; font-size: 16px; color: var(--react-dark-text); }
+.react-chat-header .react-status { font-size: 12px; color: var(--react-medium-text); }
+.react-chat-messages { height: 260px; overflow: auto; border: 1px solid var(--react-border-color); border-radius: 12px; padding: 12px; background: #fff; display: flex; flex-direction: column; gap: 8px; }
+.react-msg { max-width: 80%; padding: 10px 12px; border-radius: 12px; font-size: 14px; }
+.react-msg.react-incoming { align-self: flex-start; background: #fff7ef; border: 1px solid rgba(238,90,36,0.25); }
+.react-msg.react-outgoing { align-self: flex-end; background: #eef7ff; border: 1px solid rgba(14,165,233,0.25); }
+.react-chat-input { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.react-chat-input input { border: 1px solid var(--react-border-color); border-radius: 10px; padding: 10px 12px; }
+
+.react-call-ui { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.react-call-visual.react-voice { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.react-call-visual .react-avatar.react-large { width: 88px; height: 88px; border-radius: 50%; background: var(--react-gradient); }
+.react-call-visual h4 { margin: 6px 0 0 0; }
+.react-call-visual .react-status { font-size: 12px; color: var(--react-medium-text); }
+.react-call-controls { display: flex; justify-content: center; gap: 12px; margin-top: 8px; }
+.react-call-controls .react-control { width: 44px; height: 44px; border-radius: 999px; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; background: var(--react-muted); color: var(--react-dark-text); transition: var(--react-transition); }
+.react-call-controls .react-control:hover { filter: brightness(0.97); }
+.react-call-controls .react-control.react-danger { background: #ef4444; color: #fff; }
+
+.react-video-ui { display: flex; flex-direction: column; gap: 10px; }
+.react-video-stage { position: relative; background: #0a0d11; border-radius: 12px; height: 260px; overflow: hidden; border: 1px solid #151a22; }
+.react-video-stage .react-remote-video { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; opacity: 0.5; }
+.react-video-stage .react-local-video { position: absolute; right: 12px; bottom: 12px; width: 120px; height: 80px; background: #222; color: #fff; display: flex; align-items: center; justify-content: center; border-radius: 8px; opacity: 0.8; }
+
+@media (max-width: 600px) {
+  .react-booking-modal { max-width: 100%; }
+  .react-service-stats { grid-template-columns: 1fr; }
+  .react-form-grid { grid-template-columns: 1fr; }
+}

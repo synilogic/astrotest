@@ -1,0 +1,2 @@
+Customer Id,Role_id,Name,Email,Phone,Gender,address,country,state,city,birth_date,customer_img,birth_place,birth_time,longitude,latitude,status,created_at,updated_at
+CUS0024,4,Demo,demo@demo.com,9.20E+11,Male,Guidhhs,25,25,25,01-12-2022,53638.jpeg,"Kota, Rajasthan, India",14:55:00,75.8647527,25.2138156,1,22-12-2022 11:53,22-12-2022 17:26

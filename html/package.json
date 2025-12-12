@@ -1,0 +1,58 @@
+{
+  "name": "syni_astro_node",
+  "version": "1.0.0",
+  "description": "A Node.js server for the Syni Astro project",
+  "scripts": {
+    "users": "cd ./users && nodemon index.js",
+    "banners": "cd ./banners && nodemon index.js",
+    "astrologers": "cd ./astrologers && nodemon index.js",
+    "vendors": "cd ./vendor && nodemon index.js",
+    "communication": "cd ./communication && nodemon index.js",
+    "welcome": "cd ./welcome && nodemon index.js",
+    "product": "cd ./product && nodemon index.js",
+    "wallets": "cd ./wallets && nodemon index.js",
+    "sanjevini": "cd ./sanjevini && nodemon index.js",
+    "start": "nodemon index.js"
+  },
+  "type": "module",
+  "dependencies": {
+    "@carbon/icons": "^11.60.0",
+    "agora-token": "^2.0.5",
+    "axios": "^1.9.0",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "crc-32": "^1.2.2",
+    "crypto": "^1.0.1",
+    "dayjs": "^1.11.13",
+    "dotenv": "^16.5.0",
+    "embed-video": "^2.0.4",
+    "express": "^5.1.0",
+
+    "express-session": "^1.18.1",
+
+    "express-validator": "^7.2.1",
+
+    "firebase": "^11.8.1",
+    "firebase-admin": "^13.4.0",
+    "fs": "^0.0.1-security",
+    "helmet": "^8.1.0",
+    "joi": "^17.13.3",
+    "jsonwebtoken": "^9.0.2",
+    "luxon": "^3.6.1",
+    "moment-timezone": "^0.5.48",
+    "multer": "^1.4.5-lts.2",
+    "mysql2": "^3.14.1",
+    "path": "^0.12.7",
+    "pm2": "^6.0.5",
+    "razorpay": "^2.9.6",
+    "sequelize": "^6.37.7",
+    "sharp": "^0.34.2",
+    "sqlite3": "^5.1.7",
+    "uuid": "^11.1.0",
+    "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10",
+    "prettier": "3.5.3"
+  }
+}
