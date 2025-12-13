@@ -1,13 +1,103 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import useBreadStars from '../hooks/useBreadStars'
 import usePageTitle from '../hooks/usePageTitle'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { Link } from 'react-router-dom'
+import { fetchBlogs } from '../utils/api'
 
 const Blogs = () => {
   useBreadStars()
   usePageTitle('Blogs - Astrology Theme')
+
+  const [blogs, setBlogs] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [failedImages, setFailedImages] = useState(new Set())
+
+  useEffect(() => {
+    const loadBlogs = async () => {
+      setLoading(true)
+      setError(null)
+
+      // Fetch first batch immediately, then fetch more in background
+      // fetchBlogs(offset, limit) - positional parameters
+      fetchBlogs(0, 20).then(firstBatch => {
+        console.log('[Blogs] First batch response:', firstBatch)
+        if (firstBatch && firstBatch.status === 1 && Array.isArray(firstBatch.data) && firstBatch.data.length > 0) {
+          setBlogs(firstBatch.data) // Show first batch immediately
+          setLoading(false)
+          
+          // Fetch additional batches in background
+          let allBlogs = [...firstBatch.data]
+          let currentOffset = firstBatch.offset || firstBatch.data.length
+          const maxBatches = 2 // Fetch 2 more batches
+          
+          const fetchMore = async () => {
+            for (let batch = 0; batch < maxBatches; batch++) {
+              try {
+                const blogsRes = await fetchBlogs(currentOffset, 20)
+                if (blogsRes && blogsRes.status === 1 && Array.isArray(blogsRes.data) && blogsRes.data.length > 0) {
+                  allBlogs = [...allBlogs, ...blogsRes.data]
+                  setBlogs([...allBlogs]) // Update with more blogs
+                  currentOffset = blogsRes.offset || (currentOffset + blogsRes.data.length)
+                } else {
+                  break
+                }
+              } catch (err) {
+                console.error('[Blogs] Error fetching more blogs:', err)
+                break
+              }
+            }
+          }
+          
+          fetchMore()
+        } else {
+          console.warn('[Blogs] No blogs found or invalid response:', firstBatch)
+          setBlogs([])
+          setLoading(false)
+        }
+      }).catch((err) => {
+        console.error('[Blogs] Error fetching blogs:', err)
+        setError('Failed to load blogs. Please try again later.')
+        setLoading(false)
+      })
+    }
+
+    loadBlogs()
+  }, [])
+
+  // Format date
+  const formatDate = (dateString) => {
+    if (!dateString) return ''
+    try {
+      const date = new Date(dateString)
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+    } catch (e) {
+      return dateString
+    }
+  }
+
+  // Helper to strip HTML tags from content
+  const stripHtml = (htmlString) => {
+    if (!htmlString) return ''
+    const doc = new DOMParser().parseFromString(htmlString, 'text/html')
+    return doc.body.textContent || ''
+  }
+
+  // Get excerpt (first 120 characters)
+  const getExcerpt = (content) => {
+    const text = stripHtml(content || '')
+    return text.length > 120 ? text.substring(0, 120) + '...' : text
+  }
+
+  const handleImageError = (e, originalSrc) => {
+    if (originalSrc && !failedImages.has(originalSrc)) {
+      setFailedImages(prev => new Set(prev).add(originalSrc))
+      e.target.src = 'https://images.unsplash.com/photo-1543722530-d2c3201371e7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
+    }
+  }
+
   return (
     <div>
       <Navbar />
@@ -21,7 +111,7 @@ const Blogs = () => {
           </div>
           <h1 className="react-new-bread-hero-title">Our Blogs</h1>
           <div className="react-new-bread-breadcrumbs">
-            <a href="#">Home</a>
+            <Link to="/">Home</Link>
             <span className="react-new-bread-breadcrumb-separator">/</span>
             <span>Our Blogs</span>
           </div>
@@ -30,117 +120,70 @@ const Blogs = () => {
 
       <section>
         <div className="container">
-          <div className="react-blog-Page">
-            <div className="react-blog-card react-blog-card-shadow">
-              <div className="react-blog-image-container">
-                <img src="https://images.unsplash.com/photo-1543722530-d2c3201371e7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Jupiter Transit" className="react-blog-image" />
-                <div className="react-blog-category">Career</div>
-              </div>
-              <div className="react-blog-content">
-                <h3 className="react-blog-title">How Jupiter's Transit Affects Your Career in 2023</h3>
-                <p className="react-blog-excerpt">Discover how Jupiter's movement through different zodiac signs can influence your professional life this year.</p>
-                <div className="react-blog-meta">
-                  <div className="react-meta-item">
-                    <i className="fa-solid fa-calendar"></i>
-                    June 12, 2023
-                  </div>
-                  <div className="react-meta-item">
-                    <i className="fa-solid fa-user"></i>
-                    Aisha Sharma
-                  </div>
-                </div>
-                <Link to="/blogInner" className="react-blog-link">Read More <i className="fa-solid fa-arrow-right"></i></Link>
-              </div>
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '50px' }}>
+              <p>Loading blogs...</p>
             </div>
+          ) : error ? (
+            <div style={{ textAlign: 'center', padding: '50px', color: 'red' }}>
+              <p>{error}</p>
+            </div>
+          ) : blogs.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '50px' }}>
+              <p>No blogs found.</p>
+            </div>
+          ) : (
+            <div className="react-blog-Page">
+              {blogs.map((blog, index) => {
+                const fallback = 'https://images.unsplash.com/photo-1543722530-d2c3201371e7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
+                const originalSrc = blog.blog_image
+                const shouldUseFallback = !originalSrc || failedImages.has(originalSrc)
+                const safeImageUrl = shouldUseFallback ? fallback : originalSrc
 
-            <div className="react-blog-card react-blog-card-shadow">
-              <div className="react-blog-image-container">
-                <img src="https://images.unsplash.com/photo-1504333638930-c8787321eee0?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Mercury Retrograde" className="react-blog-image" />
-                <div className="react-blog-category">Planets</div>
-              </div>
-              <div className="react-blog-content">
-                <h3 className="react-blog-title">The Power of Mercury Retrograde: Myths vs. Reality</h3>
-                <p className="react-blog-excerpt">Understanding what Mercury retrograde truly means for your communication and planning beyond the common misconceptions.</p>
-                <div className="react-blog-meta">
-                  <div className="react-meta-item">
-                    <i className="lucide-calendar"></i>
-                    May 28, 2023
-                  </div>
-                  <div className="react-meta-item">
-                    <i className="lucide-user"></i>
-                    Michael Chen
-                  </div>
-                </div>
-                <a href="#" className="react-blog-link">Read More <i className="lucide-arrow-right"></i></a>
-              </div>
-            </div>
+                const authorName = blog.astrologer?.display_name || blog.user?.name || 'Astrologer'
+                const categoryTitle = blog.blogcategory_short?.title || blog.category_title || 'Astrology'
 
-            <div className="react-blog-card react-blog-card-shadow">
-              <div className="react-blog-image-container">
-                <img src="https://www.karmleela.com/uploads/blog/1737354931-blog_image.png" alt="Moon Sign" className="react-blog-image" />
-                <div className="react-blog-category">Zodiac</div>
-              </div>
-              <div className="react-blog-content">
-                <h3 className="react-blog-title">Understanding Your Moon Sign: Emotional Intelligence</h3>
-                <p className="react-blog-excerpt">Learn how your moon sign shapes your emotional responses and inner needs in ways your sun sign doesn't reveal.</p>
-                <div className="react-blog-meta">
-                  <div className="react-meta-item">
-                    <i className="lucide-calendar"></i>
-                    April 15, 2023
+                return (
+                  <div key={blog.id || index} className="react-blog-card react-blog-card-shadow">
+                    <div className="react-blog-image-container">
+                      <img 
+                        src={safeImageUrl} 
+                        alt={blog.title || 'Blog'} 
+                        className="react-blog-image"
+                        loading="lazy"
+                        onError={(e) => handleImageError(e, originalSrc)}
+                      />
+                      {categoryTitle && (
+                        <div className="react-blog-category">{categoryTitle}</div>
+                      )}
+                    </div>
+                    <div className="react-blog-content">
+                      <h3 className="react-blog-title">{blog.title || 'Blog Title'}</h3>
+                      <p className="react-blog-excerpt">
+                        {getExcerpt(blog.content) || 'Read our latest insights about astrology and cosmic events.'}
+                      </p>
+                      <div className="react-blog-meta">
+                        <div className="react-meta-item">
+                          <i className="fa-solid fa-calendar"></i>
+                          {formatDate(blog.created_at)}
+                        </div>
+                        <div className="react-meta-item">
+                          <i className="fa-solid fa-user"></i>
+                          {authorName}
+                        </div>
+                      </div>
+                      <Link 
+                        to={`/blog/${blog.slug || blog.id}`} 
+                        className="react-blog-link"
+                      >
+                        Read More <i className="fa-solid fa-arrow-right"></i>
+                      </Link>
+                    </div>
                   </div>
-                  <div className="react-meta-item">
-                    <i className="lucide-user"></i>
-                    Elena Rodriguez
-                  </div>
-                </div>
-                <a href="#" className="react-blog-link">Read More <i className="lucide-arrow-right"></i></a>
-              </div>
+                )
+              })}
             </div>
-
-            <div className="react-blog-card react-blog-card-shadow">
-              <div className="react-blog-image-container">
-                <img src="https://www.karmleela.com/uploads/blog/1737354725-blog_image.png" alt="Moon Sign" className="react-blog-image" />
-                <div className="react-blog-category">Zodiac</div>
-              </div>
-              <div className="react-blog-content">
-                <h3 className="react-blog-title">Understanding Your Moon Sign: Emotional Intelligence</h3>
-                <p className="react-blog-excerpt">Learn how your moon sign shapes your emotional responses and inner needs in ways your sun sign doesn't reveal.</p>
-                <div className="react-blog-meta">
-                  <div className="react-meta-item">
-                    <i className="lucide-calendar"></i>
-                    April 15, 2023
-                  </div>
-                  <div className="react-meta-item">
-                    <i className="lucide-user"></i>
-                    Elena Rodriguez
-                  </div>
-                </div>
-                <a href="#" className="react-blog-link">Read More <i className="lucide-arrow-right"></i></a>
-              </div>
-            </div>
-
-            <div className="react-blog-card react-blog-card-shadow">
-              <div className="react-blog-image-container">
-                <img src="https://www.karmleela.com/uploads/blog/1737354891-blog_image.png" alt="Moon Sign" className="react-blog-image" />
-                <div className="react-blog-category">Zodiac</div>
-              </div>
-              <div className="react-blog-content">
-                <h3 className="react-blog-title">Understanding Your Moon Sign: Emotional Intelligence</h3>
-                <p className="react-blog-excerpt">Learn how your moon sign shapes your emotional responses and inner needs in ways your sun sign doesn't reveal.</p>
-                <div className="react-blog-meta">
-                  <div className="react-meta-item">
-                    <i className="lucide-calendar"></i>
-                    April 15, 2023
-                  </div>
-                  <div className="react-meta-item">
-                    <i className="lucide-user"></i>
-                    Elena Rodriguez
-                  </div>
-                </div>
-                <a href="#" className="react-blog-link">Read More <i className="lucide-arrow-right"></i></a>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </section>
 
@@ -150,5 +193,3 @@ const Blogs = () => {
 }
 
 export default Blogs
-
-

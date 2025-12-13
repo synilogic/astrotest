@@ -85,6 +85,8 @@ const ArchitectServiceOrder = sequelize.define('ArchitectServiceOrder', {
   }, {
     tableName: 'architect_service_orders',
     timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at'
   })
 
   export default ArchitectServiceOrder;

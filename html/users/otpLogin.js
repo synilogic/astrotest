@@ -50,8 +50,12 @@ router.post("/otpSend", upload.none(), async (req, res) => {
 
   const smsGateway = configData.sms_gateway;
   const smsGatewayActive = configData.sms_gateway_status;
-   console.log("gateway status",smsGatewayActive);
+  // Only log if gateway is inactive (to reduce console noise)
+  if (!smsGatewayActive) {
+    console.log("SMS Gateway Status: Inactive (using local OTP storage for testing)");
+  }
 
+  // Generate random OTP (6 digits)
   let otp = Math.floor(100000 + Math.random() * 900000);
   const expiresAt = new Date(Date.now() + 60 * 1000);
   const expiresAtIST = formatDateTime(expiresAt);
@@ -59,16 +63,21 @@ router.post("/otpSend", upload.none(), async (req, res) => {
   let otplessOrderId = "";
 
   try {
-    // If SMS gateway is NOT active, fallback to default OTP and store it immediately
+    // If SMS gateway is NOT active, use random OTP (not default) for testing
+    // This allows different OTPs for each request even when SMS is disabled
     if (!smsGatewayActive) {
-      otp = configData.default_otp || 666331;
+      // Keep the randomly generated OTP instead of using default
+      // This way each request gets a unique OTP for testing
 
       const otpData = { phone: fullPhone, otp, expires_at: expiresAtIST };
+      
       const existing = await UserOtp.findOne({ where: { phone: fullPhone } });
 
       if (existing) {
+        // Update existing record
         await UserOtp.update(otpData, { where: { phone: fullPhone } });
       } else {
+        // Create new record
         await UserOtp.create(otpData);
       }
 
@@ -383,6 +392,7 @@ router.post("/customerLogin", upload.none(), async (req, res) => {
       currency_symbol,
       data: {
         id: userData.id,
+        user_uni_id: user.user_uni_id, // CRITICAL: Include user_uni_id for customer
         customer_uni_id: userData.customer_uni_id,
         city: userData.city || null,
         state: userData.state || null,

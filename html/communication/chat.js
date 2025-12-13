@@ -103,6 +103,8 @@ router.post("/startChat", upload.any(), async (req, res) => {
 
   try {
     //  Call helper method to initiate chat
+    // Allow web apps to proceed without Firebase token
+    req.body.allow_web_app = true;
     const sendData = await startCall(req.body, "chat");
     // Build response
     if (sendData) {
@@ -1540,7 +1542,161 @@ router.get("/cronRefreshCall", async (req, res) => {
 
 
 
+// Get Admin Chat Channels
+router.post("/getAdminChatChannels", upload.none(), async (req, res) => {
+  const schema = Joi.object({
+    api_key: Joi.string().required(),
+    user_uni_id: Joi.string().required(),
+    offset: Joi.number().integer().min(0).optional().default(0),
+  });
 
+  const { error, value } = schema.validate(req.body);
+
+  if (error) {
+    return res.json({
+      status: 0,
+      errors: error.details,
+      message: "Something went wrong",
+      msg: error.details.map((d) => d.message).join("\n"),
+    });
+  }
+
+  const { api_key, user_uni_id, offset } = value;
+
+  if (!(await checkUserApiKey(api_key, user_uni_id))) {
+    return res.json({
+      status: 0,
+      error_code: 101,
+      msg: "Unauthorized User... Please login again",
+    });
+  }
+
+  const page_limit = constants.api_page_limit_secondary || 10;
+
+  try {
+    // Import AdminChatChannel model
+    const { default: AdminChatChannel } = await import("../_models/admin_chat_channels.js");
+    
+    const whereCondition = {
+      user_uni_id: user_uni_id,
+      trash: 0,
+    };
+
+    const adminChatChannels = await AdminChatChannel.findAll({
+      where: whereCondition,
+      order: [["updated_at", "DESC"]],
+      offset,
+      limit: page_limit,
+      attributes: [
+        "id",
+        "user_uni_id",
+        "channel_name",
+        "status",
+        "trash",
+        "created_at",
+        "updated_at",
+      ],
+    });
+
+    return res.json({
+      status: 1,
+      data: adminChatChannels,
+      msg: "Admin chat channels retrieved successfully",
+    });
+  } catch (err) {
+    console.error("Error fetching admin chat channels:", err);
+    return res.json({
+      status: 0,
+      msg: "Something went wrong",
+      error: err.message,
+    });
+  }
+});
+
+// Get Admin Chat Channel History (messages for a specific channel)
+router.post("/getAdminChatChannelHistory", upload.none(), async (req, res) => {
+  const schema = Joi.object({
+    api_key: Joi.string().required(),
+    user_uni_id: Joi.string().required(),
+    channel_name: Joi.string().optional().allow('', null),
+    offset: Joi.number().integer().min(0).optional().default(0),
+  });
+
+  const { error, value } = schema.validate(req.body);
+
+  if (error) {
+    return res.json({
+      status: 0,
+      errors: error.details,
+      message: "Something went wrong",
+      msg: error.details.map((d) => d.message).join("\n"),
+    });
+  }
+
+  const { api_key, user_uni_id, channel_name, offset } = value;
+
+  if (!(await checkUserApiKey(api_key, user_uni_id))) {
+    return res.json({
+      status: 0,
+      error_code: 101,
+      msg: "Unauthorized User... Please login again",
+    });
+  }
+
+  const page_limit = constants.api_page_limit_secondary || 10;
+
+  try {
+    // Import AdminChatChannelHistory model
+    const { default: AdminChatChannelHistory } = await import("../_models/admin_chat_channel_histories.js");
+    
+    const whereCondition = {
+      user_uni_id: user_uni_id,
+      trash: 0,
+    };
+
+    // If channel_name is provided, filter by it
+    if (channel_name && channel_name.trim() !== '') {
+      whereCondition.channel_name = channel_name;
+    }
+
+    const adminChatHistory = await AdminChatChannelHistory.findAll({
+      where: whereCondition,
+      order: [["created_at", "DESC"]],
+      offset,
+      limit: page_limit,
+      attributes: [
+        "id",
+        "parent_id",
+        "channel_name",
+        "user_uni_id",
+        "uniqeid",
+        "message",
+        "selected_text",
+        "selected_type",
+        "chat_intake_data",
+        "file_url",
+        "message_type",
+        "status",
+        "trash",
+        "created_at",
+        "updated_at",
+      ],
+    });
+
+    return res.json({
+      status: 1,
+      data: adminChatHistory,
+      msg: "Admin chat channel history retrieved successfully",
+    });
+  } catch (err) {
+    console.error("Error fetching admin chat channel history:", err);
+    return res.json({
+      status: 0,
+      msg: "Something went wrong",
+      error: err.message,
+    });
+  }
+});
 
 
 

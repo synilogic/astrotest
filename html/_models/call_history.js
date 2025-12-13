@@ -50,16 +50,6 @@ const CallHistory = sequelize.define('call_history', {
     allowNull: true,
     defaultValue: 0.00,
   },
-  original_astro_charge: {
-    type: DataTypes.DOUBLE(10, 2),
-    allowNull: false,
-    defaultValue: 0.00,
-  },
-  popup_after_duration: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
-  },
   charge_minutes: {
     type: DataTypes.INTEGER,
     allowNull: false,
@@ -85,11 +75,6 @@ const CallHistory = sequelize.define('call_history', {
   status: {
     type: DataTypes.STRING(50),
     allowNull: true,
-  },
-  subscription_assign_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
   },
   refund_valid_date: {
     type: DataTypes.STRING(100),
@@ -218,5 +203,6 @@ const CallHistory = sequelize.define('call_history', {
     },
   ],
 });
+
 
 export default CallHistory;

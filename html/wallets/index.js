@@ -10,6 +10,8 @@ import proceedPaymentRequest from './proceedPaymentRequest.js';
 import updateOnlinePayment from './updateOnlinePayment.js'
 import getpayoutList from './getpayoutList.js'
 import withdrawalRequest from './withdrawalRequest.js'
+import getWalletTransactions from './getWalletTransactions.js'
+import manualWalletAdd from './manualWalletAdd.js'
 
 
 
@@ -42,6 +44,8 @@ app.use(prefix, proceedPaymentRequest);
 app.use(prefix, updateOnlinePayment);
 app.use(prefix, getpayoutList);
 app.use(prefix, withdrawalRequest);
+app.use(prefix, getWalletTransactions);
+app.use(prefix, manualWalletAdd);
 
 
 

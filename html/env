@@ -1,0 +1,64 @@
+
+USERS_PORT=8000
+
+communication_PORT=8006
+BASE_URL=http://localhost:8006
+BANNERS_PORT=8001
+ASTROLOGERS_PORT=8002
+VENDORS_PORT=8003
+WELCOME_PORT=8005
+PRODUCTS_PORT=8007
+ADMINPANEL_PORT=8008
+
+IMAGE_BASE_URL_SANJEEVINI=http://localhost:8008/assets/img
+image_base_url = http://localhost:8007
+
+DB_NAME=astronode
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=
+
+CASHFREE_APP_ID=7418672a914fdda00e7c408034768147
+CASHFREE_SECRET_KEY= cfsk_ma_prod_eb5ea946cde648d401ba41782b41694d_15d263f3
+CASHFREE_LIVE_MODE=1
+
+
+
+
+CUSTOM_SMS_URL=https://2factor.in/API/V1/b254aaa6-e486-11ef-8b17-0200cd936042/SMS/#MOBILENO#/#MESSAGE#/OTP1
+CUSTOM_SMS_MESSAGE= #OTP#
+ROUTE=dlt
+SENDER_ID=SYITPL
+SMS_TEMPLATE_ID=181789
+AUTH_KEY=ngXkObl2xD13t5ziQIvSo8AZyJURdjqmwF0Bc4pK69PhGsYE7aW4bLejqO3VUFngmJlAvTsG9QSkaMd8
+SMS_URL=https://www.fast2sms.com/dev/bulkV2
+
+API_PAGE_LIMIT=
+DEFAULT_OTP_CODE=666331
+SMS_GATEWAY_ACTIVE=true
+GELLERY_COUNT=10
+
+PRODUCTS_PORT=8007
+IMAGE_BASE_URL_CATEGORY=http://localhost:8007/images/product_category
+IMAGE_BASE_URL_PRODUCT=http://localhost:8007/images/product
+
+NODE_ENV=development
+
+# Redis Configuration (Cloud Redis)
+# Get these values from your cloud Redis provider (Upstash/Redis Cloud)
+# Example for Upstash: REDIS_HOST=your-db-name.upstash.io
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+REDIS_DB=0
+REDIS_ENABLE=true
+# For cloud Redis with TLS, set REDIS_TLS=true
+REDIS_TLS=false
+
+
+
+IMAGE_BASE_URL_CATEGORY=http://localhost:8007/images/product_category
+IMAGE_BASE_URL_PRODUCT=http://localhost:8007/assets/img
+
+
+

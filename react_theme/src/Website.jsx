@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import Swiper from 'swiper'
 import { Navigation, Pagination, Autoplay, EffectFade } from 'swiper/modules'
 import 'swiper/css'
@@ -8,34 +8,398 @@ import 'swiper/css/effect-fade'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import usePageTitle from './hooks/usePageTitle'
+import { fetchBanners, fetchServices, fetchTopAstrologers, fetchBlogs, fetchProductCategories, fetchReviews, fetchWelcomeData } from './utils/api'
+import { Link } from 'react-router-dom'
+
+// Helper function to get safe image URL with fallback
+const getSafeImageUrl = (imageUrl, fallbackUrl, failedImagesSet) => {
+  if (!imageUrl) return fallbackUrl
+  // If this image has already failed, use fallback immediately
+  if (failedImagesSet && failedImagesSet.has(imageUrl)) {
+    return fallbackUrl
+  }
+  // For localhost URLs from port 8005/uploads/, they often don't exist
+  // We'll still try to load them, but fallback will handle errors
+  // Note: 404 errors in console are expected when images don't exist - this is normal browser behavior
+  return imageUrl
+}
 
 const Landing = () => {
   usePageTitle('Home - Astrology Theme')
+  
+  // State for data
+  const [banners, setBanners] = useState([])
+  const [services, setServices] = useState([])
+  const [astrologers, setAstrologers] = useState([])
+  const [blogs, setBlogs] = useState([])
+  const [productCategories, setProductCategories] = useState([])
+  const [reviews, setReviews] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [failedImages, setFailedImages] = useState(new Set())
+  const [whyChooseUsData, setWhyChooseUsData] = useState(null)
+
+  // Fetch banners and welcome data first (priority - show immediately)
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        // Fetch banners
+        const bannersRes = await fetchBanners()
+        console.log('[Website] Banners response:', bannersRes)
+        if (bannersRes && bannersRes.status === 1 && bannersRes.data && Array.isArray(bannersRes.data)) {
+          console.log('[Website] Banners loaded:', bannersRes.data.length, 'banners')
+          setBanners(bannersRes.data)
+        } else {
+          console.warn('[Website] Banners response invalid:', bannersRes)
+          setBanners([])
+        }
+        
+        // Fetch welcome data for "Why Choose Us" section
+        const welcomeRes = await fetchWelcomeData()
+        if (welcomeRes && welcomeRes.status === 1 && welcomeRes.data) {
+          console.log('[Website] Welcome data loaded:', welcomeRes.data)
+          // Check if splash_screen_why_choose_us contains structured data
+          const whyChooseUsText = welcomeRes.data.splash_screen_why_choose_us
+          console.log('[Website] splash_screen_why_choose_us raw value:', whyChooseUsText)
+          
+          if (whyChooseUsText && whyChooseUsText.trim() !== '') {
+            try {
+              // Try to parse as JSON if it's structured data
+              const parsed = JSON.parse(whyChooseUsText)
+              console.log('[Website] Parsed JSON:', parsed)
+              
+              if (Array.isArray(parsed)) {
+                // Remove duplicates based on title/heading
+                const uniqueItems = parsed.filter((item, index, self) => 
+                  index === self.findIndex(t => 
+                    (t.title || t.heading || '') === (item.title || item.heading || '')
+                  )
+                )
+                console.log('[Website] Why Choose Us unique items:', uniqueItems.length, 'out of', parsed.length)
+                setWhyChooseUsData(uniqueItems)
+              } else if (typeof parsed === 'object' && parsed !== null) {
+                // If it's a single object, convert to array
+                console.log('[Website] Single object found, converting to array')
+                setWhyChooseUsData([parsed])
+              } else {
+                console.log('[Website] Parsed value is not an array or object')
+                setWhyChooseUsData(null)
+              }
+            } catch (e) {
+              // If not JSON, treat as plain text and use default structure
+              console.log('[Website] Why Choose Us is plain text, using default structure:', e.message)
+              setWhyChooseUsData(null)
+            }
+          } else {
+            console.log('[Website] splash_screen_why_choose_us is empty or null')
+            setWhyChooseUsData(null)
+          }
+        } else {
+          console.log('[Website] Welcome data not loaded or invalid')
+          setWhyChooseUsData(null)
+        }
+      } catch (error) {
+        console.error('[Website] Error fetching initial data:', error)
+      }
+    }
+    
+    loadInitialData()
+  }, [])
+
+  // Fetch other data from backend in parallel (instant loading)
+  useEffect(() => {
+    // Fetch all data in parallel for instant display
+    const loadData = async () => {
+      // Start all API calls simultaneously
+      const promises = [
+        fetchServices(0, 0, 20).catch(() => null), // service_category_id: 0 = all services, offset, limit
+        fetchTopAstrologers({ limit: 6 }).catch(() => null),
+        fetchBlogs(0, 20).catch(() => null), // offset, limit
+        fetchProductCategories({ offset: 0, limit: 20, status: 1 }).catch(() => null),
+        fetchReviews({ offset: 0, status: 1 }).catch(() => null) // Fetch reviews from backend
+      ]
+
+      // Use Promise.allSettled to get results as they complete
+      Promise.allSettled(promises).then((results) => {
+        // Update state immediately for each completed request
+        // Services
+        console.log('[Website] Services promise result:', results[0])
+        if (results[0].status === 'fulfilled' && results[0].value?.status === 1) {
+          const servicesData = Array.isArray(results[0].value.data) ? results[0].value.data : []
+          if (servicesData.length > 0) {
+            setServices(servicesData)
+            console.log('[Website] Services loaded:', servicesData.length, 'services')
+            console.log('[Website] Services data:', servicesData)
+          } else {
+            console.warn('[Website] Services response has status 1 but empty data')
+            console.warn('[Website] Services response:', results[0].value)
+            setServices([])
+          }
+        } else {
+          console.warn('[Website] Services failed:', results[0].status === 'fulfilled' ? results[0].value : results[0].reason)
+          setServices([])
+        }
+        
+        // Astrologers
+        console.log('[Website] Astrologers promise result:', results[1])
+        console.log('[Website] Astrologers status:', results[1].status)
+        if (results[1].status === 'fulfilled') {
+          console.log('[Website] Astrologers fulfilled value:', results[1].value)
+          console.log('[Website] Astrologers response status:', results[1].value?.status)
+          console.log('[Website] Astrologers data array check:', Array.isArray(results[1].value?.data))
+          console.log('[Website] Astrologers data:', results[1].value?.data)
+        }
+        
+        if (results[1].status === 'fulfilled' && results[1].value?.status === 1 && Array.isArray(results[1].value?.data)) {
+          setAstrologers(results[1].value.data)
+          console.log('[Website] ✅ Astrologers loaded successfully:', results[1].value.data.length, 'astrologers')
+        } else {
+          console.error('[Website] ❌ Astrologers failed to load!')
+          console.error('[Website] Failure reason:', results[1].status === 'fulfilled' ? results[1].value : results[1].reason)
+          setAstrologers([])
+        }
+        
+        // Reviews from backend
+        if (results[4].status === 'fulfilled' && results[4].value?.status === 1) {
+          const reviewsData = Array.isArray(results[4].value.reviews) ? results[4].value.reviews : 
+                             (Array.isArray(results[4].value.data) ? results[4].value.data : [])
+          if (reviewsData.length > 0) {
+            // Sort by rating and limit to top 10 for testimonials
+            const sortedReviews = reviewsData
+              .sort((a, b) => (b.review_rating || 0) - (a.review_rating || 0))
+              .slice(0, 10)
+            setReviews(sortedReviews)
+            console.log('[Website] Reviews loaded:', sortedReviews.length)
+          } else {
+            console.warn('[Website] Reviews response has status 1 but empty reviews array')
+            setReviews([])
+          }
+        } else {
+          console.warn('[Website] Reviews failed:', results[4].status === 'fulfilled' ? results[4].value : results[4].reason)
+          setReviews([])
+        }
+        
+        // Blogs
+        if (results[2].status === 'fulfilled' && results[2].value?.status === 1) {
+          const blogsData = Array.isArray(results[2].value.data) ? results[2].value.data : []
+          if (blogsData.length > 0) {
+            setBlogs(blogsData)
+            console.log('[Website] Blogs loaded:', blogsData.length)
+          } else {
+            console.warn('[Website] Blogs response has status 1 but empty data')
+            setBlogs([])
+          }
+        } else {
+          console.warn('[Website] Blogs failed:', results[2].status === 'fulfilled' ? results[2].value : results[2].reason)
+          setBlogs([])
+        }
+        
+        // Handle product categories with better error handling
+        if (results[3].status === 'fulfilled') {
+          const categoriesResult = results[3].value
+          if (categoriesResult?.status === 1 && Array.isArray(categoriesResult?.data)) {
+            // Set categories even if array is empty (API returned success but no data)
+            setProductCategories(categoriesResult.data)
+          } else {
+            // Log error for debugging
+            if (categoriesResult?.status === 0) {
+              console.warn('[Website] Product categories API returned status 0:', categoriesResult.msg || 'Unknown error')
+            } else if (!categoriesResult) {
+              console.warn('[Website] Product categories API returned null/undefined')
+            }
+            setProductCategories([])
+          }
+        } else {
+          // Promise was rejected
+          console.error('[Website] Product categories fetch failed:', results[3].reason)
+          setProductCategories([])
+        }
+        
+        // Reviews endpoint doesn't exist - reviews can be extracted from astrologers if needed
+        // For now, keep reviews empty or extract from astrologer data
+      })
+
+      // Also update state immediately as each promise resolves (for faster perceived performance)
+      promises[0].then(res => {
+        console.log('[Website] Services raw response:', res)
+        // Check if response has data array directly or nested
+        if (res?.status === 1) {
+          const servicesData = Array.isArray(res.data) ? res.data : (Array.isArray(res) ? res : [])
+          if (servicesData.length > 0) {
+            setServices(servicesData)
+            console.log('[Website] Services (immediate):', servicesData.length)
+          } else {
+            console.warn('[Website] Services response has status 1 but no data array')
+            setServices([])
+          }
+        } else {
+          console.warn('[Website] Services response invalid:', res)
+          setServices([])
+        }
+      }).catch(err => {
+        console.error('[Website] Services fetch error:', err)
+        setServices([])
+      })
+      
+      promises[1].then(res => {
+        if (res?.status === 1 && Array.isArray(res?.data)) {
+          setAstrologers(res.data)
+          console.log('[Website] Astrologers (immediate):', res.data.length)
+        } else {
+          console.warn('[Website] Astrologers response invalid:', res)
+          setAstrologers([])
+        }
+      }).catch(err => {
+        console.error('[Website] Astrologers fetch error:', err)
+        setAstrologers([])
+      })
+      
+      promises[4].then(res => {
+        console.log('[Website] Reviews raw response:', res)
+        if (res?.status === 1) {
+          const reviewsData = Array.isArray(res.reviews) ? res.reviews : 
+                             (Array.isArray(res.data) ? res.data : [])
+          if (reviewsData.length > 0) {
+            // Sort by rating and limit to top 10 for testimonials
+            const sortedReviews = reviewsData
+              .sort((a, b) => (b.review_rating || 0) - (a.review_rating || 0))
+              .slice(0, 10)
+            setReviews(sortedReviews)
+            console.log('[Website] Reviews (immediate):', sortedReviews.length)
+          } else {
+            console.warn('[Website] Reviews response has status 1 but empty reviews array')
+            setReviews([])
+          }
+        } else {
+          console.warn('[Website] Reviews response invalid:', res)
+          setReviews([])
+        }
+      }).catch(err => {
+        console.error('[Website] Reviews fetch error:', err)
+        setReviews([])
+      })
+      
+      promises[2].then(res => {
+        console.log('[Website] Blogs raw response:', res)
+        // Check if response has data array directly or nested
+        if (res?.status === 1) {
+          const blogsData = Array.isArray(res.data) ? res.data : (Array.isArray(res) ? res : [])
+          if (blogsData.length > 0) {
+            setBlogs(blogsData)
+            console.log('[Website] Blogs (immediate):', blogsData.length)
+          } else {
+            console.warn('[Website] Blogs response has status 1 but no data array')
+            setBlogs([])
+          }
+        } else {
+          console.warn('[Website] Blogs response invalid:', res)
+          setBlogs([])
+        }
+      }).catch(err => {
+        console.error('[Website] Blogs fetch error:', err)
+        setBlogs([])
+      })
+      
+      promises[3].then(res => {
+        if (res?.status === 1 && Array.isArray(res?.data)) {
+          // Set categories even if array is empty (API returned success but no data)
+          setProductCategories(res.data)
+        } else {
+          // Explicitly set empty array if categories fetch fails
+          if (res?.status === 0) {
+            console.warn('[Website] Product categories API returned status 0:', res.msg || 'Unknown error')
+          } else if (!res) {
+            console.warn('[Website] Product categories API returned null/undefined')
+          }
+          setProductCategories([])
+        }
+      }).catch(err => {
+        console.error('[Website] Product categories fetch error:', err)
+        setProductCategories([])
+      })
+      
+      // Reviews endpoint doesn't exist - extract reviews from astrologers if needed
+      // For now, reviews will remain empty array
+    }
+
+    loadData()
+  }, [])
+
+  // Initialize Swiper when banners are loaded
   useEffect(() => {
     const instances = []
+    let retryTimer = null
 
-    // Hero slider with custom buttons
-    const heroEl = document.querySelector('.hero-swiper')
-    if (heroEl) {
-      instances.push(new Swiper(heroEl, {
-        modules: [Navigation, Pagination, Autoplay],
-        loop: true,
-        autoplay: { delay: 3500, disableOnInteraction: false },
-        navigation: {
-          prevEl: '#react-custom-prev',
-          nextEl: '#react-custom-next'
-        }
-      }))
+    // Function to initialize hero Swiper
+    const initHeroSwiper = () => {
+      const heroEl = document.querySelector('.hero-swiper')
+      if (!heroEl) {
+        console.warn('[Website] Hero Swiper element not found')
+        return null
+      }
+
+      // Check if slides exist
+      const slides = heroEl.querySelectorAll('.swiper-slide')
+      console.log('[Website] Initializing hero Swiper with', banners.length, 'banners, found', slides.length, 'slides in DOM')
+      
+      if (slides.length === 0) {
+        console.warn('[Website] No slides found in hero Swiper')
+        return null
+      }
+
+      try {
+        const heroSwiper = new Swiper(heroEl, {
+          modules: [Navigation, Pagination, Autoplay],
+          loop: banners.length > 1,
+          autoplay: { delay: 3500, disableOnInteraction: false },
+          navigation: {
+            prevEl: '#react-custom-prev',
+            nextEl: '#react-custom-next'
+          },
+          on: {
+            init: function() {
+              console.log('[Website] Hero Swiper initialized with', this.slides.length, 'slides')
+            }
+          }
+        })
+        return heroSwiper
+      } catch (error) {
+        console.error('[Website] Error initializing hero Swiper:', error)
+        return null
+      }
     }
+
+    // Wait longer to ensure DOM is fully updated with banner slides
+    const timer = setTimeout(() => {
+      // Try to initialize hero Swiper (only if we have banners)
+      if (banners.length > 0) {
+        const heroSwiper = initHeroSwiper()
+        if (heroSwiper) {
+          instances.push(heroSwiper)
+        } else {
+          // Retry after a longer delay if initialization failed
+          console.warn('[Website] Hero Swiper initialization failed, retrying in 800ms...')
+          retryTimer = setTimeout(() => {
+            const retrySwiper = initHeroSwiper()
+            if (retrySwiper) {
+              instances.push(retrySwiper)
+            } else {
+              console.error('[Website] Hero Swiper initialization failed after retry')
+            }
+          }, 800)
+        }
+      } else {
+        console.log('[Website] No banners to initialize hero Swiper')
+      }
 
     // Services carousel
     const servicesEl = document.querySelector('.react-services-section .mySwiper-service')
     if (servicesEl) {
-      instances.push(new Swiper(servicesEl, {
+      console.log('[Website] Initializing services Swiper with', services.length, 'services')
+      const servicesSwiper = new Swiper(servicesEl, {
         modules: [Navigation, Pagination, Autoplay],
         slidesPerView: 1,
         spaceBetween: 16,
-        loop: true,
+        loop: services.length > 3,
         autoplay: { delay: 3000, disableOnInteraction: false },
         breakpoints: {
           576: { slidesPerView: 2 },
@@ -44,8 +408,16 @@ const Landing = () => {
         navigation: {
           prevEl: servicesEl.querySelector('.swiper-button-prev'),
           nextEl: servicesEl.querySelector('.swiper-button-next')
+        },
+        on: {
+          init: function() {
+            console.log('[Website] Services Swiper initialized with', this.slides.length, 'slides')
+          }
         }
-      }))
+      })
+      instances.push(servicesSwiper)
+    } else {
+      console.warn('[Website] Services Swiper element not found')
     }
 
     // Astrologers carousel
@@ -55,7 +427,7 @@ const Landing = () => {
         modules: [Navigation, Pagination, Autoplay],
         slidesPerView: 1,
         spaceBetween: 16,
-        loop: true,
+        loop: astrologers.length > 4,
         autoplay: { delay: 3200, disableOnInteraction: false },
         breakpoints: {
           576: { slidesPerView: 2 },
@@ -75,7 +447,7 @@ const Landing = () => {
         modules: [Navigation, Pagination, Autoplay],
         slidesPerView: 1,
         spaceBetween: 16,
-        loop: true,
+        loop: blogs.length > 3,
         autoplay: { delay: 3400, disableOnInteraction: false },
         breakpoints: {
           576: { slidesPerView: 2 },
@@ -91,11 +463,12 @@ const Landing = () => {
     // Products carousel
     const productEl = document.querySelector('.react-products-section .mySwiper-product')
     if (productEl) {
-      instances.push(new Swiper(productEl, {
+      console.log('[Website] Initializing products Swiper with', productCategories.length, 'categories')
+      const productSwiper = new Swiper(productEl, {
         modules: [Navigation, Pagination, Autoplay],
         slidesPerView: 1,
         spaceBetween: 16,
-        loop: true,
+        loop: productCategories.length > 4, // Only loop if more than 4 slides
         autoplay: { delay: 3600, disableOnInteraction: false },
         breakpoints: {
           576: { slidesPerView: 2 },
@@ -104,12 +477,19 @@ const Landing = () => {
         navigation: {
           prevEl: productEl.querySelector('.swiper-button-prev'),
           nextEl: productEl.querySelector('.swiper-button-next')
+        },
+        on: {
+          init: function() {
+            console.log('[Website] Products Swiper initialized with', this.slides.length, 'slides')
+          }
         }
-      }))
+      })
+      instances.push(productSwiper)
+    } else {
+      console.warn('[Website] Products Swiper element not found')
     }
 
     // Testimonials with custom controls and pagination element
-       // Testimonials with custom controls and pagination element
     const testSection = document.querySelector('.react-testimonials-section')
     const testimonialsEl = testSection?.querySelector('.testimonials-swiper')
     if (testimonialsEl && testSection) {
@@ -117,7 +497,7 @@ const Landing = () => {
         modules: [Navigation, Pagination, Autoplay, EffectFade],
         effect: 'fade',
         fadeEffect: { crossFade: true },
-        loop: true,
+        loop: reviews.length > 1, // Only loop if more than 1 slide
         autoplay: { delay: 3800, disableOnInteraction: false },
         navigation: {
           prevEl: testSection.querySelector('.react-custom-prev-btn'),
@@ -130,12 +510,62 @@ const Landing = () => {
       }))
     }
 
+    }, 500) // Increased delay to 500ms
+
     return () => {
+      clearTimeout(timer)
+      if (retryTimer) {
+        clearTimeout(retryTimer)
+      }
+      // Destroy all Swiper instances
       instances.forEach(instance => {
-        try { instance.destroy(true, true) } catch (e) {}
+        try { 
+          if (instance && typeof instance.destroy === 'function') {
+            instance.destroy(true, true)
+          }
+        } catch (e) {
+          console.warn('[Website] Error destroying Swiper instance:', e)
+        }
       })
     }
-  }, [])
+  }, [loading, banners.length, services.length, astrologers.length, blogs.length, productCategories.length, reviews.length])
+
+  // Debug: Log reviews state changes
+  useEffect(() => {
+    if (reviews.length > 0) {
+      console.log('[Website] Reviews state updated:', {
+        count: reviews.length,
+        sampleReview: reviews[0]
+      })
+    } else {
+      console.log('[Website] Reviews state is empty')
+    }
+  }, [reviews])
+
+  // Debug: Log banners state changes
+  useEffect(() => {
+    console.log('[Website] Banners state updated:', {
+      count: banners.length,
+      banners: banners
+    })
+  }, [banners])
+
+  // Debug: Log services state changes
+  useEffect(() => {
+    console.log('[Website] Services state updated:', {
+      count: services.length,
+      services: services
+    })
+  }, [services])
+
+  // Debug: Log product categories state changes
+  useEffect(() => {
+    console.log('[Website] Product categories state updated:', {
+      count: productCategories.length,
+      categories: productCategories
+    })
+  }, [productCategories])
+
   return (
     <div>
     
@@ -143,15 +573,68 @@ const Landing = () => {
       <section className="react-hero-slider">
         <div className="swiper hero-swiper">
           <div className="swiper-wrapper">
-            <div className="swiper-slide">
-              <img src="https://www.karmleela.com/uploads/banner/1749907120-banner_image.jpg" alt="Slide 1" />
-            </div>
-            <div className="swiper-slide">
-              <img src="https://www.karmleela.com/uploads/banner/1733747065-banner_image.jpg" alt="Slide 2" />
-            </div>
-            <div className="swiper-slide">
-              <img src="https://jyotishiwala.com/uploads/banner/1743585494-banner_image.jpg" alt="Slide 3" />
-            </div>
+            {banners && banners.length > 0 ? (
+              banners.map((banner, index) => (
+                <div key={banner.id || index} className="swiper-slide">
+                  {(() => {
+                    const fallback = 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'
+                    const originalSrc = banner.banner_image
+                    
+                    // Check for HTML content in image field
+                    const hasHtmlContent = originalSrc && typeof originalSrc === 'string' && /<[^>]+>/.test(originalSrc)
+                    
+                    // Only use fallback immediately if:
+                    // 1. No originalSrc
+                    // 2. Contains HTML content
+                    // 3. Already failed before
+                    // Otherwise, ALWAYS try to load the original image (including localhost:8005/uploads/banner/)
+                    const shouldUseFallbackImmediately = !originalSrc || 
+                      hasHtmlContent ||
+                      failedImages.has(originalSrc)
+                    
+                    const safeImageUrl = shouldUseFallbackImmediately 
+                      ? fallback 
+                      : (originalSrc || fallback)
+                    
+                    const handleImageError = (e) => {
+                      if (originalSrc && e.target.src !== fallback) {
+                        setFailedImages(prev => new Set(prev).add(originalSrc))
+                        e.target.src = fallback
+                        e.target.onerror = null
+                      }
+                    }
+                    return banner.url ? (
+                      <a href={banner.url} style={{ display: 'block', width: '100%', height: '100%' }}>
+                        <img 
+                          src={safeImageUrl} 
+                          alt={banner.title || `Banner ${index + 1}`}
+                          loading="lazy"
+                          onError={handleImageError}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                        />
+                      </a>
+                    ) : (
+                      <img 
+                        src={safeImageUrl} 
+                        alt={banner.title || `Banner ${index + 1}`}
+                        loading="lazy"
+                        onError={handleImageError}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                      />
+                    )
+                  })()}
+                </div>
+              ))
+            ) : (
+              <div className="swiper-slide">
+                <div style={{ padding: '50px', textAlign: 'center', minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+                  <p>No banners available</p>
+                  <p style={{ fontSize: '12px', color: '#999', marginTop: '10px' }}>
+                    Loading: {loading ? 'Yes' : 'No'}, Banners count: {banners?.length || 0}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
         <button className="react-custom-nav-button react-prev" id="react-custom-prev"><i className="fa-solid fa-chevron-left"></i></button>
@@ -213,42 +696,31 @@ const Landing = () => {
           </div>
           <div className="react-why-us-container">
             <div className="react-why-us-content">
-              <div className="react-why-us-item">
-                <div className="react-why-us-icon">
-                  <i className="fas fa-user-tie"></i>
+              {whyChooseUsData && Array.isArray(whyChooseUsData) && whyChooseUsData.length > 0 ? (
+                // Render data from backend (dynamic)
+                whyChooseUsData.map((item, index) => {
+                  // Use unique key based on title/heading to prevent duplicate rendering
+                  const uniqueKey = item.title || item.heading || `item-${index}`
+                  return (
+                    <div key={`${uniqueKey}-${index}`} className="react-why-us-item">
+                      <div className="react-why-us-icon">
+                        <i className={item.icon || `fas fa-star`}></i>
+                      </div>
+                      <div className="react-why-us-text">
+                        <h3>{item.title || item.heading || 'Feature'}</h3>
+                        <p>{item.description || item.text || ''}</p>
+                      </div>
+                    </div>
+                  )
+                })
+              ) : (
+                // Show message if no data available
+                <div className="react-why-us-item">
+                  <div className="react-why-us-text">
+                    <p>Why Choose Us content will be displayed here.</p>
+                  </div>
                 </div>
-                <div className="react-why-us-text">
-                  <h3>50+ Years of Experience</h3>
-                  <p>Our astrologers and Vastu consultants bring over 50 years of expertise to provide accurate and insightful guidance.</p>
-                </div>
-              </div>
-              <div className="react-why-us-item">
-                <div className="react-why-us-icon">
-                  <i className="fas fa-users"></i>
-                </div>
-                <div className="react-why-us-text">
-                  <h3>1500+ Satisfied Customers</h3>
-                  <p>More than 1500 customers have received our services, and many more are joining every day.</p>
-                </div>
-              </div>
-              <div className="react-why-us-item">
-                <div className="react-why-us-icon">
-                  <i className="fas fa-star"></i>
-                </div>
-                <div className="react-why-us-text">
-                  <h3>1100+ Best Astrologers</h3>
-                  <p>We have hand-picked over 1100 expert astrologers from India, ready to offer online consultations.</p>
-                </div>
-              </div>
-              <div className="react-why-us-item">
-                <div className="react-why-us-icon">
-                  <i className="fas fa-globe-americas"></i>
-                </div>
-                <div className="react-why-us-text">
-                  <h3>140+ Nationalities</h3>
-                  <p>Our services are trusted by clients from over 140 nationalities across the globe.</p>
-                </div>
-              </div>
+              )}
             </div>
             <div className="react-why-us-image">
               <img src="https://www.jyotishamastroapi.com/front/img/about/natal1.png" alt="Astrology Consultation" />
@@ -404,59 +876,99 @@ const Landing = () => {
           </div>
           <div className="swiper mySwiper-service">
             <div className="swiper-wrapper">
-              <div className="swiper-slide">
-                <a href="">
-                  <div className="react-card-service">
-                    <div className="react-icon-wrapper">
-                      <img src="https://www.karmleela.com/uploads/our_service/1734072422-image.png" alt="Service" />
-                    </div>
-                    <h3>Love Marriage</h3>
-                    <p>
-                      Many times it is seen that some parents have a lot more say in who their child should marry. 
-                    </p>
+              {services.length > 0 ? (
+                services.map((service) => (
+                  <div key={service.id} className="swiper-slide">
+                    <Link to={`/service/${service.slug || service.id}`}>
+                      <div className="react-card-service">
+                        <div className="react-icon-wrapper">
+                          {(() => {
+                            const fallback = 'https://images.unsplash.com/photo-1462331940025-496df2c8b5e3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+                            const originalSrc = service.service_image || service.service_image_url
+                            
+                            // Check if originalSrc contains HTML tags (like <p>demo</p>)
+                            const containsHTML = originalSrc && typeof originalSrc === 'string' && /<[^>]+>/.test(originalSrc)
+                            
+                            // Check if it's a valid image URL
+                            const isValidImageUrl = originalSrc && typeof originalSrc === 'string' && (
+                              originalSrc.startsWith('http://') || 
+                              originalSrc.startsWith('https://')
+                            )
+                            
+                            // Use fallback if:
+                            // 1. No originalSrc
+                            // 2. Contains HTML tags (invalid)
+                            // 3. Not a valid HTTP/HTTPS URL
+                            // 4. Known problematic paths (banner/blog from wrong service)
+                            // 5. Already failed before
+                            const shouldUseFallback = !originalSrc || 
+                              containsHTML || 
+                              !isValidImageUrl || 
+                              (originalSrc.includes('localhost:8005/uploads/banner/') ||
+                               originalSrc.includes('localhost:8005/uploads/blog/') ||
+                               originalSrc.includes('localhost:8002/assets/')) ||
+                              failedImages.has(originalSrc)
+                            
+                            const safeImageUrl = shouldUseFallback ? fallback : originalSrc
+                            
+                            const handleError = (e) => {
+                              if (originalSrc && e.target.src !== fallback) {
+                                setFailedImages(prev => new Set(prev).add(originalSrc))
+                                e.target.src = fallback
+                                e.target.onerror = null
+                              }
+                            }
+                            return (
+                              <img 
+                                src={safeImageUrl} 
+                                alt={service.service_name || service.title || 'Service'}
+                                loading="lazy"
+                                onError={handleError}
+                                style={{ width: '80px', height: '80px', objectFit: 'cover', display: 'block' }}
+                              />
+                            )
+                          })()}
+                        </div>
+                        <h3>{service.service_name || service.title || 'Service'}</h3>
+                        <p>
+                          {(() => {
+                            let description = service.service_description || 'Explore our comprehensive astrological services.'
+                            
+                            // Remove HTML tags and decode HTML entities from description
+                            if (description && typeof description === 'string') {
+                              // First decode HTML entities (like &lt; &gt; &amp; etc.)
+                              description = description
+                                .replace(/&lt;/g, '<')
+                                .replace(/&gt;/g, '>')
+                                .replace(/&amp;/g, '&')
+                                .replace(/&quot;/g, '"')
+                                .replace(/&#39;/g, "'")
+                                .replace(/&nbsp;/g, ' ')
+                              
+                              // Then strip HTML tags
+                              description = description.replace(/<[^>]*>/g, '')
+                              
+                              // Trim whitespace and newlines
+                              description = description.trim().replace(/\s+/g, ' ')
+                            }
+                            
+                            // Truncate if too long
+                            if (description && description.length > 120) {
+                              description = description.substring(0, 120) + '...'
+                            }
+                            
+                            return description || 'Explore our comprehensive astrological services.'
+                          })()}
+                        </p>
+                      </div>
+                    </Link>
                   </div>
-                </a>
-              </div>
-              <div className="swiper-slide">
-                <a href="">
-                  <div className="react-card-service">
-                    <div className="react-icon-wrapper">
-                      <img src="https://www.karmleela.com/uploads/our_service/1734072468-image.png" alt="Service" />
-                    </div>
-                    <h3>Career</h3>
-                    <p>
-                      Education systems worldwide are evolving to provide more personalized learning experiences. 
-                    </p>
-                  </div>
-                </a>
-              </div>
-              <div className="swiper-slide">
-                <a href="">
-                  <div className="react-card-service">
-                    <div className="react-icon-wrapper">
-                      <img src="https://www.karmleela.com/uploads/our_service/1734072409-image.png" alt="Service" />
-                    </div>
-                    <h3>Children Problem</h3>
-                    <p>
-                      Child problem solving is very popular. Children are God's gift to as they are the source of happiness 
-                    </p>
-                  </div>
-                </a>
-              </div>
-              <div className="swiper-slide">
-                <a href="">
-                  <div className="react-card-service">
-                    <div className="react-icon-wrapper">
-                      <img src="https://astroone.org/uploads/our_service/1714480858-image.jpg" alt="Service" />
-                    </div>
-                    <h3>Divorce</h3>
-                    <p>
-                      Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quisquam
-                      consequatur necessitatibus eaque.
-                    </p>
-                  </div>
-                </a>
-              </div>
+                ))
+              ) : (
+                <div className="swiper-slide">
+                  <div style={{ padding: '50px', textAlign: 'center' }}>No services available</div>
+                </div>
+              )}
             </div>
             <div className="swiper-button-prev"><i className="fa-solid fa-chevron-left"></i></div>
             <div className="swiper-button-next"><i className="fa-solid fa-chevron-right"></i></div>
@@ -478,208 +990,126 @@ const Landing = () => {
           </div>
           <div className="swiper mySwiper-astro">
             <div className="swiper-wrapper">
-              <div className="swiper-slide">
-                <a href="">
-                  <div className="react-astrologer-card">
-                    <div className="react-astrologer-image-container">
-                      <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80" alt="Aisha Sharma" className="react-astrologer-image" />
-                      <div className="react-astrologer-rating">
-                        <i className="fa-solid fa-star react-rating-star"></i>
-                        4.9
-                      </div>
+              {console.log('[Website Render] Astrologers array:', astrologers)}
+              {console.log('[Website Render] Astrologers length:', astrologers?.length)}
+              {astrologers && astrologers.length > 0 ? (
+                astrologers.map((astro, index) => {
+                  const chatPrice = astro.prices?.find(p => p.type === 'chat')?.price || 0
+                  const videoPrice = astro.prices?.find(p => p.type === 'video')?.price || 0
+                  const callPrice = astro.prices?.find(p => p.type === 'call')?.price || 0
+                  const minPrice = Math.min(
+                    chatPrice || Infinity,
+                    videoPrice || Infinity,
+                    callPrice || Infinity
+                  )
+                  
+                  return (
+                    <div key={astro.astrologer_uni_id || `astro-${index}`} className="swiper-slide">
+                      <Link to={`/astrologer?id=${astro.astrologer_uni_id}`}>
+                        <div className="react-astrologer-card">
+                          <div className="react-astrologer-image-container">
+                            {(() => {
+                              const fallback = 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400'
+                              const originalSrc = astro.astro_img
+                              
+                              // Check if it's a valid image URL
+                              const isValidImageUrl = originalSrc && typeof originalSrc === 'string' && (
+                                originalSrc.startsWith('http://') || 
+                                originalSrc.startsWith('https://')
+                              )
+                              
+                              // Valid astrologer image paths from port 8002 (allow these)
+                              const isValidAstrologerPath = originalSrc && (
+                                originalSrc.includes('localhost:8002/uploads/astrologer/') ||
+                                originalSrc.includes('localhost:8002/assets/img/astrologer')
+                              )
+                              
+                              // Use fallback if:
+                              // 1. No originalSrc
+                              // 2. Not a valid HTTP/HTTPS URL
+                              // 3. Known problematic paths (but NOT valid astrologer paths from port 8002)
+                              // 4. Already failed before
+                              const shouldUseFallback = !originalSrc || 
+                                !isValidImageUrl ||
+                                (originalSrc && !isValidAstrologerPath && (
+                                  originalSrc.includes('localhost:8005/uploads/') ||
+                                  (originalSrc.includes('localhost:8002/assets/') && !originalSrc.includes('astrologer'))
+                                )) ||
+                                failedImages.has(originalSrc)
+                              
+                              const safeImageUrl = shouldUseFallback ? fallback : originalSrc
+                              
+                              const handleError = (e) => {
+                                if (originalSrc && e.target.src !== fallback) {
+                                  setFailedImages(prev => new Set(prev).add(originalSrc))
+                                  e.target.src = fallback
+                                  e.target.onerror = null
+                                }
+                              }
+                              
+                              return (
+                                <img 
+                                  key={`astro-img-${astro.astrologer_uni_id || index}`}
+                                  src={safeImageUrl} 
+                                  alt={astro.display_name || 'Astrologer'} 
+                                  className="react-astrologer-image"
+                                  loading="lazy"
+                                  onError={handleError}
+                                />
+                              )
+                            })()}
+                            <div className="react-astrologer-rating">
+                              <i className="fa-solid fa-star react-rating-star"></i>
+                              {astro.avg_rating != null ? (typeof astro.avg_rating === 'number' ? astro.avg_rating.toFixed(1) : parseFloat(astro.avg_rating)?.toFixed(1) || '4.5') : '4.5'}
+                            </div>
+                          </div>
+                          <div className="react-astrologer-content">
+                            <h3 className="react-astrologer-name">{astro.display_name || astro.user?.name || 'Astrologer'}</h3>
+                            <p className="react-astrologer-specialty">{astro.category_names?.split(',')[0] || 'Astrologer'}</p>
+                            <div className="react-astrologer-details">
+                              <div className="react-astrologer-detail">
+                                <span className="react-detail-label">Experience:</span>
+                                <span className="react-detail-value">{astro.experience || 0}+ years</span>
+                              </div>
+                              <div className="react-astrologer-detail">
+                                <span className="react-detail-label">Orders:</span>
+                                <span className="react-detail-value">{astro.total_orders_count || 0}</span>
+                              </div>
+                              <div className="react-astrologer-detail">
+                                <span className="react-detail-label">Languages:</span>
+                                <span className="react-detail-value">{astro.language_name || 'N/A'}</span>
+                              </div>
+                              <div className="react-astrologer-detail">
+                                <span className="react-detail-label">Price:</span>
+                                <span className="react-detail-value react-price">
+                                  {minPrice !== Infinity ? `₹${minPrice}/min` : 'N/A'}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="react-astrologer-actions">
+                              <span className="react-btn react-btn-primary" style={{width: '100%', display: 'block', textAlign: 'center'}}>Call Now</span>
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
                     </div>
-                    <div className="react-astrologer-content">
-                      <h3 className="react-astrologer-name">Aisha Sharma</h3>
-                      <p className="react-astrologer-specialty">Vedic Astrology</p>
-                      <div className="react-astrologer-details">
-                        <div className="react-astrologer-detail">
-                          <span className="react-detail-label">Experience:</span>
-                          <span className="react-detail-value">15+ years</span>
-                        </div>
-                        <div className="react-astrologer-detail">
-                          <span className="react-detail-label">Reviews:</span>
-                          <span className="react-detail-value">342</span>
-                        </div>
-                        <div className="react-astrologer-detail">
-                          <span className="react-detail-label">Languages:</span>
-                          <span className="react-detail-value">English, Hindi</span>
-                        </div>
-                        <div className="react-astrologer-detail">
-                          <span className="react-detail-label">Price:</span>
-                          <span className="react-detail-value react-price">$2.5/min</span>
-                        </div>
-                      </div>
-                      <div className="react-astrologer-actions">
-                        <a className="react-btn react-btn-primary" style={{width: '100%'}} href="#">Call Now</a>
-                      </div>
+                  )
+                })
+              ) : (
+                <div className="swiper-slide">
+                  <div style={{ padding: '50px', textAlign: 'center', flexDirection: 'column', display: 'flex', gap: '10px' }}>
+                    <div>No astrologers available</div>
+                    <div style={{ fontSize: '12px', color: '#999' }}>
+                      Loading: {loading ? 'Yes' : 'No'}, Count: {astrologers?.length || 0}
                     </div>
+                    {astrologers && astrologers.length === 0 && !loading && (
+                      <div style={{ fontSize: '11px', color: '#f00', marginTop: '10px' }}>
+                        Check console for API response details
+                      </div>
+                    )}
                   </div>
-                </a>
-              </div>
-              <div className="swiper-slide">
-                <a href="">
-                  <div className="react-astrologer-card">
-                    <div className="react-astrologer-image-container">
-                      <img src="https://images.unsplash.com/photo-1566492031773-4f4e44671857?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80" alt="Michael Chen" className="react-astrologer-image" />
-                      <div className="react-astrologer-rating">
-                        <i className="lucide-star react-rating-star"></i>
-                        4.8
-                      </div>
-                    </div>
-                    <div className="react-astrologer-content">
-                      <h3 className="react-astrologer-name">Michael Chen</h3>
-                      <p className="react-astrologer-specialty">Western Astrology</p>
-                      <div className="react-astrologer-details">
-                        <div className="react-astrologer-detail">
-                          <span className="react-detail-label">Experience:</span>
-                          <span className="react-detail-value">12+ years</span>
-                        </div>
-                        <div className="react-astrologer-detail">
-                          <span className="react-detail-label">Reviews:</span>
-                          <span className="react-detail-value">289</span>
-                        </div>
-                        <div className="react-astrologer-detail">
-                          <span className="react-detail-label">Languages:</span>
-                          <span className="react-detail-value">English, Mandarin</span>
-                        </div>
-                        <div className="react-astrologer-detail">
-                          <span className="react-detail-label">Price:</span>
-                          <span className="react-detail-value react-price">$2.2/min</span>
-                        </div>
-                      </div>
-                      <div className="react-astrologer-actions">
-                        <button className="react-btn react-btn-primary">Call Now</button>
-                        <button className="react-btn react-btn-outline">
-                          <i className="lucide-calendar"></i> Book
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </a>
-              </div>
-              <div className="swiper-slide">
-                <a href="">
-                  <div className="react-astrologer-card">
-                    <div className="react-astrologer-image-container">
-                      <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80" alt="Elena Rodriguez" className="react-astrologer-image" />
-                      <div className="react-astrologer-rating">
-                        <i className="lucide-star react-rating-star"></i>
-                        4.7
-                      </div>
-                    </div>
-                    <div className="react-astrologer-content">
-                      <h3 className="react-astrologer-name">Elena Rodriguez</h3>
-                      <p className="react-astrologer-specialty">Tarot & Astrology</p>
-                      <div className="react-astrologer-details">
-                        <div className="react-astrologer-detail">
-                          <span className="react-detail-label">Experience:</span>
-                          <span className="react-detail-value">10+ years</span>
-                        </div>
-                        <div className="react-astrologer-detail">
-                          <span className="react-detail-label">Reviews:</span>
-                          <span className="react-detail-value">217</span>
-                        </div>
-                        <div className="react-astrologer-detail">
-                          <span className="react-detail-label">Languages:</span>
-                          <span className="react-detail-value">English, Spanish</span>
-                        </div>
-                        <div className="react-astrologer-detail">
-                          <span className="react-detail-label">Price:</span>
-                          <span className="react-detail-value react-price">$2.0/min</span>
-                        </div>
-                      </div>
-                      <div className="react-astrologer-actions">
-                        <button className="react-btn react-btn-primary">Call Now</button>
-                        <button className="react-btn react-btn-outline">
-                          <i className="lucide-calendar"></i> Book
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </a>
-              </div>
-              <div className="swiper-slide">
-                <a href="">
-                  <div className="react-astrologer-card">
-                    <div className="react-astrologer-image-container">
-                      <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80" alt="Raj Patel" className="react-astrologer-image" />
-                      <div className="react-astrologer-rating">
-                        <i className="lucide-star react-rating-star"></i>
-                        4.9
-                      </div>
-                    </div>
-                    <div className="react-astrologer-content">
-                      <h3 className="react-astrologer-name">Raj Patel</h3>
-                      <p className="react-astrologer-specialty">Numerology & Astrology</p>
-                      <div className="react-astrologer-details">
-                        <div className="react-astrologer-detail">
-                          <span className="react-detail-label">Experience:</span>
-                          <span className="react-detail-value">18+ years</span>
-                        </div>
-                        <div className="react-astrologer-detail">
-                          <span className="react-detail-label">Reviews:</span>
-                          <span className="react-detail-value">412</span>
-                        </div>
-                        <div className="react-astrologer-detail">
-                          <span className="react-detail-label">Languages:</span>
-                          <span className="react-detail-value">English, Gujarati, Hindi</span>
-                        </div>
-                        <div className="react-astrologer-detail">
-                          <span className="react-detail-label">Price:</span>
-                          <span className="react-detail-value react-price">$2.7/min</span>
-                        </div>
-                      </div>
-                      <div className="react-astrologer-actions">
-                        <button className="react-btn react-btn-primary">Call Now</button>
-                        <button className="react-btn react-btn-outline">
-                          <i className="lucide-calendar"></i> Book
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </a>
-              </div>
-              <div className="swiper-slide">
-                <a href="">
-                  <div className="react-astrologer-card">
-                    <div className="react-astrologer-image-container">
-                      <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80" alt="Raj Patel" className="react-astrologer-image" />
-                      <div className="react-astrologer-rating">
-                        <i className="lucide-star react-rating-star"></i>
-                        4.9
-                      </div>
-                    </div>
-                    <div className="react-astrologer-content">
-                      <h3 className="react-astrologer-name">Raj Patel</h3>
-                      <p className="react-astrologer-specialty">Numerology & Astrology</p>
-                      <div className="react-astrologer-details">
-                        <div className="react-astrologer-detail">
-                          <span className="react-detail-label">Experience:</span>
-                          <span className="react-detail-value">18+ years</span>
-                        </div>
-                        <div className="react-astrologer-detail">
-                          <span className="react-detail-label">Reviews:</span>
-                          <span className="react-detail-value">412</span>
-                        </div>
-                        <div className="react-astrologer-detail">
-                          <span className="react-detail-label">Languages:</span>
-                          <span className="react-detail-value">English, Gujarati, Hindi</span>
-                        </div>
-                        <div className="react-astrologer-detail">
-                          <span className="react-detail-label">Price:</span>
-                          <span className="react-detail-value react-price">$2.7/min</span>
-                        </div>
-                      </div>
-                      <div className="react-astrologer-actions">
-                        <button className="react-btn react-btn-primary">Call Now</button>
-                        <button className="react-btn react-btn-outline">
-                          <i className="lucide-calendar"></i> Book
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </a>
-              </div>
+                </div>
+              )}
             </div>
             <div className="swiper-button-prev"><i className="fa-solid fa-chevron-left"></i></div>
             <div className="swiper-button-next"><i className="fa-solid fa-chevron-right"></i></div>
@@ -701,131 +1131,78 @@ const Landing = () => {
           </div>
           <div className="swiper mySwiper-blog">
             <div className="swiper-wrapper">
-              <div className="swiper-slide">
-                <a href="">
-                  <div className="react-blog-card">
-                    <div className="react-blog-image-container">
-                      <img src="https://images.unsplash.com/photo-1543722530-d2c3201371e7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Jupiter Transit" className="react-blog-image" />
-                      <div className="react-blog-category">Career</div>
-                    </div>
-                    <div className="react-blog-content">
-                      <h3 className="react-blog-title">How Jupiter's Transit Affects Your Career in 2023</h3>
-                      <p className="react-blog-excerpt">Discover how Jupiter's movement through different zodiac signs can influence your professional life this year.</p>
-                      <div className="react-blog-meta">
-                        <div className="react-meta-item">
-                          <i className="fa-solid fa-calendar"></i>
-                          June 12, 2023
+              {blogs.length > 0 ? (
+                blogs.map((blog, index) => (
+                  <div key={blog.id || index} className="swiper-slide">
+                    <Link to={`/blog/${blog.slug || blog.id}`}>
+                      <div className="react-blog-card">
+                        <div className="react-blog-image-container">
+                          {(() => {
+                            const fallback = 'https://images.unsplash.com/photo-1543722530-d2c3201371e7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
+                            const originalSrc = blog.blog_image
+                            const shouldUseFallback = originalSrc && (
+                              originalSrc.includes('localhost:8005/uploads/') ||
+                              originalSrc.includes('localhost:8002/uploads/') ||
+                              failedImages.has(originalSrc)
+                            )
+                            const safeImageUrl = shouldUseFallback ? fallback : (originalSrc || fallback)
+                            const handleError = (e) => {
+                              if (originalSrc && e.target.src !== fallback) {
+                                setFailedImages(prev => new Set(prev).add(originalSrc))
+                                e.target.src = fallback
+                                e.target.onerror = null
+                              }
+                            }
+                            return (
+                              <img 
+                                src={safeImageUrl} 
+                                alt={blog.title || 'Blog'} 
+                                className="react-blog-image"
+                                loading="lazy"
+                                onError={handleError}
+                              />
+                            )
+                          })()}
+                          {blog.category_title && (
+                            <div className="react-blog-category">{blog.category_title}</div>
+                          )}
                         </div>
-                        <div className="react-meta-item">
-                          <i className="fa-solid fa-user"></i>
-                          Aisha Sharma
-                        </div>
-                      </div>
-                      <a href="#" className="react-blog-link">Read More  <i className="fa-solid fa-arrow-right"></i></a>
-                    </div>
-                  </div>
-                </a>
-              </div>
-              <div className="swiper-slide">
-                <a href="">
-                  <div className="react-blog-card">
-                    <div className="react-blog-image-container">
-                      <img src="https://images.unsplash.com/photo-1504333638930-c8787321eee0?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Mercury Retrograde" className="react-blog-image" />
-                      <div className="react-blog-category">Planets</div>
-                    </div>
-                    <div className="react-blog-content">
-                      <h3 className="react-blog-title">The Power of Mercury Retrograde: Myths vs. Reality</h3>
-                      <p className="react-blog-excerpt">Understanding what Mercury retrograde truly means for your communication and planning beyond the common misconceptions.</p>
-                      <div className="react-blog-meta">
-                        <div className="react-meta-item">
-                          <i className="lucide-calendar"></i>
-                          May 28, 2023
-                        </div>
-                        <div className="react-meta-item">
-                          <i className="lucide-user"></i>
-                          Michael Chen
-                        </div>
-                      </div>
-                      <a href="#" className="react-blog-link">Read More <i className="lucide-arrow-right"></i></a>
-                    </div>
-                  </div>
-                </a>
-              </div>
-              <div className="swiper-slide">
-                <a href="">
-                  <div className="react-blog-card">
-                    <div className="react-blog-image-container">
-                      <img src="https://images.unsplash.com/photo-1532978379173-523e16f371f9?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Moon Sign" className="react-blog-image" />
-                      <div className="react-blog-category">Zodiac</div>
-                    </div>
-                    <div className="react-blog-content">
-                      <h3 className="react-blog-title">Understanding Your Moon Sign: Emotional Intelligence</h3>
-                      <p className="react-blog-excerpt">Learn how your moon sign shapes your emotional responses and inner needs in ways your sun sign doesn't reveal.</p>
-                      <div className="react-blog-meta">
-                        <div className="react-meta-item">
-                          <i className="lucide-calendar"></i>
-                          April 15, 2023
-                        </div>
-                        <div className="react-meta-item">
-                          <i className="lucide-user"></i>
-                          Elena Rodriguez
+                        <div className="react-blog-content">
+                          <h3 className="react-blog-title">{blog.title || 'Blog Title'}</h3>
+                          <p className="react-blog-excerpt">
+                            {blog.content 
+                              ? (blog.content.replace(/<[^>]*>/g, '').length > 120 
+                                  ? blog.content.replace(/<[^>]*>/g, '').substring(0, 120) + '...' 
+                                  : blog.content.replace(/<[^>]*>/g, ''))
+                              : 'Read our latest insights about astrology and cosmic events.'}
+                          </p>
+                          <div className="react-blog-meta">
+                            <div className="react-meta-item">
+                              <i className="fa-solid fa-calendar"></i>
+                              {blog.created_at 
+                                ? new Date(blog.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+                                : 'Recent'}
+                            </div>
+                            {blog.astrologer_name && (
+                              <div className="react-meta-item">
+                                <i className="fa-solid fa-user"></i>
+                                {blog.astrologer_name}
+                              </div>
+                            )}
+                          </div>
+                          <span className="react-blog-link">
+                            Read More <i className="fa-solid fa-arrow-right"></i>
+                          </span>
                         </div>
                       </div>
-                      <a href="#" className="react-blog-link">Read More <i className="lucide-arrow-right"></i></a>
-                    </div>
+                    </Link>
                   </div>
-                </a>
-              </div>
-              <div className="swiper-slide">
-                <a href="">
-                  <div className="react-blog-card">
-                    <div className="react-blog-image-container">
-                      <img src="https://images.unsplash.com/photo-1532978379173-523e16f371f9?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Moon Sign" className="react-blog-image" />
-                      <div className="react-blog-category">Zodiac</div>
-                    </div>
-                    <div className="react-blog-content">
-                      <h3 className="react-blog-title">Understanding Your Moon Sign: Emotional Intelligence</h3>
-                      <p className="react-blog-excerpt">Learn how your moon sign shapes your emotional responses and inner needs in ways your sun sign doesn't reveal.</p>
-                      <div className="react-blog-meta">
-                        <div className="react-meta-item">
-                          <i className="lucide-calendar"></i>
-                          April 15, 2023
-                        </div>
-                        <div className="react-meta-item">
-                          <i className="lucide-user"></i>
-                          Elena Rodriguez
-                        </div>
-                      </div>
-                      <a href="#" className="react-blog-link">Read More <i className="lucide-arrow-right"></i></a>
-                    </div>
-                  </div>
-                </a>
-              </div>
-              <div className="swiper-slide">
-                <a href="">
-                  <div className="react-blog-card">
-                    <div className="react-blog-image-container">
-                      <img src="https://images.unsplash.com/photo-1532978379173-523e16f371f9?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Moon Sign" className="react-blog-image" />
-                      <div className="react-blog-category">Zodiac</div>
-                    </div>
-                    <div className="react-blog-content">
-                      <h3 className="react-blog-title">Understanding Your Moon Sign: Emotional Intelligence</h3>
-                      <p className="react-blog-excerpt">Learn how your moon sign shapes your emotional responses and inner needs in ways your sun sign doesn't reveal.</p>
-                      <div className="react-blog-meta">
-                        <div className="react-meta-item">
-                          <i className="lucide-calendar"></i>
-                          April 15, 2023
-                        </div>
-                        <div className="react-meta-item">
-                          <i className="lucide-user"></i>
-                          Elena Rodriguez
-                        </div>
-                      </div>
-                      <a href="#" className="react-blog-link">Read More <i className="lucide-arrow-right"></i></a>
-                    </div>
-                  </div>
-                </a>
-              </div>
+                ))
+              ) : (
+                <div className="swiper-slide">
+                  <div style={{ padding: '50px', textAlign: 'center' }}>No blogs available</div>
+                </div>
+              )}
             </div>
             <div className="swiper-button-prev"><i className="fa-solid fa-chevron-left"></i></div>
             <div className="swiper-button-next"><i className="fa-solid fa-chevron-right"></i></div>
@@ -847,56 +1224,58 @@ const Landing = () => {
           </div>
           <div className="swiper mySwiper-product">
             <div className="swiper-wrapper">
-              <div className="swiper-slide">
-                <a href="#" className="react-product-category-card">
-                  <img src="https://images.unsplash.com/photo-1598751337726-3c8577d00bd3?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Crystal Gemstones" className="react-product-category-image" />
-                  <div className="react-product-category-overlay"></div>
-                  <div className="react-product-category-content">
-                    <h3 className="react-product-category-title">Crystal Gemstones</h3>
-                    <p className="react-product-category-count">42 Products</p>
-                  </div>
-                </a>
-              </div>
-              <div className="swiper-slide">
-                <a href="#" className="react-product-category-card">
-                  <img src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Zodiac Jewelry" className="react-product-category-image" />
-                  <div className="react-product-category-overlay"></div>
-                  <div className="react-product-category-content">
-                    <h3 className="react-product-category-title">Zodiac Jewelry</h3>
-                    <p className="react-product-category-count">36 Products</p>
-                  </div>
-                </a>
-              </div>
-              <div className="swiper-slide">
-                <a href="#" className="react-product-category-card">
-                  <img src="https://images.unsplash.com/photo-1612875895771-db03db82371a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Ritual Items" className="react-product-category-image" />
-                  <div className="react-product-category-overlay"></div>
-                  <div className="react-product-category-content">
-                    <h3 className="react-product-category-title">Ritual Items</h3>
-                    <p className="react-product-category-count">28 Products</p>
-                  </div>
-                </a>
-              </div>
-              <div className="swiper-slide">
-                <a href="#" className="react-product-category-card">
-                  <img src="https://images.unsplash.com/photo-1612875895771-db03db82371a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Ritual Items" className="react-product-category-image" />
-                  <div className="react-product-category-overlay"></div>
-                  <div className="react-product-category-content">
-                    <h3 className="react-product-category-title">Ritual Items</h3>
-                    <p className="react-product-category-count">28 Products</p>
-                  </div>
-                </a>
-              </div>
-              <div className="swiper-slide">
-                <a href="#" className="react-product-category-card">
-                  <img src="https://images.unsplash.com/photo-1600690556482-57edeeeebbfd?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Feng Shui Products" className="react-product-category-image" />
-                  <div className="react-product-category-overlay"></div>
-                  <div className="react-product-category-content">
-                    <h3 className="react-product-category-title">Feng Shui Products</h3>
-                    <p className="react-product-category-count">31 Products</p>
-                  </div>
-                </a>
-              </div>
+              {productCategories.length > 0 ? (
+                productCategories.map((category, index) => {
+                  const fallback = 'https://images.unsplash.com/photo-1598751337726-3c8577d00bd3?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
+                  const originalSrc = category.image || category.category_image || category.image_url
+                  
+                  // Check for HTML content in image field (like we do for services)
+                  const hasHtmlContent = originalSrc && typeof originalSrc === 'string' && /<[^>]+>/.test(originalSrc)
+                  
+                  // Use fallback immediately ONLY if:
+                  // 1. No originalSrc
+                  // 2. Contains HTML content
+                  // 3. Already failed before
+                  // Otherwise, ALWAYS try to load the original image
+                  const shouldUseFallbackImmediately = !originalSrc || 
+                    hasHtmlContent ||
+                    failedImages.has(originalSrc)
+                  
+                  const safeImageUrl = shouldUseFallbackImmediately 
+                    ? fallback 
+                    : (originalSrc || fallback)
+                  
+                  const handleError = (e) => {
+                    if (originalSrc && e.target.src !== fallback) {
+                      setFailedImages(prev => new Set(prev).add(originalSrc))
+                      e.target.src = fallback
+                      e.target.onerror = null
+                    }
+                  }
+                  return (
+                    <div key={category.id || index} className="swiper-slide">
+                      <Link to={`/shop?category=${category.id}`} className="react-product-category-card">
+                        <img 
+                          src={safeImageUrl} 
+                          alt={category.title || 'Product Category'} 
+                          className="react-product-category-image"
+                          loading="lazy"
+                          onError={handleError}
+                        />
+                        <div className="react-product-category-overlay"></div>
+                        <div className="react-product-category-content">
+                          <h3 className="react-product-category-title">{category.title || 'Product Category'}</h3>
+                          <p className="react-product-category-count">{category.product_count || 0} Products</p>
+                        </div>
+                      </Link>
+                    </div>
+                  )
+                })
+              ) : (
+                <div className="swiper-slide">
+                  <div style={{ padding: '50px', textAlign: 'center' }}>No product categories available</div>
+                </div>
+              )}
             </div>
             <div className="swiper-button-prev"><i className="fa-solid fa-chevron-left"></i></div>
             <div className="swiper-button-next"><i className="fa-solid fa-chevron-right"></i></div>
@@ -918,68 +1297,87 @@ const Landing = () => {
           </div>
           <div className="swiper testimonials-swiper">
             <div className="swiper-wrapper">
-              <div className="swiper-slide">
-                <div className="react-testimonial-card">
-                  <div className="react-testimonial-content">
-                    <div className="react-testimonial-profile">
-                      <div className="react-testimonial-image-container">
-                        <img
-                          src="https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80"
-                          alt="Jessica Thompson"
-                          className="react-testimonial-image"
-                        />
+              {reviews && reviews.length > 0 ? (
+                reviews.map((review, index) => {
+                  const user = review.review_by_user || {}
+                  const customer = review.customer || {}
+                  const userName = user.name || customer.customer_uni_id || 'Anonymous'
+                  const userImage = customer.customer_img || 'https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80'
+                  const rating = parseInt(review.review_rating) || 5
+                  const comment = review.review_comment || 'Great service!'
+                  const date = review.created_at ? new Date(review.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Recent'
+                  
+                  // Generate star rating
+                  const stars = []
+                  for (let i = 1; i <= 5; i++) {
+                    stars.push(
+                      <i 
+                        key={i} 
+                        className={`lucide-star ${i <= rating ? 'react-filled' : ''}`}
+                      ></i>
+                    )
+                  }
+
+                  const fallback = 'https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80'
+                  const shouldUseFallback = userImage && (
+                    userImage.includes('localhost:8007/uploads/') ||
+                    userImage.includes('localhost:8005/uploads/') ||
+                    userImage.includes('localhost:8002/uploads/') ||
+                    failedImages.has(userImage)
+                  )
+                  const safeImageUrl = shouldUseFallback ? fallback : (userImage || fallback)
+                  const handleError = (e) => {
+                    if (userImage && e.target.src !== fallback) {
+                      setFailedImages(prev => new Set(prev).add(userImage))
+                      e.target.src = fallback
+                      e.target.onerror = null
+                    }
+                  }
+
+                  return (
+                    <div key={review.id || `review-${index}`} className="swiper-slide">
+                      <div className="react-testimonial-card">
+                        <div className="react-testimonial-content">
+                          <div className="react-testimonial-profile">
+                            <div className="react-testimonial-image-container">
+                              <img
+                                src={safeImageUrl}
+                                alt={userName}
+                                className="react-testimonial-image"
+                                loading="lazy"
+                                onError={handleError}
+                              />
+                            </div>
+                            <h3 className="react-testimonial-name">{userName}</h3>
+                            <p className="react-testimonial-location">{user.email || user.user_uni_id || 'Customer'}</p>
+                            <div className="react-testimonial-rating">
+                              {stars}
+                            </div>
+                            <p className="react-testimonial-date">{date}</p>
+                          </div>
+                          <div className="react-testimonial-text">
+                            <i className="lucide-quote react-testimonial-quote-icon"></i>
+                            <p className="react-testimonial-message">
+                              {comment}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                      <h3 className="react-testimonial-name">Jessica Thompson</h3>
-                      <p className="react-testimonial-location">New York, USA</p>
-                      <div className="react-testimonial-rating">
-                        <i className="lucide-star react-filled"></i>
-                        <i className="lucide-star react-filled"></i>
-                        <i className="lucide-star react-filled"></i>
-                        <i className="lucide-star react-filled"></i>
-                        <i className="lucide-star react-filled"></i>
+                    </div>
+                  )
+                })
+              ) : (
+                <div className="swiper-slide">
+                  <div style={{ padding: '50px', textAlign: 'center' }}>
+                    <div>No testimonials available</div>
+                    {process.env.NODE_ENV === 'development' && (
+                      <div style={{ fontSize: '12px', color: '#999', marginTop: '10px' }}>
+                        Reviews count: {reviews?.length || 0}
                       </div>
-                      <p className="react-testimonial-date">March 15, 2023</p>
-                    </div>
-                    <div className="react-testimonial-text">
-                      <i className="lucide-quote react-testimonial-quote-icon"></i>
-                      <p className="react-testimonial-message">
-                        The birth chart reading I received was incredibly accurate. It helped me understand patterns in my life and make better decisions. I'm grateful for the insight and guidance!
-                      </p>
-                    </div>
+                    )}
                   </div>
                 </div>
-              </div>
-              <div className="swiper-slide">
-                <div className="react-testimonial-card">
-                  <div className="react-testimonial-content">
-                    <div className="react-testimonial-profile">
-                      <div className="react-testimonial-image-container">
-                        <img
-                          src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80"
-                          alt="Jessica Thompson"
-                          className="react-testimonial-image"
-                        />
-                      </div>
-                      <h3 className="react-testimonial-name">David Chen</h3>
-                      <p className="react-testimonial-location">Toronto, Canada</p>
-                      <div className="react-testimonial-rating">
-                        <i className="lucide-star react-filled"></i>
-                        <i className="lucide-star react-filled"></i>
-                        <i className="lucide-star react-filled"></i>
-                        <i className="lucide-star react-filled"></i>
-                        <i className="lucide-star react-filled"></i>
-                      </div>
-                      <p className="react-testimonial-date">JAn 15, 2023</p>
-                    </div>
-                    <div className="react-testimonial-text">
-                      <i className="lucide-quote react-testimonial-quote-icon"></i>
-                      <p className="react-testimonial-message">
-                        I was skeptical at first, but my career reading was spot on. The astrologer predicted a career change that happened exactly as described. I now consult before any major decision.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
             <div className="react-slider-controls">
               <button className="react-custom-prev-btn" aria-label="Previous testimonial">

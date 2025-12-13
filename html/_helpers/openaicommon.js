@@ -1121,7 +1121,7 @@ export async function addOpenAIProfile(request){
   return result;
 }
 
-async function generateVedicAstroKundaliChart(userData) {
+export async function generateVedicAstroKundaliChart(userData) {
         
   const customer = { ...userData };
     if (!customer.dob || !customer.tob || !customer.lon || !customer.lat) {
@@ -1130,16 +1130,47 @@ async function generateVedicAstroKundaliChart(userData) {
  // console.log("cus",customer);
             
    let dob = dayjs(customer.dob, 'YYYY-MM-DD', true);
-  if (!dob.isValid()) throw new Error("Invalid DOB format");
+  if (!dob.isValid()) {
+    console.error("generateVedicAstroKundaliChart - Invalid DOB format:", customer.dob);
+    throw new Error("Invalid DOB format");
+  }
   dob = dob.format('DD/MM/YYYY');
 
-  
-
   let tob = formatTime(customer.tob);
+  if (!tob || tob === false) {
+    console.error("generateVedicAstroKundaliChart - Invalid TOB format:", customer.tob);
+    // Try to use the time as-is if formatTime fails
+    tob = customer.tob;
+    // If it's in HH:mm:ss format, extract HH:mm
+    if (tob && tob.includes(':')) {
+      const parts = tob.split(':');
+      if (parts.length >= 2) {
+        tob = `${parts[0]}:${parts[1]}`;
+      }
+    }
+    console.log("generateVedicAstroKundaliChart - Using fallback TOB:", tob);
+  }
 
   const lat = customer.lat;
   const lon = customer.lon;
-  const tz = customer.tz || '5.5';
+  // Convert timezone to number if it's a string like "Asia/Kolkata" or "+05:30"
+  let tz = customer.tz || '5.5';
+  if (typeof tz === 'string') {
+    // If it's a timezone name, try to extract offset
+    if (tz.includes('+') || tz.includes('-')) {
+      // Extract numeric offset (e.g., "+05:30" -> "5.5")
+      const match = tz.match(/([+-])(\d{1,2}):?(\d{2})?/);
+      if (match) {
+        const sign = match[1] === '+' ? 1 : -1;
+        const hours = parseInt(match[2]);
+        const minutes = match[3] ? parseInt(match[3]) : 0;
+        tz = (sign * (hours + minutes / 60)).toString();
+      }
+    } else if (tz.includes('/')) {
+      // Timezone name like "Asia/Kolkata" - default to IST
+      tz = '5.5';
+    }
+  }
 
   const div = 'D1';
   // const color = '%23ff850b3d';
@@ -1166,14 +1197,55 @@ async function generateVedicAstroKundaliChart(userData) {
       fontSize, fontStyle,
       colorfulPlanets, size, stroke, lang,transit_date,fromat}
     );
-  //  console.log("Kundali API Response:", chartImage);
-    if (!chartImage || chartImage.message === "Internal server error" || chartImage.message) {
+    
+    console.log("generateVedicAstroKundaliChart - API Response type:", typeof chartImage);
+    console.log("generateVedicAstroKundaliChart - API Response keys:", chartImage && typeof chartImage === 'object' ? Object.keys(chartImage) : 'N/A');
+    
+    // Handle different response formats
+    if (!chartImage) {
+      console.error("generateVedicAstroKundaliChart - No response from API");
       return { chartImage: '' };
     }
-//    console.log("Kundali API Response:", chartImage);
-    return { chartImage };
+    
+    // Check for error messages
+    if (chartImage.message === "Internal server error" || (chartImage.message && chartImage.message !== 'success')) {
+      console.error("generateVedicAstroKundaliChart - API returned error:", chartImage.message);
+      return { chartImage: '' };
+    }
+    
+    // Extract chart image data from response
+    let imageData = '';
+    if (typeof chartImage === 'string') {
+      // Direct string response (SVG or base64)
+      imageData = chartImage;
+    } else if (chartImage.data) {
+      // Response with data property
+      imageData = chartImage.data;
+    } else if (chartImage.response) {
+      // Response with response property
+      imageData = chartImage.response;
+    } else if (chartImage.svg) {
+      // Response with svg property
+      imageData = chartImage.svg;
+    } else if (chartImage.chart) {
+      // Response with chart property
+      imageData = chartImage.chart;
+    } else {
+      // Try to use the whole response if it's a string-like object
+      imageData = chartImage;
+    }
+    
+    // Ensure it's a string
+    if (typeof imageData !== 'string') {
+      console.error("generateVedicAstroKundaliChart - Image data is not a string:", typeof imageData);
+      return { chartImage: '' };
+    }
+    
+    console.log("generateVedicAstroKundaliChart - Returning chart image, length:", imageData.length);
+    return { chartImage: imageData };
   } catch (error) {
     console.error("generateVedicAstroKundaliChart error:", error);
+    console.error("generateVedicAstroKundaliChart error stack:", error.stack);
     return { chartImage: '' };
   }
 }

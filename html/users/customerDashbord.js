@@ -101,6 +101,26 @@ router.post("/customerEdit", upload.any(), async (req, res) => {
 
     const { api_key, user_uni_id } = attributes;
 
+    // CRITICAL: Validate ID format - customer IDs should start with CUS, not VEND
+    // Safely check user_uni_id (handle null/undefined)
+    if (user_uni_id && typeof user_uni_id === 'string' && user_uni_id.startsWith('VEND')) {
+      console.error('[customerEdit] ❌ CRITICAL: Vendor ID detected in customer endpoint!', {
+        user_uni_id: user_uni_id,
+        id_prefix: user_uni_id.length >= 4 ? user_uni_id.substring(0, 4) : user_uni_id,
+        id_length: user_uni_id.length
+      });
+      return res.status(403).json({ 
+        status: 0, 
+        msg: `Invalid user ID format. Vendor IDs (VEND*) cannot use customer endpoints. Received ID: ${user_uni_id}` 
+      });
+    }
+
+    console.log('[customerEdit] Request received:', {
+      user_uni_id: user_uni_id,
+      id_prefix: user_uni_id ? user_uni_id.substring(0, 3) : 'MISSING',
+      api_key_length: api_key ? api_key.length : 0
+    });
+
     if (!(await checkUserApiKey(api_key, user_uni_id))) {
       return res.status(401).json({
         status: 0,
@@ -109,11 +129,81 @@ router.post("/customerEdit", upload.any(), async (req, res) => {
       });
     }
 
-    const userValidation = await User.findOne({ where: { user_uni_id } });
+    // CRITICAL: Check user role first - this endpoint is ONLY for customers (role_id = 4)
+    const userValidation = await User.findOne({ 
+      where: { 
+        user_uni_id: user_uni_id,
+        trash: 0
+      } 
+    });
+
+    if (!userValidation) {
+      console.error('[customerEdit] User not found:', { 
+        user_uni_id: user_uni_id,
+        id_prefix: user_uni_id ? user_uni_id.substring(0, 3) : 'MISSING',
+        id_length: user_uni_id ? user_uni_id.length : 0
+      });
+      return res.status(404).json({ 
+        status: 0, 
+        msg: `User not found with user_uni_id: ${user_uni_id}. Please check if the ID is correct and user exists in database.` 
+      });
+    }
+
+    // CRITICAL: This endpoint is ONLY for customers (role_id = 4), not vendors (role_id = 5)
+    if (userValidation.role_id !== ROLE_IDS.USER) {
+      console.error('[customerEdit] Invalid role for this endpoint:', { 
+        user_uni_id: user_uni_id, 
+        role_id: userValidation.role_id,
+        expected_role: ROLE_IDS.USER,
+        is_vendor: userValidation.role_id === ROLE_IDS.VENDOR,
+        user_name: userValidation.name,
+        user_email: userValidation.email
+      });
+      return res.status(403).json({ 
+        status: 0, 
+        msg: `This endpoint is only for customers (role_id: ${ROLE_IDS.USER}). Your role_id is ${userValidation.role_id}. Vendors should use /vendor/vendor-update endpoint.` 
+      });
+    }
+
+    // Only check for Customer record if user is actually a customer
     const customer = await Customer.findOne({ where: { customer_uni_id: user_uni_id } });
 
-    if (!userValidation || !customer) {
-      return res.status(404).json({ status: 0, msg: "User or Customer not found" });
+    if (!customer) {
+      console.error('[customerEdit] Customer not found:', { 
+        customer_uni_id: user_uni_id,
+        user_role_id: userValidation.role_id,
+        user_exists: !!userValidation,
+        user_name: userValidation.name,
+        // Check if there's a customer with similar ID (case/spacing issues)
+        similar_ids_check: 'Check database for case/spacing mismatches'
+      });
+      
+      // Try to find customer with case-insensitive search (safely handle null/undefined)
+      let allCustomers = [];
+      if (user_uni_id && typeof user_uni_id === 'string' && user_uni_id.length > 3) {
+        try {
+          allCustomers = await Customer.findAll({
+            where: {
+              customer_uni_id: {
+                [Op.like]: `%${user_uni_id.substring(3)}%` // Check numeric part
+              }
+            },
+            limit: 5
+          });
+        } catch (searchErr) {
+          console.error('[customerEdit] Error searching for similar customer IDs:', searchErr);
+        }
+      }
+      
+      console.log('[customerEdit] Similar customer IDs found:', allCustomers.map(c => ({
+        customer_uni_id: c?.customer_uni_id || 'N/A',
+        id_length: c?.customer_uni_id ? c.customer_uni_id.length : 0
+      })));
+      
+      return res.status(404).json({ 
+        status: 0, 
+        msg: `Customer not found with customer_uni_id: ${user_uni_id}. User exists (role_id: ${userValidation.role_id}) but Customer record is missing. This might indicate the customer record was never created or was deleted.` 
+      });
     }
 
     const emailUser = await User.findOne({
@@ -184,42 +274,75 @@ router.post("/customerEdit", upload.any(), async (req, res) => {
     });
 
     const customerData = {
-      gender: attributes.gender,
-      birth_date: attributes.birth_date,
-      birth_time: attributes.birth_time,
-      birth_place: attributes.birth_place,
+      gender: attributes.gender || "",
+      birth_date: attributes.birth_date || "",
+      birth_time: attributes.birth_time || "00:00:00",
+      birth_place: attributes.birth_place || "",
       country: attributes.country || "",
       state: attributes.state || "",
       city: attributes.city || "",
       latitude: attributes.latitude || "",
       longitude: attributes.longitude || "",
       time_zone: attributes.time_zone || "",
-      customer_img: attributes.customer_img || customer.customer_img || "https://astro.synilogictech.com/uploads/offlne_service_category/1724738665-image.jpeg",
+      customer_img: attributes.customer_img || customer?.customer_img || "https://astro.synilogictech.com/uploads/offlne_service_category/1724738665-image.jpeg",
     };
 
-    if (customer.process_status < 1) customerData.process_status = 1;
+    // Safely check process_status (handle null/undefined)
+    if (customer && (customer.process_status === null || customer.process_status === undefined || customer.process_status < 1)) {
+      customerData.process_status = 1;
+    }
 
     await Customer.update(customerData, { where: { customer_uni_id: user_uni_id } });
 
     const data11 = await getUserData({ user_uni_id });
     let data;
-    if (Array.isArray(data11) && data11.length > 0) {
+    
+    // Safely parse getUserData response
+    try {
+      if (Array.isArray(data11) && data11.length > 0) {
+        data = {
+          ...(data11[0]?.dataValues || data11[0] || {}),
+          ...(data11[0]?.user?.dataValues || data11[0]?.user || {}),
+          user_api_key: data11[0]?.dataValues?.user_api_key || data11[0]?.user_api_key || "",
+        };
+      } else if (data11?.dataValues) {
+        data = {
+          ...(data11.dataValues || {}),
+          ...(data11.user?.dataValues || data11.user || {}),
+          user_api_key: data11.dataValues?.user_api_key || data11.user_api_key || "",
+        };
+      } else if (data11) {
+        data = data11;
+      } else {
+        // Fallback: create minimal data object from customer and userValidation
+        data = {
+          ...(customer?.dataValues || customer || {}),
+          ...(userValidation?.dataValues || userValidation || {}),
+          customer_uni_id: user_uni_id,
+          user_api_key: userValidation?.user_api_key || "",
+        };
+      }
+    } catch (parseErr) {
+      console.error('[customerEdit] Error parsing getUserData response:', parseErr);
+      // Fallback: create minimal data object
       data = {
-        ...data11[0].dataValues,
-        ...(data11[0].user?.dataValues || {}),
-        user_api_key: data11[0].dataValues.user_api_key,
+        ...(customer?.dataValues || customer || {}),
+        ...(userValidation?.dataValues || userValidation || {}),
+        customer_uni_id: user_uni_id,
+        user_api_key: userValidation?.user_api_key || "",
       };
-    } else if (data11?.dataValues) {
-      data = {
-        ...data11.dataValues,
-        ...(data11.user?.dataValues || {}),
-        user_api_key: data11.dataValues.user_api_key,
-      };
-    } else {
-      data = data11;
     }
 
-    if (data && data.user) delete data.user;
+    // Safely handle data object
+    if (!data) {
+      console.error('[customerEdit] Data is null/undefined after parsing');
+      return res.status(500).json({
+        status: 0,
+        msg: "Failed to retrieve user data after update",
+      });
+    }
+
+    if (data.user) delete data.user;
     data.user_fcm_token = data.user_fcm_token || "";
     data.user_ios_token = data.user_ios_token || "";
     data.firebase_auth_token = data.firebase_auth_token || "";
@@ -228,20 +351,34 @@ router.post("/customerEdit", upload.any(), async (req, res) => {
       data.customer_img = "https://astro.synilogictech.com/uploads/offlne_service_category/1724738665-image.jpeg";
     }
 
-    const userWithRelations = await Customer.findOne({
-      where: { customer_uni_id: user_uni_id },
-      include: [{ model: User, as: "user", where: { user_uni_id } }],
-    });
+    // Safely fetch user with relations (handle potential relation errors)
+    let userWithRelations = null;
+    try {
+      userWithRelations = await Customer.findOne({
+        where: { customer_uni_id: user_uni_id },
+        include: [{ model: User, as: "user", where: { user_uni_id }, required: false }],
+      });
+    } catch (relationErr) {
+      console.warn('[customerEdit] Error fetching user with relations (non-critical):', relationErr.message);
+      // Continue without welcome email check
+    }
 
+    // Safely check welcome mail conditions
     if (
       userWithRelations &&
+      userWithRelations.user &&
       userWithRelations.user.welcome_mail !== 1 &&
       userWithRelations.user.email &&
-      userWithRelations.user.process_status < 1
+      (userWithRelations.user.process_status === null || userWithRelations.user.process_status === undefined || userWithRelations.user.process_status < 1)
     ) {
-      const sent = await SendNotification(user_uni_id, "welcome-template-for-customer");
-      if (sent) {
-        await User.update({ welcome_mail: 1 }, { where: { user_uni_id } });
+      try {
+        const sent = await SendNotification(user_uni_id, "welcome-template-for-customer");
+        if (sent) {
+          await User.update({ welcome_mail: 1 }, { where: { user_uni_id } });
+        }
+      } catch (notifErr) {
+        console.warn('[customerEdit] Error sending welcome notification (non-critical):', notifErr.message);
+        // Continue - notification failure shouldn't block profile update
       }
     }
 
@@ -295,9 +432,32 @@ router.post("/customerEdit", upload.any(), async (req, res) => {
     });
   } catch (err) {
     console.error("Error in /customerEdit:", err);
+    console.error("Error stack:", err.stack);
+    console.error("Error details:", {
+      name: err.name,
+      message: err.message,
+      code: err.code,
+      sql: err.sql,
+      original: err.original
+    });
+    
+    // Provide more specific error messages
+    let errorMessage = "Internal Server Error";
+    if (err.name === 'SequelizeValidationError') {
+      errorMessage = `Validation error: ${err.errors?.map(e => e.message).join(', ') || err.message}`;
+    } else if (err.name === 'SequelizeDatabaseError') {
+      errorMessage = `Database error: ${err.message}`;
+    } else if (err.name === 'SequelizeUniqueConstraintError') {
+      errorMessage = `Duplicate entry: ${err.errors?.map(e => e.message).join(', ') || err.message}`;
+    } else if (err.message) {
+      errorMessage = err.message;
+    }
+    
     return res.status(500).json({
       status: 0,
-      msg: "Internal Server Error",
+      msg: errorMessage,
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
     });
   }
 });
@@ -310,6 +470,23 @@ router.post("/customerDashboard", upload.none(), async (req, res) => {
   const status = 1;
   const limit = parseInt(constants.api_page_limit || '10');
 
+  // API key validation
+  if (!attributes.api_key || !attributes.user_uni_id) {
+    return res.status(400).json({
+      status: 0,
+      msg: 'Missing required fields: api_key and user_uni_id',
+    });
+  }
+
+  const isValid = await checkUserApiKey(attributes.api_key, attributes.user_uni_id);
+  if (!isValid) {
+    return res.status(401).json({
+      status: 0,
+      error_code: 101,
+      msg: 'Unauthorized User... Please login again',
+    });
+  }
+
   try {
     // Pass default filters to GroupPujaCategory if required
     attributes.offset = offset;
@@ -318,47 +495,89 @@ router.post("/customerDashboard", upload.none(), async (req, res) => {
 
      const basePath = `${req.protocol}://${req.get("host")}/`;
 
-    const [groupPujaCategory] = await Promise.all([
-      GroupPujaCategory(attributes)
-    ]);
+    let groupPujaCategory = [];
+    try {
+      groupPujaCategory = await GroupPujaCategory(attributes);
+    } catch (err) {
+      console.error('[customerDashboard] Error fetching GroupPujaCategory:', err);
+      groupPujaCategory = []; // Fallback to empty array
+    }
+    
+    // Ensure it's an array
+    if (!Array.isArray(groupPujaCategory)) {
+      groupPujaCategory = [];
+    }
+    
   const updatedGroupPujaCategory =  groupPujaCategory.map((puja) => {
+    // Create a new object to avoid mutating the original
+    const updatedPuja = { ...puja };
+    const imagePath = constants?.group_puja_category_image_path || 'uploads/group_puja_category/';
+    updatedPuja.image = updatedPuja.image 
+      ? `${basePath}${imagePath}${updatedPuja.image}` 
+      : "";
 
-    puja.image = puja.image ? `${basePath}${constants.group_puja_category_image_path}${puja.image}` : "";
-
-     puja.created_at = puja.created_at
-        ? formatDateTime(puja.created_at)
+    try {
+      updatedPuja.created_at = updatedPuja.created_at
+        ? formatDateTime(updatedPuja.created_at)
         : "";
-      puja.updated_at = puja.updated_at
-        ? formatDateTime(puja.updated_at)
+      updatedPuja.updated_at = updatedPuja.updated_at
+        ? formatDateTime(updatedPuja.updated_at)
         : "";
-return puja; 
+    } catch (err) {
+      console.error('[customerDashboard] Error formatting puja dates:', err);
+      updatedPuja.created_at = updatedPuja.created_at || "";
+      updatedPuja.updated_at = updatedPuja.updated_at || "";
+    }
+    return updatedPuja; 
   });
 
 
-    const courseList = await Course.findAll({
-      where: { status: 1 },
-      limit,
-      raw: true,
-    });
+    let courseList = [];
+    try {
+      courseList = await Course.findAll({
+        where: { status: 1 },
+        limit,
+        raw: true,
+      });
+    } catch (err) {
+      console.error('[customerDashboard] Error fetching Course list:', err);
+      courseList = []; // Fallback to empty array
+    }
+    
+    // Ensure it's an array
+    if (!Array.isArray(courseList)) {
+      courseList = [];
+    }
 
     const updatedCourseList = courseList.map((course) => {
+      // Create a new object to avoid mutating the original
+      const updatedCourse = { ...course };
       // Safe fallback if no image or video
-      course.course_image = course.course_image
-        ? `${basePath}${imagePath.course_image_path}${course.course_image}`
+      const courseImagePath = imagePath?.course_image_path || 'uploads/course_image/';
+      const courseVideoPath = imagePath?.course_video_file_path || 'uploads/course_video_file/';
+      
+      updatedCourse.course_image = updatedCourse.course_image
+        ? `${basePath}${courseImagePath}${updatedCourse.course_image}`
         : "";
 
-      course.video_url = course.video_url
-        ? `${basePath}${imagePath.course_video_file_path}${course.video_url}`
+      updatedCourse.video_url = updatedCourse.video_url
+        ? `${basePath}${courseVideoPath}${updatedCourse.video_url}`
         : "";
 
-      course.created_at = course.created_at
-        ? formatDateTime(course.created_at)
-        : "";
-      course.updated_at = course.updated_at
-        ? formatDateTime(course.updated_at)
-        : "";
+      try {
+        updatedCourse.created_at = updatedCourse.created_at
+          ? formatDateTime(updatedCourse.created_at)
+          : "";
+        updatedCourse.updated_at = updatedCourse.updated_at
+          ? formatDateTime(updatedCourse.updated_at)
+          : "";
+      } catch (err) {
+        console.error('[customerDashboard] Error formatting course dates:', err);
+        updatedCourse.created_at = updatedCourse.created_at || "";
+        updatedCourse.updated_at = updatedCourse.updated_at || "";
+      }
 
-      return course;
+      return updatedCourse;
     });
 
     let inReview = {
@@ -370,64 +589,100 @@ return puja;
     };
 
     if (userUniId) {
-      const lastCall = await CallHistory.findOne({
-        where: {
-          customer_uni_id: userUniId,
-          call_type: "call",
-          status: "completed",
-          is_review: 0,
-        },
-       include: [{ model: Astrologer, as: 'astrologer',}]
-      });
+      let lastCall = null;
+      try {
+        // Try to find call history with astrologer
+        lastCall = await CallHistory.findOne({
+          where: {
+            customer_uni_id: userUniId,
+            call_type: "call",
+            status: "completed",
+            is_review: 0,
+          },
+          include: [{
+            model: Astrologer,
+            as: 'astrologer',
+            required: false,
+            attributes: ['astrologer_uni_id', 'display_name', 'astro_img']
+          }],
+          raw: false, // Keep as Sequelize instance to access associations
+          nest: true
+        });
+      } catch (err) {
+        console.error('[customerDashboard] Error fetching CallHistory:', err);
+        console.error('[customerDashboard] Error details:', {
+          message: err.message,
+          name: err.name,
+          sql: err.sql
+        });
+        lastCall = null;
+      }
 
       if (lastCall) {
-        inReview = {
-          is_review: lastCall.astrologer.astrologer_uni_id ? 0 : 0,
-          id_for_review: lastCall.astrologer.astrologer_uni_id || "",
-          display_name_for_review: lastCall.astrologer?.display_name || "",
-          uniqeid: lastCall.uniqeid || "",
-          astro_img: lastCall.astrologer?.astro_img || "",
-        };
+        // Safely access astrologer data
+        const astrologer = lastCall.astrologer || lastCall.get ? lastCall.get('astrologer') : null;
+        if (astrologer) {
+          inReview = {
+            is_review: astrologer.astrologer_uni_id ? 0 : 0,
+            id_for_review: astrologer.astrologer_uni_id || "",
+            display_name_for_review: astrologer.display_name || "",
+            uniqeid: lastCall.uniqeid || lastCall.get ? lastCall.get('uniqeid') : "",
+            astro_img: astrologer.astro_img || "",
+          };
+        }
       }
     }
 
-    const architectServiceStatus = await getArchitectServiceInProgressStatusForCustomer(userUniId);
-    const inProgressChat = await inProgressChatDetailForCustomer(userUniId);
+    let architectServiceStatus = {};
+    let inProgressChat = {};
+    try {
+      architectServiceStatus = await getArchitectServiceInProgressStatusForCustomer(userUniId);
+    } catch (err) {
+      console.error('[customerDashboard] Error fetching architectServiceStatus:', err);
+      architectServiceStatus = {};
+    }
+    try {
+      inProgressChat = await inProgressChatDetailForCustomer(userUniId);
+    } catch (err) {
+      console.error('[customerDashboard] Error fetching inProgressChat:', err);
+      inProgressChat = {};
+    }
 
-let chatChannels = "";
-let transformedChatChannels = "";
+let chatChannels = [];
+let transformedChatChannels = [];
 
 if (userUniId) {
-  const whereCondition = {
-    trash: 0,
-    [Op.or]: []
-  };
+  try {
+    const whereCondition = {
+      trash: 0,
+      [Op.or]: []
+    };
 
-  // Dynamic channel_name filtering
-  if (userUniId.includes('CUS')) {
-    whereCondition[Op.or].push(
-      Sequelize.where(
-        Sequelize.fn(
-          'SUBSTRING_INDEX',
-          Sequelize.fn('SUBSTRING_INDEX', Sequelize.col('channel_name'), '-', 1),
-          '/',
-          -1
-        ),
-        userUniId
-      )
-    );
-  } else if (userUniId.includes('ASTRO')) {
-    whereCondition[Op.or].push(
-      Sequelize.where(
-        Sequelize.fn('SUBSTRING_INDEX', Sequelize.col('channel_name'), '-', -1),
-        userUniId
-      )
-    );
-  } else {
-    whereCondition.channel_name = { [Op.like]: `%${userUniId}%` };
-  }
+    // Dynamic channel_name filtering
+    if (userUniId.includes('CUS')) {
+      whereCondition[Op.or].push(
+        Sequelize.where(
+          Sequelize.fn(
+            'SUBSTRING_INDEX',
+            Sequelize.fn('SUBSTRING_INDEX', Sequelize.col('channel_name'), '-', 1),
+            '/',
+            -1
+          ),
+          userUniId
+        )
+      );
+    } else if (userUniId.includes('ASTRO')) {
+      whereCondition[Op.or].push(
+        Sequelize.where(
+          Sequelize.fn('SUBSTRING_INDEX', Sequelize.col('channel_name'), '-', -1),
+          userUniId
+        )
+      );
+    } else {
+      whereCondition.channel_name = { [Op.like]: `%${userUniId}%` };
+    }
 
-  chatChannels = await ChatChannel.findAll({
+    chatChannels = await ChatChannel.findAll({
     include: [
       {
         model: Customer,
@@ -459,25 +714,42 @@ if (userUniId) {
     ],
     where: whereCondition,
     order: [['updated_at', 'DESC']],
-    offset: offset,
-    limit: parseInt(constants.customer_dashboard_chat_limit || '6'),
-    attributes: ['id', 'channel_name', 'created_at', 'updated_at'],
-  });
+      offset: offset,
+      limit: parseInt(constants?.customer_dashboard_chat_limit || '6'),
+      attributes: ['id', 'channel_name', 'created_at', 'updated_at'],
+    });
+    
+    // Ensure chatChannels is an array
+    if (!Array.isArray(chatChannels)) {
+      chatChannels = [];
+    }
+  } catch (err) {
+    console.error('[customerDashboard] Error fetching ChatChannel:', err);
+    chatChannels = []; // Fallback to empty array
+  }
+}
 
  const hostUrl = `${req.protocol}://${req.get("host")}/`;
 
- transformedChatChannels = chatChannels.map(channel => {
+ // Ensure chatChannels is an array before mapping
+ if (Array.isArray(chatChannels)) {
+   transformedChatChannels = chatChannels.map(channel => {
   const customer = channel.customer || {};
   const astrologer = channel.astrologer || {};
   const customerUser = channel.customerUser || {};
 
+  const customerImgPath = constants?.customer_image_path || 'uploads/customers/';
+  const defaultCustomerImgPath = constants?.default_customer_image_path || 'assets/img/customer.png';
+  const astroImgPath = constants?.astrologer_image_path || 'uploads/astrologers/';
+  const defaultAstroImgPath = constants?.default_astrologer_image_path || 'assets/img/astrologer.png';
+  
   const customerImg = customer.customer_img
-    ? `${hostUrl}${constants.customer_image_path}${customer.customer_img}`
-    : `${hostUrl}${constants.default_customer_image_path}`;
+    ? `${hostUrl}${customerImgPath}${customer.customer_img}`
+    : `${hostUrl}${defaultCustomerImgPath}`;
 
   const astroImg = astrologer.astro_img
-    ? `${hostUrl}${constants.astrologer_image_path}${astrologer.astro_img}`
-    : `${hostUrl}${constants.default_astrologer_image_path}`;
+    ? `${hostUrl}${astroImgPath}${astrologer.astro_img}`
+    : `${hostUrl}${defaultAstroImgPath}`;
 
   return {
     id: channel.id,
@@ -487,16 +759,45 @@ if (userUniId) {
     openai_thread_id: channel.openai_thread_id || null,
     status: channel.status || 0,
     trash: channel.trash || 0,
-    created_at: formatDateTime(channel.created_at),
-    updated_at: formatDateTime(channel.updated_at),
+    created_at: channel.created_at ? (formatDateTime(channel.created_at) || "") : "",
+    updated_at: channel.updated_at ? (formatDateTime(channel.updated_at) || "") : "",
     customer_img: customerImg,
     astro_img: astroImg,
     display_name: astrologer.display_name || '',
     user_name: customerUser.name || ''
   };
-});
+  });
+ } else {
+   transformedChatChannels = [];
+ }
 
-}
+ // Fetch customer profile data including customer_img
+ let customerProfile = {};
+ try {
+   const customerData = await getUserData({ user_uni_id: userUniId }, true);
+   const customer = customerData?.get ? customerData.get({ plain: true }) : customerData;
+
+   if (customer) {
+     const customerImgPath = constants?.customer_image_path || 'uploads/customers/';
+     const defaultCustomerImgPath = constants?.default_customer_image_path || 'assets/img/customer.png';
+     
+     customerProfile = {
+       name: customer.user?.name || customer.name || '',
+       email: customer.user?.email || customer.email || '',
+       phone: customer.user?.phone || customer.phone || '',
+       gender: customer.gender || '',
+       birth_date: customer.birth_date || '',
+       birth_time: customer.birth_time || '',
+       birth_place: customer.birth_place || '',
+       customer_img: customer.customer_img
+         ? `${basePath}${customerImgPath}${customer.customer_img}`
+         : `${basePath}${defaultCustomerImgPath}`
+     };
+   }
+ } catch (err) {
+   console.error('[customerDashboard] Error fetching customer profile:', err);
+   customerProfile = {};
+ }
 
    const dashboard = {
   is_review: inReview.is_review,
@@ -508,6 +809,7 @@ if (userUniId) {
   chat_channels: transformedChatChannels,
   groupPujaCategory: updatedGroupPujaCategory,
   courseList: updatedCourseList,
+  customer_profile: customerProfile,
 };
 
     return res.json({
@@ -517,9 +819,11 @@ if (userUniId) {
     });
   } catch (error) {
     console.error("customerDashboard error:", error);
+    console.error("customerDashboard error stack:", error.stack);
     return res.status(500).json({
       status: 0,
       msg: "Something went wrong",
+      error: error.message || 'Unknown error',
     });
   }
 });

@@ -1,4 +1,6 @@
 // src/config/constants.js
+import dotenv from 'dotenv';
+dotenv.config();
 
 export const ROLE_IDS = {
   SUPERADMIN: 1,
@@ -174,21 +176,21 @@ export const imagePath = {
 
 
 export const configData = {
-  sms_gateway: 'Fast2sms', // or 'MessageIndia', etc.
-  sms_live_mode: true,
-  default_country_code: '91',
-  company_name: 'YourCompany',
-  architect_category_id:'17',
-  electro_homoeopathy_category_id:'18',
-  textlocal_template_message: '{#var#} is your OTP',
-  astrologer_test_mobile: '9999999999',
-  astrologer_test_otp_code: '123456',
-  customer_test_mobile: '8888888888',
-  customer_test_otp_code: '654321',
-  sms_gateway_status:false,
-  default_otp:'666331',
-  custom_sms_url:'https://2factor.in/API/V1/b254aaa6-e486-11ef-8b17-0200cd936042/SMS/#MOBILENO#/#MESSAGE#/OTP1',
-  custom_sms_message:'#OTP#'
+  sms_gateway: process.env.SMS_GATEWAY || 'Fast2sms', // or 'MessageIndia', etc.
+  sms_live_mode: process.env.SMS_LIVE_MODE === 'true' || process.env.SMS_LIVE_MODE === '1' || true,
+  default_country_code: process.env.DEFAULT_COUNTRY_CODE || '91',
+  company_name: process.env.COMPANY_NAME || 'YourCompany',
+  architect_category_id: process.env.ARCHITECT_CATEGORY_ID || '17',
+  electro_homoeopathy_category_id: process.env.ELECTRO_HOMOEOPATHY_CATEGORY_ID || '18',
+  textlocal_template_message: process.env.TEXTLOCAL_TEMPLATE_MESSAGE || '{#var#} is your OTP',
+  astrologer_test_mobile: process.env.ASTROLOGER_TEST_MOBILE || '9999999999',
+  astrologer_test_otp_code: process.env.ASTROLOGER_TEST_OTP_CODE || '123456',
+  customer_test_mobile: process.env.CUSTOMER_TEST_MOBILE || '8888888888',
+  customer_test_otp_code: process.env.CUSTOMER_TEST_OTP_CODE || '654321',
+  sms_gateway_status: process.env.SMS_GATEWAY_ACTIVE === 'true' || process.env.SMS_GATEWAY_ACTIVE === '1' || false,
+  default_otp: process.env.DEFAULT_OTP_CODE || '666331',
+  custom_sms_url: process.env.CUSTOM_SMS_URL || 'https://2factor.in/API/V1/b254aaa6-e486-11ef-8b17-0200cd936042/SMS/#MOBILENO#/#MESSAGE#/OTP1',
+  custom_sms_message: process.env.CUSTOM_SMS_MESSAGE || '#OTP#'
 }
 
 export const CURRENCY = {

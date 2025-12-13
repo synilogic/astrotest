@@ -2,11 +2,15 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import LoginPopup from './LoginPopup'
 import UserDropdown from './UserDropdown'
+import NotificationBell from './NotificationBell'
 import useLocalAuth from '../hooks/useLocalAuth'
+import { fetchServiceCategories } from '../utils/api'
 
 const Navbar = () => {
   const [isLoginPopupOpen, setIsLoginPopupOpen] = useState(false)
   const { user } = useLocalAuth()
+  const [serviceCategories, setServiceCategories] = useState([])
+  const [categoriesLoading, setCategoriesLoading] = useState(true)
 
   const handleLoginClick = (e) => {
     e.preventDefault()
@@ -16,6 +20,33 @@ const Navbar = () => {
   const handleCloseLoginPopup = () => {
     setIsLoginPopupOpen(false)
   }
+
+  // Fetch service categories from backend
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const categoriesRes = await fetchServiceCategories({
+          offset: 0,
+          search: ''
+        })
+        
+        if (categoriesRes && categoriesRes.status === 1 && Array.isArray(categoriesRes.data)) {
+          // Show all categories in navbar (or limit to 10 for better UX)
+          setServiceCategories(categoriesRes.data.slice(0, 10))
+          console.log('[Navbar] Service categories loaded:', categoriesRes.data.length)
+        } else {
+          console.warn('[Navbar] Service categories failed:', categoriesRes)
+          setServiceCategories([])
+        }
+      } catch (error) {
+        setServiceCategories([])
+      } finally {
+        setCategoriesLoading(false)
+      }
+    }
+
+    loadCategories()
+  }, [])
 
   useEffect(() => {
     const hamburger = document.querySelector('.react-hamburger')
@@ -112,9 +143,24 @@ const Navbar = () => {
             <li className="react-custom-dropdown">
               <a>Services <span> <i className="fa-solid fa-chevron-down react-dropdown-Icon"></i></span></a>
               <ul className="react-custom-dropdown-menu">
-                <li><Link to="/services">Online Pooja</Link></li>
-                <li><Link to="/services">Love Spell</Link></li>
-                <li><Link to="/services">Chakra Healing</Link></li>
+                {categoriesLoading ? (
+                  <li><span style={{padding: '10px', display: 'block'}}>Loading...</span></li>
+                ) : serviceCategories.length > 0 ? (
+                  <>
+                    {serviceCategories.map((category) => (
+                      <li key={category.id}>
+                        <Link to={`/services?category=${encodeURIComponent(category.id || category.title || category.category_title || '')}`}>
+                          {category.title || category.category_title || 'Category'}
+                        </Link>
+                      </li>
+                    ))}
+                    <li style={{borderTop: '1px solid #eee', marginTop: '5px', paddingTop: '5px'}}>
+                      <Link to="/services" style={{fontWeight: 'bold'}}>View All Services</Link>
+                    </li>
+                  </>
+                ) : (
+                  <li><Link to="/services">View All Services</Link></li>
+                )}
               </ul>
             </li>
             <li className="react-custom-dropdown">
@@ -126,6 +172,19 @@ const Navbar = () => {
             </li>
             <li><Link to="/shop">Shop</Link></li>
             <li><Link to="/blogs">Blogs</Link></li>
+            <li className="react-custom-dropdown">
+              <a>More <span> <i className="fa-solid fa-chevron-down react-dropdown-Icon"></i></span></a>
+              <ul className="react-custom-dropdown-menu">
+                <li><Link to="/notices">📢 Notices</Link></li>
+                <li><Link to="/offers">🎁 Offers</Link></li>
+                <li><Link to="/pdf-books">📚 PDF Books</Link></li>
+              </ul>
+            </li>
+            {user && (
+              <li style={{ display: 'flex', alignItems: 'center' }}>
+                <NotificationBell />
+              </li>
+            )}
             <li>
               {user ? (
                 <UserDropdown />

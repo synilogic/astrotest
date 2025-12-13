@@ -74,7 +74,6 @@ import open_ai from "./OpenAI.js";
 import SlotBooking from "../_models/slot_bookings.js";
 import sharp from "sharp";
 import { messaging } from './firebase/firebase.js';
-import { log } from "util";
 // import { get } from "lodash";
 // Setup __dirname for ES Modules
 const __filename = fileURLToPath(import.meta.url);
@@ -173,27 +172,87 @@ export async function validateReferralCode(referralCode = "") {
  * Generate or update API key for user
  */
 export async function generateUserApiKey(userId, roleId) {
-  const payload = {
-    user_uni_id: userId,
-    role_id: roleId,
-    jti: uuidv4(), // force uniqueness
-    iat: Math.floor(Date.now() / 1000),
-  };
+  try {
+    console.log('[generateUserApiKey] ===== Token Generation Started =====');
+    console.log('[generateUserApiKey] Input:', {
+      userId: userId,
+      roleId: roleId
+    });
+    
+    const payload = {
+      user_uni_id: userId,
+      role_id: roleId,
+      jti: uuidv4(), // force uniqueness
+      iat: Math.floor(Date.now() / 1000),
+    };
 
-  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: 86400 });
-  const signatureOnly = token.split(".")[2]; // use 3rd part only
-  const expiresAt = Math.floor(Date.now() / 1000) + 86400;
+    console.log('[generateUserApiKey] JWT Payload:', payload);
 
-  await ApiKeys.upsert({
-    user_uni_id: userId,
-    api_key: signatureOnly,
-    expires_at: expiresAt,
-  });
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: 86400 });
+    console.log('[generateUserApiKey] Full JWT Token:', token);
+    console.log('[generateUserApiKey] Token parts:', token.split('.').map((part, idx) => ({
+      part: idx + 1,
+      length: part.length,
+      preview: `${part.substring(0, 10)}...${part.substring(part.length - 10)}`
+    })));
+    
+    const signatureOnly = token.split(".")[2]; // use 3rd part only
+    console.log('[generateUserApiKey] Signature only (API key):', {
+      value: signatureOnly,
+      length: signatureOnly.length,
+      preview: `${signatureOnly.substring(0, 10)}...${signatureOnly.substring(signatureOnly.length - 10)}`
+    });
+    
+    const expiresAt = Math.floor(Date.now() / 1000) + 86400;
+    console.log('[generateUserApiKey] Expires at:', expiresAt, new Date(expiresAt * 1000).toISOString());
 
-  return {
-    // fullToken: token,
-    api_key: signatureOnly,
-  };
+    const upsertResult = await ApiKeys.upsert({
+      user_uni_id: userId,
+      api_key: signatureOnly,
+      expires_at: expiresAt,
+    });
+    
+    console.log('[generateUserApiKey] Database upsert result:', {
+      created: upsertResult[0]?.created || false,
+      updated: upsertResult[0]?.updated || false
+    });
+    
+    // Verify it was stored correctly
+    const storedKey = await ApiKeys.findOne({
+      where: {
+        user_uni_id: userId,
+        api_key: signatureOnly
+      }
+    });
+    
+    console.log('[generateUserApiKey] Verification - stored key found:', !!storedKey);
+    if (storedKey) {
+      console.log('[generateUserApiKey] Stored key details:', {
+        user_uni_id: storedKey.user_uni_id,
+        api_key_length: storedKey.api_key ? storedKey.api_key.length : 0,
+        api_key_preview: storedKey.api_key ? `${storedKey.api_key.substring(0, 10)}...${storedKey.api_key.substring(storedKey.api_key.length - 10)}` : 'MISSING',
+        expires_at: storedKey.expires_at
+      });
+    }
+
+    const result = {
+      api_key: signatureOnly,
+    };
+    
+    console.log('[generateUserApiKey] Returning:', {
+      result: result,
+      resultType: typeof result,
+      api_key: result.api_key,
+      api_keyType: typeof result.api_key,
+      api_keyLength: result.api_key ? result.api_key.length : 0
+    });
+    console.log('[generateUserApiKey] ✅ Token Generation Completed =====');
+    
+    return result;
+  } catch (error) {
+    console.error('[generateUserApiKey] ❌ Error generating API key:', error);
+    throw error;
+  }
 }
 
 /**
@@ -755,23 +814,64 @@ function astrologerListShuffle(astrologers) {
 
 export async function checkUserApiKey(user_api_key, user_uni_id) {
   try {
+    console.log('[checkUserApiKey] ===== API Key Validation =====');
+    console.log('[checkUserApiKey] Input:', {
+      user_uni_id: user_uni_id,
+      api_key_length: user_api_key ? String(user_api_key).length : 0,
+      api_key_type: typeof user_api_key,
+      api_key_preview: user_api_key ? `${String(user_api_key).substring(0, 10)}...${String(user_api_key).substring(String(user_api_key).length - 10)}` : 'MISSING'
+    });
+    
+    // Ensure api_key is a string
+    const apiKeyStr = String(user_api_key || '').trim();
+    
     const apiKey = await ApiKeyModel.findOne({
       where: {
-        api_key: user_api_key,
+        api_key: apiKeyStr,
         user_uni_id: user_uni_id,
       },
     });
 
-    if (!apiKey) return false;
+    console.log('[checkUserApiKey] Database lookup result:', {
+      found: !!apiKey,
+      api_key_in_db: apiKey ? apiKey.api_key : 'NOT FOUND',
+      user_uni_id_in_db: apiKey ? apiKey.user_uni_id : 'NOT FOUND',
+      expires_at: apiKey ? apiKey.expires_at : 'NOT FOUND'
+    });
+
+    if (!apiKey) {
+      console.error('[checkUserApiKey] ❌ API key not found in database');
+      // Try to find any API keys for this user to help debug
+      const allKeysForUser = await ApiKeyModel.findAll({
+        where: { user_uni_id: user_uni_id },
+        limit: 5
+      });
+      console.log('[checkUserApiKey] All API keys for this user:', allKeysForUser.map(k => ({
+        api_key: k.api_key ? `${k.api_key.substring(0, 10)}...${k.api_key.substring(k.api_key.length - 10)}` : 'EMPTY',
+        expires_at: k.expires_at
+      })));
+      return false;
+    }
 
     const now = Math.floor(Date.now() / 1000);
-    if (apiKey.expires_at < now) {
+    const isExpired = apiKey.expires_at < now;
+    
+    console.log('[checkUserApiKey] Expiry check:', {
+      expires_at: apiKey.expires_at,
+      now: now,
+      isExpired: isExpired,
+      timeRemaining: isExpired ? 0 : (apiKey.expires_at - now)
+    });
+    
+    if (isExpired) {
+      console.error('[checkUserApiKey] ❌ API key is expired');
       return false; // Token is expired
     }
 
+    console.log('[checkUserApiKey] ✅ API key is valid');
     return true;
   } catch (error) {
-    console.error("Error checking API key:", error);
+    console.error("[checkUserApiKey] ❌ Error checking API key:", error);
     return false;
   }
 }
@@ -4935,7 +5035,10 @@ export const startCall = async (array, call_type) => {
   const firebase_custom_auth_token = await checkFirebaseCustomAuthToken(
     array.user_uni_id
   );
-  if (firebase_custom_auth_token) {
+  // Allow web apps to proceed without Firebase token (for mobile apps, Firebase token is required)
+  // Check if this is a web request by checking if Firebase token exists or if explicitly allowed
+  const isWebApp = !firebase_custom_auth_token || array.allow_web_app === true;
+  if (firebase_custom_auth_token || isWebApp) {
     let in_app_voice_call = 0;
     if (array.is_inapp_voice_call !== undefined) {
       if (array.is_inapp_voice_call == 1) {
@@ -5849,10 +5952,20 @@ export const startCall = async (array, call_type) => {
       }
     }
   } else {
-    result = {
-      status: 0,
-      msg: "Please update your app and then re-login",
-    };
+    // Only show this error for mobile apps that require Firebase token
+    // For web apps, we should allow proceeding without Firebase token
+    if (array.allow_web_app !== true) {
+      result = {
+        status: 0,
+        msg: "Please update your app and then re-login",
+      };
+    } else {
+      // For web apps, return a more appropriate error or allow to proceed
+      result = {
+        status: 0,
+        msg: "Unable to start session. Please try again.",
+      };
+    }
   }
   charge_for_clevertap = parseFloat(charge_for_clevertap);
   result.charge = charge_for_clevertap;
@@ -8868,15 +8981,13 @@ export const getVoiceCallRequest = async (filter_array) => {
         "call_end",
         "duration",
         "charge",
-        "original_astro_charge",
-        "popup_after_duration",
+        // "original_astro_charge", // Commented out - column doesn't exist in database
         "charge_minutes",
         "recording",
         "token",
         "channel_name",
         "waiting_time",
         "status",
-        "subscription_assign_id",
         "refund_valid_date",
         "offer_type",
         "astrologer_offline_at",

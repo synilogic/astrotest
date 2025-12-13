@@ -82,30 +82,111 @@ const updateProductStock = async (order_id) => {
 };
 
 router.post('/productPurchase', upload.none(), async (req, res) => {
-  const schema = Joi.object({
-    api_key: Joi.string().required(),
-    user_uni_id: Joi.string().required(),
-    item: Joi.any().required(),
-    vendor_uni_id: Joi.string().required(),
-    address_id:Joi.string().required(),
-    product_id: Joi.string().required(),
-    reference_id: Joi.string().optional().allow('', null),
-    offer_code: Joi.string().optional().allow('', null),
-    wallet_check: Joi.any().optional().allow('', null),
-    payment_method: Joi.string().required(),
-    is_updated:Joi.string().optional().allow('', null),
-  });
-
-  const { error, value } = schema.validate(req.body);
-  if (error) {
-    return res.status(400).json({ status: 0, msg: error.details.map(e => e.message).join('\n') });
-  }
-
-  const { api_key, user_uni_id, item, vendor_uni_id, address_id, product_id, reference_id, offer_code,  wallet_check, payment_method, is_updated  } = value;
-
   try {
-    const isAuthorized = await checkUserApiKey(api_key, user_uni_id);
-    if (!isAuthorized) return res.status(401).json({ status: 0, msg: 'Unauthorized User... Please login again' });
+    // Log incoming request for debugging
+    console.log('[productPurchase] Request received');
+    console.log('[productPurchase] Request body:', req.body ? Object.keys(req.body) : 'EMPTY');
+    console.log('[productPurchase] Content-Type:', req.headers['content-type']);
+    
+    // Check if req.body exists and is not empty
+    if (!req.body || typeof req.body !== 'object' || Object.keys(req.body).length === 0) {
+      console.error('[productPurchase] ERROR: Request body is empty or invalid');
+      return res.status(400).json({ 
+        status: 0, 
+        msg: 'Request body is empty or invalid. Please check your request data and Content-Type header (should be application/x-www-form-urlencoded).' 
+      });
+    }
+
+    // Joi validation schema with detailed error messages
+    const schema = Joi.object({
+      api_key: Joi.string().required().messages({
+        'string.empty': 'API key is required',
+        'any.required': 'API key is required'
+      }),
+      user_uni_id: Joi.string().required().messages({
+        'string.empty': 'User ID is required',
+        'any.required': 'User ID is required'
+      }),
+      item: Joi.any().required().messages({
+        'any.required': 'Item quantity is required'
+      }),
+      vendor_uni_id: Joi.string().required().messages({
+        'string.empty': 'Vendor ID is required',
+        'any.required': 'Vendor ID is required'
+      }),
+      address_id: Joi.string().required().messages({
+        'string.empty': 'Address ID is required',
+        'any.required': 'Address ID is required'
+      }),
+      product_id: Joi.string().required().messages({
+        'string.empty': 'Product ID is required',
+        'any.required': 'Product ID is required'
+      }),
+      reference_id: Joi.string().optional().allow('', null),
+      offer_code: Joi.string().optional().allow('', null),
+      wallet_check: Joi.any().optional().allow('', null),
+      payment_method: Joi.string().optional().allow('', null), // Allow empty string to use default gateway
+      is_updated: Joi.string().optional().allow('', null),
+    });
+
+    // Validate request body with Joi
+    const { error, value } = schema.validate(req.body, {
+      abortEarly: false, // Return all validation errors, not just the first one
+      stripUnknown: true // Remove unknown fields
+    });
+
+    // Handle validation errors
+    if (error) {
+      const errorMessages = error.details.map(detail => detail.message).join(', ');
+      console.error('[productPurchase] Validation error:', errorMessages);
+      return res.status(400).json({ 
+        status: 0, 
+        msg: `Validation failed: ${errorMessages}` 
+      });
+    }
+
+    // Check if value exists after validation
+    if (!value || typeof value !== 'object') {
+      console.error('[productPurchase] ERROR: Validation value is undefined or invalid');
+      return res.status(500).json({ 
+        status: 0, 
+        msg: 'Internal server error: Validation failed. Please contact support.' 
+      });
+    }
+
+    // Destructure validated values
+    const { 
+      api_key, 
+      user_uni_id, 
+      item, 
+      vendor_uni_id, 
+      address_id, 
+      product_id, 
+      reference_id, 
+      offer_code, 
+      wallet_check, 
+      payment_method, 
+      is_updated 
+    } = value;
+
+    // Validate required fields are not empty after destructuring
+    if (!api_key || !user_uni_id || !vendor_uni_id || !address_id || !product_id) {
+      console.error('[productPurchase] ERROR: Required fields are missing after validation');
+      return res.status(400).json({ 
+        status: 0, 
+        msg: 'Required fields are missing: api_key, user_uni_id, vendor_uni_id, address_id, or product_id' 
+      });
+    }
+
+    console.log('[productPurchase] Validation passed for user:', user_uni_id, 'product:', product_id);
+
+    // Start main business logic
+    try {
+      const isAuthorized = await checkUserApiKey(api_key, user_uni_id);
+      if (!isAuthorized) {
+        console.error('[productPurchase] Unauthorized user:', user_uni_id);
+        return res.status(401).json({ status: 0, msg: 'Unauthorized User... Please login again' });
+      }
 
       const currencyInfo = await getCurrency(user_uni_id, 'all');
      const default_currency_code = CURRENCY.default_currency_code;
@@ -711,9 +792,37 @@ return res.status(200).json({
 }
 
 
-  } catch (err) {
-    console.error('Error in productPurchase:', err);
-    return res.status(500).json({ status: 0, msg: 'Something went wrong' });
+    } catch (err) {
+      // Log detailed error information for debugging
+      console.error('[productPurchase] ERROR:', {
+        message: err.message,
+        stack: err.stack,
+        name: err.name,
+        user_uni_id: user_uni_id || 'unknown',
+        product_id: product_id || 'unknown'
+      });
+      
+      // Return detailed error response
+      return res.status(500).json({ 
+        status: 0, 
+        msg: `Internal server error: ${err.message || 'Something went wrong. Please try again.'}`,
+        error: process.env.NODE_ENV === 'development' ? err.message : undefined // Only show error in development
+      });
+    }
+  } catch (outerError) {
+    // Catch any errors in validation or setup phase
+    console.error('[productPurchase] OUTER ERROR:', {
+      message: outerError.message,
+      stack: outerError.stack,
+      name: outerError.name,
+      body: req.body ? Object.keys(req.body) : 'empty'
+    });
+    
+    return res.status(500).json({ 
+      status: 0, 
+      msg: `Request processing error: ${outerError.message || 'Invalid request format or server error. Please check your request data.'}`,
+      error: process.env.NODE_ENV === 'development' ? outerError.message : undefined
+    });
   }
 });
 

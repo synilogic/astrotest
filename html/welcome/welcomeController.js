@@ -41,6 +41,7 @@ import { Service } from '../_models/service.js';
 import { ServiceAssign } from '../_models/serviceAssign.js';
 import Reviews from "../_models/reviews.js";
 import { PredefinedMessage } from "../_models/predefinedMessage.js";
+import { getFromCache, setToCache, CACHE_TTL } from "../_helpers/cacheHelper.js";
 
 
 const upload = multer();
@@ -180,7 +181,56 @@ router.post("/welcome", upload.none(), async (req, res) => {
       active_kundli_api,
       ask_question_price: master_data['ask_question_price'] || '',
       splash_screen_about_us: master_data['splash_screen_about_us'] || '',
-      splash_screen_why_choose_us: master_data['splash_screen_why_choose_us'] || '',
+      splash_screen_why_choose_us: (() => {
+        // First check if splash_screen_why_choose_us exists directly
+        if (master_data['splash_screen_why_choose_us'] && master_data['splash_screen_why_choose_us'].trim() !== '') {
+          return master_data['splash_screen_why_choose_us'];
+        }
+        
+        // Otherwise, combine existing why_choose settings from database
+        const whyChooseItems = [];
+        
+        // Years of Experience
+        if (master_data['why_choose_years_of_experience']) {
+          whyChooseItems.push({
+            icon: 'fas fa-user-tie',
+            title: `${master_data['why_choose_years_of_experience']}+ Years of Experience`,
+            description: 'Our astrologers and Vastu consultants bring over 50 years of expertise to provide accurate and insightful guidance.'
+          });
+        }
+        
+        // Satisfied Customers
+        if (master_data['why_choose_satisfied_customer']) {
+          whyChooseItems.push({
+            icon: 'fas fa-users',
+            title: `${master_data['why_choose_satisfied_customer']}+ Satisfied Customers`,
+            description: 'More than 1500 customers have received our services, and many more are joining every day.'
+          });
+        }
+        
+        // Best Astrologers
+        if (master_data['why_choose_best_astrologers']) {
+          whyChooseItems.push({
+            icon: 'fas fa-star',
+            title: `${master_data['why_choose_best_astrologers']}+ Best Astrologers`,
+            description: 'We have hand-picked over 1100 expert astrologers from India, ready to offer online consultations.'
+          });
+        }
+        
+        // Nationalities
+        if (master_data['why_choose_Nationalities']) {
+          whyChooseItems.push({
+            icon: 'fas fa-globe-americas',
+            title: `${master_data['why_choose_Nationalities']}+ Nationalities`,
+            description: 'Our services are trusted by clients from over 140 nationalities across the globe.'
+          });
+        }
+        
+        // Return as JSON string if items found, otherwise empty string
+        return whyChooseItems.length > 0 ? JSON.stringify(whyChooseItems) : '';
+      })(),
+      default_country_code: '+' + (master_data['default_country_code'] || '91').replace('+', ''),
+      default_country_name: master_data['default_country_name'] || 'India',
       astro_update_request_list: constants.astro_update_request_list || '',
     };
 
@@ -253,9 +303,13 @@ router.post("/cityList", upload.none(), async (req, res) => {
   // Fetch cities
   try {
     const records = await City.findAll({ where: { state_id } });
+    
+    // Convert Sequelize models to plain JSON objects
+    const citiesData = records.map(city => city.toJSON ? city.toJSON() : city);
+    
     const result =
-      records.length > 0
-        ? { status: 1, data: records, msg: "Success" }
+      citiesData.length > 0
+        ? { status: 1, data: citiesData, msg: "Success" }
         : { status: 0, msg: "Something Went wrong.. Try Again" };
 
     await updateApiLogs(api, result);
@@ -320,20 +374,111 @@ router.post("/stateList", upload.none(), async (req, res) => {
   //   return res.json(result);
   // }
 
-  // Fetch cities
+  // Fetch states
   try {
     const records = await State.findAll({ where: { country_id } });
+    
+    // Convert Sequelize models to plain JSON objects
+    const statesData = records.map(state => state.toJSON ? state.toJSON() : state);
+    
     const result =
-      records.length > 0
-        ? { status: 1, data: records, msg: "Success" }
+      statesData.length > 0
+        ? { status: 1, data: statesData, msg: "Success" }
         : { status: 0, msg: "Something Went wrong.. Try Again" };
 
     await updateApiLogs(api, result);
     return res.json(result);
   } catch (error) {
-    console.error("City fetch error:", error);
+    console.error("State fetch error:", error);
     const result = { status: 0, msg: "Internal Server Error" };
     await updateApiLogs(api, result);
+    return res.status(500).json(result);
+  }
+});
+
+// Public country list endpoint (no auth required - for login/registration)
+router.post("/publicCountryList", upload.none(), async (req, res) => {
+  try {
+    const records = await Country.findAll({
+      attributes: ['id', 'name', 'nicename', 'phonecode', 'iso', 'iso3'],
+      order: [['name', 'ASC']]
+    });
+    
+    console.log(`[publicCountryList] Found ${records.length} countries`);
+    
+    const result =
+      records.length > 0
+        ? { status: 1, data: records, msg: "Success", count: records.length }
+        : { status: 0, msg: "No countries found", data: [] };
+
+    return res.json(result);
+  } catch (error) {
+    console.error("Country fetch error:", error);
+    const result = { status: 0, msg: "Internal Server Error", error: error.message, data: [] };
+    return res.status(500).json(result);
+  }
+});
+
+// Public state list endpoint (no auth required - for registration)
+router.post("/publicStateList", upload.none(), async (req, res) => {
+  try {
+    const { country_id } = req.body;
+    
+    if (!country_id) {
+      return res.json({ status: 0, msg: "country_id is required", data: [] });
+    }
+
+    const records = await State.findAll({ 
+      where: { country_id },
+      attributes: ['id', 'state_name', 'country_id', 'status']
+    });
+    
+    // Convert Sequelize models to plain JSON objects
+    const statesData = records.map(state => state.toJSON ? state.toJSON() : state);
+    
+    console.log(`[publicStateList] Found ${statesData.length} states for country_id: ${country_id}`);
+    
+    const result =
+      statesData.length > 0
+        ? { status: 1, data: statesData, msg: "Success" }
+        : { status: 0, msg: "No states found", data: [] };
+
+    return res.json(result);
+  } catch (error) {
+    console.error("State fetch error:", error);
+    const result = { status: 0, msg: "Internal Server Error", error: error.message, data: [] };
+    return res.status(500).json(result);
+  }
+});
+
+// Public city list endpoint (no auth required - for registration)
+router.post("/publicCityList", upload.none(), async (req, res) => {
+  try {
+    const { state_id } = req.body;
+    
+    if (!state_id) {
+      return res.json({ status: 0, msg: "state_id is required", data: [] });
+    }
+
+    const records = await City.findAll({ 
+      where: { state_id },
+      attributes: ['id', 'city_name', 'state_id', 'city_pincode', 'status']
+    });
+    
+    // Convert Sequelize models to plain JSON objects
+    const citiesData = records.map(city => city.toJSON ? city.toJSON() : city);
+    
+    console.log(`[publicCityList] Found ${citiesData.length} cities for state_id: ${state_id}`);
+    
+    const result =
+      citiesData.length > 0
+        ? { status: 1, data: citiesData, msg: "Success" }
+        : { status: 0, msg: "No cities found", data: [] };
+
+    return res.json(result);
+  } catch (error) {
+    console.error("City fetch error:", error);
+    const result = { status: 0, msg: "Internal Server Error", error: error.message, data: [] };
     return res.status(500).json(result);
   }
 });
@@ -596,14 +741,26 @@ router.post("/bannerList", upload.none(), async (req, res) => {
   //   return res.json(result);
   // }
 
-  // Fetch cities
+  // Check cache first
   try {
+    const cacheKey = { endpoint: 'bannerList', category: 1 };
+    const cachedResult = await getFromCache('banners', cacheKey);
+    
+    if (cachedResult) {
+      // Update image URLs with current host
+      const records = cachedResult.data || [];
+      for (const banner of records) {
+        banner.banner_image = banner.banner_image
+          ? banner.banner_image.replace(/https?:\/\/[^/]+/, `${req.protocol}://${req.get("host")}`)
+          : `${req.protocol}://${req.get("host")}/${constants.default_banner_image_path}`;
+      }
+      return res.json(cachedResult);
+    }
+
+    // Fetch from database
     const records = await Banner.findAll({ where: { status: 1, banner_category_id: 1 }, attributes: ["id", "banner_category_id", "banner_image", "url"] , limit: constants.api_page_limit});
     for (const banner of records) {
       banner.url = banner.url || '';
-      // banner.title = banner.title || '';
-
-      // const imgPath = path.join('public', constants.banner_image_path || 'uploads/banners/');
       banner.banner_image =  banner.banner_image
         ? `${req.protocol}://${req.get("host")}/${constants.banner_image_path}${banner.banner_image}`
         : `${req.protocol}://${req.get("host")}/${constants.default_banner_image_path}`;
@@ -613,12 +770,13 @@ router.post("/bannerList", upload.none(), async (req, res) => {
         ? { status: 1, data: records, msg: "Success" }
         : { status: 0, msg: "Something Went wrong.. Try Again" };
 
-    // await updateApiLogs(api, result);
+    // Cache the result (5 minutes TTL)
+    await setToCache('banners', cacheKey, result, CACHE_TTL.MEDIUM);
+
     return res.json(result);
   } catch (error) {
-    console.error("City fetch error:", error);
+    console.error("Banner fetch error:", error);
     const result = { status: 0, msg: "Internal Server Error" };
-    // await updateApiLogs(api, result);
     return res.status(500).json(result);
   }
 });
@@ -1148,17 +1306,39 @@ router.post("/getBlog", upload.none(), async (req, res) => {
   }
 
   try {
+    // Check cache first (only for non-search queries)
+    const cacheKey = {
+      offset: Number(attributes.offset),
+      limit: Number(attributes.limit),
+      astrologer_uni_id: attributes.astrologer_uni_id || '',
+      search: attributes.search || ''
+    };
+    
+    // Only cache if no search
+    if (!attributes.search) {
+      const cachedResult = await getFromCache('blogs', cacheKey);
+      if (cachedResult) {
+        // Update image URLs with current host
+        const blogs = cachedResult.data || [];
+        for (const blog of blogs) {
+          blog.blog_image = blog.blog_image
+            ? blog.blog_image.replace(/https?:\/\/[^/]+/, `${req.protocol}://${req.get("host")}`)
+            : `${req.protocol}://${req.get("host")}/${constants.default_image_path}`;
+        }
+        return res.json(cachedResult);
+      }
+    }
+
+    console.log('[getBlog] Fetching blogs with attributes:', JSON.stringify(attributes, null, 2));
     const blogs = await getAllBlog(attributes);
+    console.log('[getBlog] Total blogs fetched from database:', blogs?.length || 0);
 
     for (const blog of blogs) {
-      // banner.url = banner.url || '';
-      // banner.title = banner.title || '';
       blog.dataValues.is_astro_follow = !!blog.dataValues.is_astro_follow;
-  blog.dataValues.is_likes = !!blog.dataValues.is_likes;
-  blog.dataValues.created_at = dayjs(blog.dataValues.created_at).format('YYYY-MM-DD HH:mm:ss');
-  blog.dataValues.updated_at = dayjs(blog.dataValues.updated_at).format('YYYY-MM-DD HH:mm:ss');
+      blog.dataValues.is_likes = !!blog.dataValues.is_likes;
+      blog.dataValues.created_at = dayjs(blog.dataValues.created_at).format('YYYY-MM-DD HH:mm:ss');
+      blog.dataValues.updated_at = dayjs(blog.dataValues.updated_at).format('YYYY-MM-DD HH:mm:ss');
 
-      // const imgPath = path.join('public', constants.banner_image_path || 'uploads/banners/');
       blog.blog_image =  blog.blog_image
         ? `${req.protocol}://${req.get("host")}/${constants.blog_image_path}${blog.blog_image}`
         : `${req.protocol}://${req.get("host")}/${constants.default_image_path}`;
@@ -1178,7 +1358,11 @@ router.post("/getBlog", upload.none(), async (req, res) => {
             msg: "No Record Found"
           };
 
-    // await updateApiLogs(api, result);
+    // Cache the result (only if no search)
+    if (!attributes.search) {
+      await setToCache('blogs', cacheKey, result, CACHE_TTL.MEDIUM);
+    }
+
     return res.json(result);
   } catch (error) {
     console.error("Blog Fetch Error:", error);
@@ -1188,6 +1372,91 @@ router.post("/getBlog", upload.none(), async (req, res) => {
     };
     // await updateApiLogs(api, result);
     return res.status(500).json(result);
+  }
+});
+
+// Get single blog by ID or slug
+router.post("/getBlogDetail", upload.none(), async (req, res) => {
+  const schema = Joi.object({
+    id: Joi.number().optional().allow(null, ""),
+    slug: Joi.string().optional().allow(null, "")
+  });
+
+  const validation = schema.validate(req.body);
+  if (validation.error) {
+    const result = {
+      status: 0,
+      errors: validation.error.details,
+      message: "Something went wrong",
+      msg: validation.error.details.map((d) => d.message).join("\n")
+    };
+    return res.json(result);
+  }
+
+  const { id, slug } = req.body;
+
+  if (!id && !slug) {
+    return res.json({
+      status: 0,
+      msg: "Please provide id or slug"
+    });
+  }
+
+  try {
+    const whereClause = { status: '1' };
+    
+    if (id) {
+      whereClause.id = Number(id);
+    } else if (slug) {
+      whereClause.slug = slug;
+    }
+
+    console.log('[getBlogDetail] Fetching blog with:', whereClause);
+
+    const filter = {
+      status: 1,
+      ...(id ? { id: Number(id) } : {}),
+      ...(slug ? { slug: slug } : {})
+    };
+
+    // Use getAllBlog but with specific filter
+    const blogs = await getAllBlog({ 
+      ...filter,
+      limit: 1,
+      offset: 0
+    });
+
+    if (!blogs || blogs.length === 0) {
+      return res.json({
+        status: 0,
+        msg: "Blog not found"
+      });
+    }
+
+    const blog = blogs[0];
+
+    // Process blog data
+    blog.dataValues.is_astro_follow = !!blog.dataValues.is_astro_follow;
+    blog.dataValues.is_likes = !!blog.dataValues.is_likes;
+    blog.dataValues.created_at = dayjs(blog.dataValues.created_at).format('YYYY-MM-DD HH:mm:ss');
+    blog.dataValues.updated_at = dayjs(blog.dataValues.updated_at).format('YYYY-MM-DD HH:mm:ss');
+
+    blog.blog_image = blog.blog_image
+      ? `${req.protocol}://${req.get("host")}/${constants.blog_image_path}${blog.blog_image}`
+      : `${req.protocol}://${req.get("host")}/${constants.default_image_path}`;
+
+    return res.json({
+      status: 1,
+      data: blog,
+      msg: "Blog found"
+    });
+  } catch (error) {
+    console.error("Blog Detail Fetch Error:", error);
+    return res.status(500).json({
+      status: 0,
+      msg: "Internal Server Error",
+      error: error.message
+    });
   }
 });
 
@@ -2085,6 +2354,30 @@ router.post('/services', upload.none(), async (req, res) => {
   const page_limit = parseInt(process.env.API_PAGE_LIMIT_SECONDARY || 10);
 
   try {
+    // Check cache first (only for non-search queries)
+    const cacheKey = {
+      category_id: attributes.service_category_id,
+      offset: Number(offset),
+      limit: Number(page_limit),
+      slug: attributes.slug || '',
+      search: attributes.search || ''
+    };
+    
+    // Only cache if no search (search results are dynamic)
+    if (!attributes.search) {
+      const cachedResult = await getFromCache('services', cacheKey);
+      if (cachedResult) {
+        // Update image URLs with current host
+        const records = cachedResult.data || [];
+        for (const service of records) {
+          service.dataValues.service_image = service.dataValues.service_image
+            ? service.dataValues.service_image.replace(/https?:\/\/[^/]+/, `${req.protocol}://${req.get("host")}`)
+            : `${req.protocol}://${req.get("host")}/${constants.default_image_path}`;
+        }
+        return res.json(cachedResult);
+      }
+    }
+
     const whereClause = {
       status: 1,
     };
@@ -2129,7 +2422,6 @@ router.post('/services', upload.none(), async (req, res) => {
 
     
     for (const service of records) {
-      // const imgPath = path.join('public', constants.banner_image_path || 'uploads/banners/');
       service.dataValues.service_image =  service.dataValues.service_image
         ? `${req.protocol}://${req.get("host")}/${constants.service_image_path}${service.dataValues.service_image}`
         : `${req.protocol}://${req.get("host")}/${constants.default_image_path}`;
@@ -2151,7 +2443,11 @@ router.post('/services', upload.none(), async (req, res) => {
       };
     }
 
-    // await updateApiLogs(api, result);
+    // Cache the result (only if no search)
+    if (!attributes.search) {
+      await setToCache('services', cacheKey, result, CACHE_TTL.MEDIUM);
+    }
+
     return res.json(result);
   } catch (err) {
     console.error(err);
@@ -2410,19 +2706,29 @@ router.post("/productOrderList", upload.none(), async (req, res) => {
       orderData.created_at = orderData.created_at ? dayjs(orderData.created_at).format('YYYY-MM-DD HH:mm:ss') : "N/A"
       orderData.updated_at = orderData.updated_at ? dayjs(orderData.updated_at).format('YYYY-MM-DD HH:mm:ss') : "N/A"
 
-      orderData.order_products[0].created_at = orderData.order_products[0].created_at ? dayjs(orderData.order_products[0].created_at).format('YYYY-MM-DD HH:mm:ss') : "N/A"
-      orderData.order_products[0].updated_at = orderData.order_products[0].updated_at ? dayjs(orderData.order_products[0].updated_at).format('YYYY-MM-DD HH:mm:ss') : "N/A"
-      
-      if (orderData.order_products[0].product ) {
-        orderData.order_products[0].product.created_at = orderData.order_products[0].product.created_at ? dayjs(orderData.order_products[0].product.created_at).format('YYYY-MM-DD HH:mm:ss') : "N/A"
-        orderData.order_products[0].product.updated_at = orderData.order_products[0].product.updated_at ? dayjs(orderData.order_products[0].product.updated_at).format('YYYY-MM-DD HH:mm:ss') : "N/A"
-        orderData.order_products[0].product.product_image = orderData.order_products[0].product.product_image ? `${req.protocol}://${req.get("host")}/uploads/product/${orderData.order_products[0].product.product_image}` : ""
+      // Safe check for order_products
+      if (orderData.order_products && orderData.order_products.length > 0) {
+        orderData.order_products[0].created_at = orderData.order_products[0].created_at ? dayjs(orderData.order_products[0].created_at).format('YYYY-MM-DD HH:mm:ss') : "N/A"
+        orderData.order_products[0].updated_at = orderData.order_products[0].updated_at ? dayjs(orderData.order_products[0].updated_at).format('YYYY-MM-DD HH:mm:ss') : "N/A"
+        
+        if (orderData.order_products[0].product ) {
+          orderData.order_products[0].product.created_at = orderData.order_products[0].product.created_at ? dayjs(orderData.order_products[0].product.created_at).format('YYYY-MM-DD HH:mm:ss') : "N/A"
+          orderData.order_products[0].product.updated_at = orderData.order_products[0].product.updated_at ? dayjs(orderData.order_products[0].product.updated_at).format('YYYY-MM-DD HH:mm:ss') : "N/A"
+          orderData.order_products[0].product.product_image = orderData.order_products[0].product.product_image ? `${req.protocol}://${req.get("host")}/uploads/product/${orderData.order_products[0].product.product_image}` : ""
+        } else {
+          orderData.order_products[0].product = {}
+        }
       } else {
-        orderData.order_products[0].product = {}
+        orderData.order_products = []
       }
 
-      orderData.address.created_at = orderData.address.created_at ? dayjs(orderData.address.created_at).format('YYYY-MM-DD HH:mm:ss') : "N/A"
-      orderData.address.updated_at = orderData.address.updated_at ? dayjs(orderData.address.updated_at).format('YYYY-MM-DD HH:mm:ss') : "N/A"
+      // Safe check for address
+      if (orderData.address) {
+        orderData.address.created_at = orderData.address.created_at ? dayjs(orderData.address.created_at).format('YYYY-MM-DD HH:mm:ss') : "N/A"
+        orderData.address.updated_at = orderData.address.updated_at ? dayjs(orderData.address.updated_at).format('YYYY-MM-DD HH:mm:ss') : "N/A"
+      } else {
+        orderData.address = {}
+      }
 
       orderData.invoice_url = orderData.invoice_url ? `${req.protocol}://${req.get("host")}/invoice/${order.order_id}` : "N/A";
 
@@ -2804,7 +3110,7 @@ router.post("/userKundaliRequest", upload.none(), async (req, res) => {
     api_key: Joi.string().required(),
     user_uni_id: Joi.string().required(),
     for_id: Joi.string().required(),
-    kundali_method: Joi.string().required(),
+    kundali_method: Joi.string().optional().allow(''), // Make optional to allow fetching all methods
     kundali_type: Joi.string().required(),
   });
 
@@ -2845,12 +3151,19 @@ router.post("/userKundaliRequest", upload.none(), async (req, res) => {
   const limit = constants.api_page_limit || 10;
 
   try {
+    // Build where clause - if kundali_method is not provided or empty, fetch all methods
+    const whereClause = {
+      user_uni_id: for_id,
+      kundali_type,
+    };
+    
+    // Only filter by method if it's provided and not empty
+    if (kundali_method && kundali_method.trim() !== '') {
+      whereClause.kundali_method = kundali_method;
+    }
+    
     const kundalis = await UserKundali.findAll({
-      where: {
-        user_uni_id: for_id,
-        kundali_method,
-        kundali_type,
-      },
+      where: whereClause,
       order: [["created_at", "DESC"]],
       offset: parseInt(offset),
       limit: limit,
@@ -3197,6 +3510,180 @@ router.post("/deleteKundali", upload.none(), async (req, res) => {
   return res.json(result);
 })
 
+router.post("/getKundaliChart", upload.none(), async (req, res) => {
+  // Validation
+  const schema = Joi.object({
+    api_key: Joi.string().required(),
+    user_uni_id: Joi.string().required(),
+    id: Joi.number().required(),
+  });
+
+  const { error, value } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({
+      status: 0,
+      errors: error.details,
+      message: 'Validation failed',
+      msg: error.details.map(e => e.message).join('\n'),
+    });
+  }
+
+  const { api_key, user_uni_id, id } = value;
+
+  // Authorization
+  const isValid = await checkUserApiKey(api_key, user_uni_id);
+  if (!isValid) {
+    return res.status(401).json({
+      status: 0,
+      error_code: 101,
+      msg: 'Unauthorized User... Please login again',
+    });
+  }
+
+  try {
+    // Find kundali record
+    const kundali = await UserKundali.findOne({ where: { id, user_uni_id } });
+    
+    if (!kundali) {
+      return res.json({
+        status: 0,
+        msg: 'Kundali not found',
+      });
+    }
+
+    // Parse request_body to get birth details
+    let requestBody = {};
+    try {
+      requestBody = kundali.request_body ? JSON.parse(kundali.request_body) : {};
+    } catch (e) {
+      requestBody = {};
+    }
+
+    // Check if we have required data for chart generation
+    if (!requestBody.dob || !requestBody.tob || !requestBody.lat || !requestBody.lon) {
+      console.error('[getKundaliChart] Missing required fields:', {
+        hasDob: !!requestBody.dob,
+        hasTob: !!requestBody.tob,
+        hasLat: !!requestBody.lat,
+        hasLon: !!requestBody.lon,
+        requestBodyKeys: Object.keys(requestBody)
+      });
+      return res.json({
+        status: 0,
+        msg: 'Incomplete birth details for chart generation',
+        debug: {
+          hasDob: !!requestBody.dob,
+          hasTob: !!requestBody.tob,
+          hasLat: !!requestBody.lat,
+          hasLon: !!requestBody.lon
+        }
+      });
+    }
+
+    // Import generateVedicAstroKundaliChart (now exported)
+    const { generateVedicAstroKundaliChart } = await import('../_helpers/openaicommon.js');
+    
+    // Prepare user data for chart generation
+    const userData = {
+      dob: requestBody.dob,
+      tob: requestBody.tob,
+      lat: requestBody.lat,
+      lon: requestBody.lon,
+      tz: requestBody.timezone || requestBody.tz || '5.5',
+      name: kundali.name || requestBody.name || '',
+      gender: requestBody.gender || '',
+    };
+
+    // Generate chart
+    console.log('[getKundaliChart] User data for chart generation:', {
+      dob: userData.dob,
+      tob: userData.tob,
+      lat: userData.lat,
+      lon: userData.lon,
+      tz: userData.tz
+    });
+    
+    let chartResult;
+    try {
+      chartResult = await generateVedicAstroKundaliChart(userData);
+    } catch (chartError) {
+      console.error('[getKundaliChart] Error calling generateVedicAstroKundaliChart:', chartError);
+      console.error('[getKundaliChart] Error stack:', chartError.stack);
+      return res.json({
+        status: 0,
+        msg: 'Error generating chart: ' + (chartError.message || 'Unknown error'),
+      });
+    }
+    
+    console.log('[getKundaliChart] Chart result:', {
+      hasResult: !!chartResult,
+      hasChartImage: !!(chartResult && chartResult.chartImage),
+      chartImageType: chartResult && chartResult.chartImage ? typeof chartResult.chartImage : 'N/A',
+      chartImageLength: chartResult && chartResult.chartImage ? (typeof chartResult.chartImage === 'string' ? chartResult.chartImage.length : 'not string') : 'N/A'
+    });
+
+    if (chartResult && chartResult.chartImage) {
+      // Check if chartImage is a string (SVG or base64) or an object
+      let chartImageData = chartResult.chartImage;
+      
+      // If it's an object, try to extract the image data
+      if (typeof chartImageData === 'object') {
+        // Check common response structures
+        if (chartImageData.data) {
+          chartImageData = chartImageData.data;
+        } else if (chartImageData.image) {
+          chartImageData = chartImageData.image;
+        } else if (chartImageData.svg) {
+          chartImageData = chartImageData.svg;
+        } else if (chartImageData.chart) {
+          chartImageData = chartImageData.chart;
+        } else {
+          // Try to stringify if it's a valid object
+          chartImageData = JSON.stringify(chartImageData);
+        }
+      }
+      
+      // Ensure it's a string
+      if (typeof chartImageData !== 'string') {
+        console.error('[getKundaliChart] Chart image is not a string:', typeof chartImageData);
+        return res.json({
+          status: 0,
+          msg: 'Invalid chart image format',
+        });
+      }
+      
+      return res.json({
+        status: 1,
+        msg: 'Chart generated successfully',
+        chart_image: chartImageData,
+        kundali_data: {
+          id: kundali.id,
+          name: kundali.name,
+          method: kundali.kundali_method,
+          type: kundali.kundali_type,
+        }
+      });
+    } else {
+      console.error('[getKundaliChart] Chart generation failed:', {
+        hasResult: !!chartResult,
+        result: chartResult
+      });
+      return res.json({
+        status: 0,
+        msg: 'Failed to generate chart. Please try again.',
+        debug: chartResult ? 'Chart result exists but no chartImage' : 'No chart result returned'
+      });
+    }
+  } catch (err) {
+    console.error('getKundaliChart error:', err);
+    return res.status(500).json({
+      status: 0,
+      msg: 'Server Error',
+      error: err.message,
+    });
+  }
+})
+
 router.post('/customerServiceOrder', upload.none(), async (req, res) => {
   try {
     const { api_key, user_uni_id, offset = 0, limit = 15 } = req.body;
@@ -3297,25 +3784,29 @@ router.post('/customerServiceOrder', upload.none(), async (req, res) => {
           : null,
         is_available: order.is_available || 0,
         service_assign: {
-          id: serviceAssign.id,
-          service_id: serviceAssign.service_id,
-          astrologer_uni_id: serviceAssign.astrologer_uni_id,
-          price: serviceAssign.price,
-          actual_price: serviceAssign.actual_price,
-          description: serviceAssign.description,
-          duration: serviceAssign.duration,
-          status: serviceAssign.status,
-          created_at: moment(serviceAssign.created_at).format('YYYY-MM-DD HH:mm:ss'),
-          updated_at: moment(serviceAssign.updated_at).format('YYYY-MM-DD HH:mm:ss'),
+          id: serviceAssign.id || null,
+          service_id: serviceAssign.service_id || null,
+          astrologer_uni_id: serviceAssign.astrologer_uni_id || null,
+          price: serviceAssign.price || 0,
+          actual_price: serviceAssign.actual_price || 0,
+          description: serviceAssign.description || '',
+          duration: serviceAssign.duration || 0,
+          status: serviceAssign.status || 0,
+          created_at: serviceAssign.created_at 
+            ? moment(serviceAssign.created_at).format('YYYY-MM-DD HH:mm:ss')
+            : null,
+          updated_at: serviceAssign.updated_at
+            ? moment(serviceAssign.updated_at).format('YYYY-MM-DD HH:mm:ss')
+            : null,
           service: {
-            id: service.id,
-            service_category_id: service.service_category_id,
-            service_name: service.service_name,
-            slug: service.slug,
+            id: service.id || null,
+            service_category_id: service.service_category_id || null,
+            service_name: service.service_name || '',
+            slug: service.slug || '',
             service_image: service.service_image
               ? `${baseServiceUrl}${service.service_image}`
               : null,
-            service_description: service.service_description,
+            service_description: service.service_description || '',
           },
         },
         user_astrologer: {

@@ -25,6 +25,8 @@ import dayjs from "dayjs";
 import multer from "multer";
 import moment from 'moment-timezone';
 import AstrologerDiscountAssign from "../_models/astrologer_discount_assigns.js";
+import crypto from 'crypto';
+import { getFromCache, setToCache, CACHE_TTL } from '../_helpers/cacheHelper.js';
 
 const upload =multer();
 const router = express.Router();
@@ -81,6 +83,47 @@ router.post("/getAllAstrologer", upload.none(), async (req, res) => {
       whereClause.is_virtual = false;
     }
 
+   // Generate comprehensive cache key after all filters are applied
+   // Cache strategy: Cache all requests except when search is provided (search results are dynamic)
+   // For search queries, use shorter TTL since results may change frequently
+   let cachedResult = null;
+   const shouldCache = true; // Cache all requests
+   const isSearchQuery = !!search && search.trim().length > 0;
+   
+   if (shouldCache) {
+     // Create comprehensive cache key including all filters
+     const cacheKeyParams = {
+       offset: Number(offset),
+       limit: Number(limit),
+       search: search || '',
+       category: category || '',
+       is_virtual: body.is_virtual || false,
+       user_currency: userCurrency,
+       // Include filter hash for whereClause and orderArray
+       whereClause_hash: crypto.createHash('md5').update(JSON.stringify(whereClause)).digest('hex').substring(0, 8),
+       orderArray_hash: crypto.createHash('md5').update(JSON.stringify(orderArray)).digest('hex').substring(0, 8)
+     };
+     
+     // Create hash of cache key for shorter key
+     const cacheKeyHash = crypto.createHash('md5').update(JSON.stringify(cacheKeyParams)).digest('hex');
+     const cacheKey = {
+       hash: cacheKeyHash,
+       offset: Number(offset),
+       limit: Number(limit),
+       search: search || '',
+       is_search: isSearchQuery
+     };
+     
+     console.log(`[Cache] Checking cache for astrologers - Key: ${cacheKeyHash.substring(0, 12)}...`);
+     cachedResult = await getFromCache('astrologers', cacheKey);
+     
+     if (cachedResult) {
+       console.log(`[Cache] ✅ Cache HIT for astrologers - Key: ${cacheKeyHash.substring(0, 12)}...`);
+       return res.json(cachedResult);
+     }
+     console.log(`[Cache] ❌ Cache MISS for astrologers - Key: ${cacheKeyHash.substring(0, 12)}...`);
+   }
+   
    astrologers = await Astrologer.findAll({
     limit,
     offset,
@@ -362,9 +405,23 @@ router.post("/getAllAstrologer", upload.none(), async (req, res) => {
                     created_at: dayjs(price.created_at).format("YYYY-MM-DD HH:mm:ss"),
                     updated_at: dayjs(price.updated_at).format("YYYY-MM-DD HH:mm:ss"),
                   })); 
+        // Construct image URL using constants for consistency
+        const hostUrl = `${req.protocol}://${req.get("host")}`;
         const astro_img_url = astrologer.astro_img
-          ? `${req.protocol}://${req.get("host")}/uploads/astrologer/icon/${astrologer.astro_img}`
-          : `${req.protocol}://${req.get("host")}/assets/img/customer.png`;
+          ? `${hostUrl}/${constants.astrologer_image_path}icon/${astrologer.astro_img}`
+          : `${hostUrl}/${constants.default_astrologer_image_path}`;
+
+        // Debug logging for image URLs - REMOVED to prevent memory issues
+        // Only log in development mode if needed
+        // if (process.env.NODE_ENV === 'development') {
+        //   console.log(`[Image URL] Astrologer ${astrologer.astrologer_uni_id}:`, {
+        //     display_name: astrologer.display_name,
+        //     astro_img_from_db: astrologer.astro_img,
+        //     constructed_url: astro_img_url,
+        //     protocol: req.protocol,
+        //     host: req.get("host")
+        //   });
+        // }
 
         const user = astrologer.user || {};
       
@@ -422,6 +479,49 @@ router.post("/getAllAstrologer", upload.none(), async (req, res) => {
           status: 0,
           msg: "No Record Found"
         };
+    
+    // Cache the result with appropriate TTL based on query type
+    if (shouldCache && cachedResult === null && result.status === 1) {
+      // Recreate cache key (must match the one used for getFromCache)
+      const cacheKeyParams = {
+        offset: Number(offset),
+        limit: Number(limit),
+        search: search || '',
+        category: category || '',
+        is_virtual: body.is_virtual || false,
+        user_currency: userCurrency,
+        whereClause_hash: crypto.createHash('md5').update(JSON.stringify(whereClause)).digest('hex').substring(0, 8),
+        orderArray_hash: crypto.createHash('md5').update(JSON.stringify(orderArray)).digest('hex').substring(0, 8)
+      };
+      const cacheKeyHash = crypto.createHash('md5').update(JSON.stringify(cacheKeyParams)).digest('hex');
+      const cacheKey = {
+        hash: cacheKeyHash,
+        offset: Number(offset),
+        limit: Number(limit),
+        search: search || '',
+        is_search: isSearchQuery
+      };
+      
+      // Use shorter TTL for search queries (1 minute) vs regular queries (5 minutes)
+      const ttl = isSearchQuery ? CACHE_TTL.SHORT : CACHE_TTL.MEDIUM;
+      
+      console.log(`[Cache] Attempting to cache astrologers - Key: ${cacheKeyHash.substring(0, 12)}..., TTL: ${ttl}s, Status: ${result.status}`);
+      
+      const cacheSuccess = await setToCache('astrologers', cacheKey, result, ttl);
+      if (cacheSuccess) {
+        console.log(`[Cache] ✅ Successfully cached astrologers result - Key: ${cacheKeyHash.substring(0, 12)}..., TTL: ${ttl}s`);
+      } else {
+        console.log(`[Cache] ⚠️ Failed to cache astrologers result - Key: ${cacheKeyHash.substring(0, 12)}... (Redis may not be available)`);
+      }
+    } else {
+      if (!shouldCache) {
+        console.log(`[Cache] ⚠️ Caching disabled for this request`);
+      } else if (cachedResult !== null) {
+        console.log(`[Cache] ⚠️ Not caching - result was already from cache`);
+      } else if (result.status !== 1) {
+        console.log(`[Cache] ⚠️ Not caching - result status is ${result.status} (only caching successful results)`);
+      }
+    }
       
     return res.json(result);
 
@@ -612,7 +712,8 @@ router.post("/featuredCategoryList", async (req, res) => {
 
    // console.log("astroRes",astroRes);
     const astrologerList = astroRes.data?.data || [];
-         console.log("astrologerdata",astrologerList);
+         // Removed excessive logging to prevent memory issues
+         // console.log("astrologerdata",astrologerList);
     // 2. Fetch featured categories
     const categoryWhere = {
       status: 1,
@@ -621,13 +722,15 @@ router.post("/featuredCategoryList", async (req, res) => {
         [Op.notIn]: [architectCategoryId, electroHomoeopathyCategoryId],
       },
     };
-           console.log("categoryWhere",categoryWhere);
+           // Removed excessive logging to prevent memory issues
+           // console.log("categoryWhere",categoryWhere);
     if (search && search.trim() !== "") {
       categoryWhere.category_title = { [Op.like]: `%${search.trim()}%` };
     }
 
     const categories = await Category.findAll({ where: categoryWhere, raw: true });
-       console.log("categories",categories);
+       // Removed excessive logging to prevent memory issues
+       // console.log("categories",categories);
     // 3. Match astrologers to categories
     const finalData = categories.map((category) => {
       const astrologer_list = astrologerList.filter((astro) => {
@@ -644,7 +747,8 @@ router.post("/featuredCategoryList", async (req, res) => {
         astrologer_list,
       };
     });
-      console.log("finalData" ,finalData);
+      // Removed excessive logging to prevent memory issues
+      // console.log("finalData" ,finalData);
     // Filter only categories that have astrologers
     const nonEmptyCategories = finalData.filter(
       (item) => item.astrologer_list.length > 0

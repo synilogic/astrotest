@@ -4,7 +4,8 @@ import multer from 'multer';
 import {
   productCategory,
   productDetail,
-  products,      
+  products,
+  addProduct
 } from './productController.js';
 
 
@@ -14,6 +15,7 @@ const router = express.Router();
 router.post('/productCategory', upload.none(), productCategory);
 router.post('/products', upload.none(), products);
 router.post('/productDetail', upload.none(), productDetail);
+router.post('/addProduct', upload.none(), addProduct);
 
 
 export default router;

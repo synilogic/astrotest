@@ -45,10 +45,19 @@ export const getQuery = async (filter, req) => {
     whereConditions.auth_id = filter.astrologer_uni_id;
   }
 
+  // Add ID filter
+  if (filter.id) {
+    whereConditions.id = Number(filter.id);
+  }
 
-  // Add status filter
-  if (filter.status !== undefined && filter.status !== '') {
-    whereConditions.status = filter.status;
+  // Add slug filter
+  if (filter.slug) {
+    whereConditions.slug = filter.slug;
+  }
+
+  // Add status filter - ensure it's a string since DB stores status as STRING
+  if (filter.status !== undefined && filter.status !== '' && filter.status !== null) {
+    whereConditions.status = String(filter.status); // Convert to string to match DB type
   }
 
   // Include associations
@@ -71,19 +80,28 @@ export const getQuery = async (filter, req) => {
       } : undefined
     },
     {
-      model: UserModel,
-      as: 'user',
-      required: true, // This ensures blogs with valid users only
-      attributes: [
-        'id',
-        'user_uni_id',
-        'name',
-        'user_fcm_token',
-        'user_ios_token',
-        'avg_rating'
-      ]
-    },
+      model: BlogCategory,
+      as: 'blogcategory_short',
+      required: false,
+      attributes: ['id', 'title', 'slug']
+    }
   );
+  
+  // Only include User if we actually need it (for now, make it completely optional)
+  // Commenting out User include to see if it's causing the filtering issue
+  // {
+  //   model: UserModel,
+  //   as: 'user_short',
+  //   required: false,
+  //   attributes: [
+  //     'id',
+  //     'user_uni_id',
+  //     'name',
+  //     'user_fcm_token',
+  //     'user_ios_token',
+  //     'avg_rating'
+  //   ]
+  // }
 
   // Remove undefined where conditions from includes
   includeConditions.forEach(include => {
@@ -91,6 +109,38 @@ export const getQuery = async (filter, req) => {
       delete include.where;
     }
   });
+
+  // Log query details
+  console.log('[blogService] Query parameters:', {
+    whereConditions,
+    limit,
+    offset,
+    hasUserInclude: includeConditions.some(inc => inc.as === 'user')
+  });
+
+  // Count total blogs matching conditions (without includes for accurate count)
+  const totalCountWithoutIncludes = await Blog.count({
+    where: whereConditions
+  });
+  console.log('[blogService] Total blogs matching WHERE conditions (no includes):', totalCountWithoutIncludes);
+  
+  // Also check ALL blogs in database for debugging
+  const allBlogsCount = await Blog.count({});
+  console.log('[blogService] Total blogs in database (all statuses):', allBlogsCount);
+  
+  // Check blogs by status
+  const activeBlogsCount = await Blog.count({ where: { status: '1' } });
+  const inactiveBlogsCount = await Blog.count({ where: { status: '0' } });
+  console.log('[blogService] Blogs with status=1:', activeBlogsCount);
+  console.log('[blogService] Blogs with status=0:', inactiveBlogsCount);
+  
+  // Count with includes (may differ if associations filter results)
+  const totalCount = await Blog.count({
+    where: whereConditions,
+    include: includeConditions,
+    distinct: true
+  });
+  console.log('[blogService] Total blogs matching conditions (with includes):', totalCount);
 
   const blogs = await Blog.findAll({
     where: whereConditions,
@@ -116,7 +166,13 @@ export const getQuery = async (filter, req) => {
     ]
   });
 
+  console.log('[blogService] Blogs fetched:', blogs.length);
+  if (blogs.length > 0) {
+    console.log('[blogService] Blog IDs:', blogs.map(b => ({ id: b.id, title: b.title, status: b.status, auth_id: b.auth_id })));
+  }
+
   // Process blogs to add computed fields
+  console.log('[blogService] Processing', blogs.length, 'blogs');
   const processedBlogs = blogs.map(blog => {
     const blogData = blog.toJSON();
     

@@ -35,6 +35,12 @@ import  ServiceCategory  from './serviceCategory.js';
 
 import Blog from '../_models/blog.js';
 import BlogCategory from '../_models/blogCategory.js';
+import SlotBooking from './slot_bookings.js';
+import ArchitectRoom from './architectRoom.js';
+import ArchitectServiceOrder from './architectServiceOrder.js';
+
+// Note: AskQuestion associations are already defined in init-models.js
+// No need to duplicate them here
 
 Blog.belongsTo(Astrologer, {
   foreignKey: 'auth_id',
@@ -153,6 +159,63 @@ Reviews.belongsTo(Astrologer, {
 SanjeeviniOrder.belongsTo(Sanjeevini, {
   foreignKey: 'sanjeevini_id',
   as: 'sanjeevini' 
+});
+
+// SlotBooking associations
+SlotBooking.belongsTo(User, {
+  foreignKey: 'astrologer_uni_id',
+  targetKey: 'user_uni_id',
+  as: 'astrologer_user'
+});
+
+SlotBooking.belongsTo(Astrologer, {
+  foreignKey: 'astrologer_uni_id',
+  targetKey: 'astrologer_uni_id',
+  as: 'astrologer'
+});
+
+SlotBooking.belongsTo(Customer, {
+  foreignKey: 'customer_uni_id',
+  targetKey: 'customer_uni_id',
+  as: 'customer'
+});
+
+// ArchitectRoom associations
+ArchitectRoom.belongsTo(User, {
+  foreignKey: 'architect_uni_id',
+  targetKey: 'user_uni_id',
+  as: 'architect_user'
+});
+
+ArchitectRoom.belongsTo(Astrologer, {
+  foreignKey: 'architect_uni_id',
+  targetKey: 'astrologer_uni_id',
+  as: 'architect'
+});
+
+ArchitectRoom.belongsTo(Customer, {
+  foreignKey: 'customer_uni_id',
+  targetKey: 'customer_uni_id',
+  as: 'customer'
+});
+
+// ArchitectServiceOrder associations
+ArchitectServiceOrder.belongsTo(User, {
+  foreignKey: 'architect_uni_id',
+  targetKey: 'user_uni_id',
+  as: 'architect_user'
+});
+
+ArchitectServiceOrder.belongsTo(Astrologer, {
+  foreignKey: 'architect_uni_id',
+  targetKey: 'astrologer_uni_id',
+  as: 'architect'
+});
+
+ArchitectServiceOrder.belongsTo(Customer, {
+  foreignKey: 'customer_uni_id',
+  targetKey: 'customer_uni_id',
+  as: 'customer'
 });
 
 

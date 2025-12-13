@@ -465,12 +465,12 @@ export const startVideoCall = async (array, call_type) => {
                 
 
                  const status_online_data = {
-  uniqeid,
-  customer_uni_id: array.user_uni_id,
-  astrologer_uni_id: array.astrologer_uni_id,
-  charge: parseFloat(astroPrice) || 0,
-  original_astro_charge: parseFloat(astroPrice) || 0,
-  charge_minutes,
+ uniqeid,
+ customer_uni_id: array.user_uni_id,
+ astrologer_uni_id: array.astrologer_uni_id,
+ charge: parseFloat(astroPrice) || 0,
+ // original_astro_charge: parseFloat(astroPrice) || 0, // Commented out - column doesn't exist in database
+ charge_minutes,
   duration: 0,
   status: "queue",
   call_type,

@@ -164,6 +164,14 @@ router.post("/proceedPaymentRequest", upload.none(), async (req, res) => {
 
   const { api_key, user_uni_id, payment_method, wallet_id, is_updated } = req.body;
 
+  // Normalize payment_method to handle case variations
+  const normalizedPaymentMethod = payment_method ? payment_method.trim() : '';
+  console.log('🔍 Payment Gateway Mapping:', {
+    received: payment_method,
+    normalized: normalizedPaymentMethod,
+    availableGateways: ['razorpay', 'PhonePe', 'CCAvenue', 'Cashfree', 'Payu', 'PayTm']
+  });
+
   try {
     const isAuthorized = await checkUserApiKey(api_key, user_uni_id);
     if (!isAuthorized) {
@@ -265,9 +273,14 @@ router.post("/proceedPaymentRequest", upload.none(), async (req, res) => {
       return res.status(500).json({ status: 0, msg: 'Something went wrong. Please try again.' });
     }
 
-    if (payment_method === 'PayTm') {
+    // Use normalized payment method for matching
+    const paymentMethod = normalizedPaymentMethod;
+    
+    if (paymentMethod === 'PayTm' || paymentMethod.toLowerCase() === 'paytm') {
       // TODO: Handle PayTm logic
-    } else if (payment_method === 'razorpay') {
+      console.log('⚠️ PayTm payment method not implemented yet');
+      return res.status(400).json({ status: 0, msg: 'PayTm payment method is not supported yet' });
+    } else if (paymentMethod === 'razorpay' || paymentMethod.toLowerCase() === 'razorpay') {
       const RazorpayInstance = new RazorpayApi();
       const response = await RazorpayInstance.createOrderId({
         amount: totalamount,
@@ -309,7 +322,7 @@ router.post("/proceedPaymentRequest", upload.none(), async (req, res) => {
       } else {
         return res.status(500).json({ status: 0, msg: response?.msg || 'Razorpay order creation failed' });
       }
-    } else if (payment_method === 'CCAvenue') {
+    } else if (paymentMethod === 'CCAvenue' || paymentMethod.toLowerCase() === 'ccavenue') {
   let cust_phone = customerData.user.phone || '';
   if (cust_phone) cust_phone = cust_phone.slice(-10);
   let cust_email = customerData.user.email || '';
@@ -386,7 +399,14 @@ router.post("/proceedPaymentRequest", upload.none(), async (req, res) => {
       msg: 'Something went Wrong. Please Try Again'
     });
   }
-    }else if (payment_method === 'PhonePe') {
+    } else if (paymentMethod === 'PhonePe' || paymentMethod.toLowerCase() === 'phonepe') {
+  console.log('✅ PhonePe Payment Method Matched:', {
+    received: payment_method,
+    normalized: normalizedPaymentMethod,
+    paymentMethod: paymentMethod,
+    matching: true
+  });
+  
   try {
     const custPhone = customerData?.user?.phone || '';
     const mobileNumber = custPhone ? custPhone.slice(-10) : '';
@@ -406,12 +426,28 @@ router.post("/proceedPaymentRequest", upload.none(), async (req, res) => {
       is_updated: is_updated || 0
     };
 
-    console.log("PhonePe parameters:", parameters);
-
+    // Initialize PhonePe Gateway first
     const phonePeGateway = new PhonePeGateway();
+    
+    console.log("📞 PhonePe Payment Request:", {
+      parameters: {
+        ...parameters,
+        amount: parameters.amount,
+        merchantTransactionId: parameters.merchantTransactionId
+      },
+      merchantId: phonePeGateway.merchantId ? 'Configured' : 'Missing',
+      testMode: phonePeGateway.testMode ? 'TEST' : 'LIVE'
+    });
+
     const phonepe_response = await phonePeGateway.requestApp(parameters);
 
-    console.log("PhonePe response:", phonepe_response);
+    console.log("📥 PhonePe Gateway Response:", {
+      status: phonepe_response.status,
+      msg: phonepe_response.msg,
+      hasError: !!phonepe_response.error,
+      errorCode: phonepe_response.error?.code,
+      errorMessage: phonepe_response.error?.message
+    });
 
     if (phonepe_response.status === 1) {
       // Update wallet order with gateway_order_id
@@ -462,7 +498,7 @@ router.post("/proceedPaymentRequest", upload.none(), async (req, res) => {
       error: error.message
     });
   }
-}else if (payment_method === 'Cashfree') {
+    } else if (paymentMethod === 'Cashfree' || paymentMethod.toLowerCase() === 'cashfree') {
   try {
    
     const custPhone = customerData?.user?.phone || '';
@@ -470,11 +506,36 @@ router.post("/proceedPaymentRequest", upload.none(), async (req, res) => {
     
     const gatewayOrderId = `order_${generateNDigitRandomNumber(8)}`;
     
-    // For local development with live keys, you need a public URL
-    // You can use ngrok or your actual domain
-    const baseUrl = process.env.CASHFREE_CALLBACK_URL || `${req.protocol}://${req.get('host')}`;
+    // Cashfree requires HTTPS URLs - handle localhost and production
+    let baseUrl = process.env.CASHFREE_CALLBACK_URL;
+    
+    if (!baseUrl) {
+      // If no environment variable, construct from request
+      const host = req.get('host');
+      const protocol = req.protocol;
+      
+      // For localhost, use HTTPS (Cashfree requirement)
+      // In production, use actual protocol
+      if (host.includes('localhost') || host.includes('127.0.0.1')) {
+        // For local development, you need to use ngrok or similar tool
+        // Or set CASHFREE_CALLBACK_URL environment variable
+        baseUrl = process.env.CASHFREE_CALLBACK_URL || 'https://your-ngrok-url.ngrok.io';
+        console.warn('⚠️ Cashfree: Using localhost - HTTPS URL required. Set CASHFREE_CALLBACK_URL env variable or use ngrok.');
+      } else {
+        // Production - force HTTPS if not already
+        baseUrl = protocol === 'https' ? `${protocol}://${host}` : `https://${host}`;
+      }
+    }
     
     const returnUrl = `${baseUrl}/api/paymentresponsecashfreeapp`;
+    
+    console.log('🔗 Cashfree Return URL:', {
+      baseUrl,
+      returnUrl,
+      isHttps: returnUrl.startsWith('https://'),
+      host: req.get('host'),
+      protocol: req.protocol
+    });
     
     const parameters = {
       gateway_order_id: gatewayOrderId,
@@ -553,7 +614,7 @@ router.post("/proceedPaymentRequest", upload.none(), async (req, res) => {
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
-}else if (payment_method === 'Payu') {
+    } else if (paymentMethod === 'Payu' || paymentMethod.toLowerCase() === 'payu' || paymentMethod === 'PayU') {
   const custPhone = customerData?.user?.phone || '';
   const mobileNumber = custPhone ? custPhone.slice(-10) : '';
 
@@ -619,13 +680,31 @@ router.post("/proceedPaymentRequest", upload.none(), async (req, res) => {
       },
       data
     });
-  } else {
-    return res.status(500).json({
-      status: 0,
-      msg: payu_data.msg || 'Something went wrong!',
-    });
-  }
-}
+    } else {
+      return res.status(500).json({
+        status: 0,
+        msg: payu_data.msg || 'Something went wrong!',
+      });
+    }
+    } else {
+      // Unsupported payment method
+      console.error('❌ Unsupported Payment Method:', {
+        received: payment_method,
+        normalized: normalizedPaymentMethod,
+        supportedMethods: ['razorpay', 'PhonePe', 'CCAvenue', 'Cashfree', 'Payu', 'PayTm']
+      });
+      
+      return res.status(400).json({
+        status: 0,
+        msg: `Payment method "${payment_method}" is not supported. Supported methods: Razorpay, PhonePe, CCAvenue, Cashfree, PayU, PayTM`,
+        error: {
+          code: 'UNSUPPORTED_PAYMENT_METHOD',
+          message: `Payment method "${payment_method}" is not supported`,
+          received: payment_method,
+          supported: ['razorpay', 'PhonePe', 'CCAvenue', 'Cashfree', 'Payu', 'PayTm']
+        }
+      });
+    }
 
 
   } catch (err) {

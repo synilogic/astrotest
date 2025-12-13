@@ -9,6 +9,7 @@ import WalletModel from '../_models/wallet.js';
 import CustomerModel from '../_models/customers.js';
 import UserModel from '../_models/users.js';
 import {checkUserApiKey} from '../_helpers/common.js';
+import { getFromCache, setToCache, CACHE_TTL } from '../_helpers/cacheHelper.js';
 
 dotenv.config();
 
@@ -82,8 +83,33 @@ router.post("/getWalletBalance", upload.none(), async (req, res) => {
       });
     }
 
-    // Step 3: Get wallet balance
+    // Step 3: Try to get from cache first (short TTL since balance changes frequently)
+    const cacheKey = { user_uni_id };
+    const cachedBalance = await getFromCache('wallet_balance', cacheKey);
+    
+    if (cachedBalance !== null) {
+      // Return cached balance with customer data
+      let is_anonymous_review = 0;
+      const cust_data = await CustomerModel.findOne({
+        where: { customer_uni_id: user_uni_id }
+      });
+      if (cust_data) {
+        is_anonymous_review = cust_data.is_anonymous_review;
+      }
+      
+      return res.json({
+        status: 1,
+        msg: 'Wallet Balance',
+        data: cachedBalance,
+        is_anonymous_review: is_anonymous_review,
+      });
+    }
+
+    // Step 4: Get wallet balance from database
     const amount_balance = await getTotalBalanceById(user_uni_id);
+    
+    // Cache the balance for 30 seconds (short TTL since balance changes with transactions)
+    await setToCache('wallet_balance', cacheKey, amount_balance, CACHE_TTL.SHORT);
   
 let is_anonymous_review=0;
 
