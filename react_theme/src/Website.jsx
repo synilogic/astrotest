@@ -8,7 +8,7 @@ import 'swiper/css/effect-fade'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import usePageTitle from './hooks/usePageTitle'
-import { fetchBanners, fetchServices, fetchTopAstrologers, fetchBlogs, fetchProductCategories, fetchReviews, fetchWelcomeData } from './utils/api'
+import { fetchBanners, fetchBannerCategories, fetchServices, fetchTopAstrologers, fetchBlogs, fetchProductCategories, fetchReviews, fetchWelcomeData } from './utils/api'
 import { Link } from 'react-router-dom'
 
 // Helper function to get safe image URL with fallback
@@ -29,6 +29,7 @@ const Landing = () => {
   
   // State for data
   const [banners, setBanners] = useState([])
+  const [bannerCategories, setBannerCategories] = useState([])
   const [services, setServices] = useState([])
   const [astrologers, setAstrologers] = useState([])
   const [blogs, setBlogs] = useState([])
@@ -42,8 +43,12 @@ const Landing = () => {
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        // Fetch banners
-        const bannersRes = await fetchBanners()
+        // Fetch banners and banner categories in parallel
+        const [bannersRes, bannerCategoriesRes] = await Promise.all([
+          fetchBanners(),
+          fetchBannerCategories()
+        ])
+        
         console.log('[Website] Banners response:', bannersRes)
         if (bannersRes && bannersRes.status === 1 && bannersRes.data && Array.isArray(bannersRes.data)) {
           console.log('[Website] Banners loaded:', bannersRes.data.length, 'banners')
@@ -51,6 +56,15 @@ const Landing = () => {
         } else {
           console.warn('[Website] Banners response invalid:', bannersRes)
           setBanners([])
+        }
+        
+        console.log('[Website] Banner Categories response:', bannerCategoriesRes)
+        if (bannerCategoriesRes && bannerCategoriesRes.status === 1 && bannerCategoriesRes.data) {
+          console.log('[Website] Banner Categories loaded:', bannerCategoriesRes.data.length, 'categories')
+          setBannerCategories(bannerCategoriesRes.data)
+        } else {
+          console.warn('[Website] Banner Categories response invalid:', bannerCategoriesRes)
+          setBannerCategories([])
         }
         
         // Fetch welcome data for "Why Choose Us" section
@@ -1078,6 +1092,10 @@ const Landing = () => {
                               <div className="react-astrologer-detail">
                                 <span className="react-detail-label">Languages:</span>
                                 <span className="react-detail-value">{astro.language_name || 'N/A'}</span>
+                              </div>
+                              <div className="react-astrologer-detail">
+                                <span className="react-detail-label">Skills:</span>
+                                <span className="react-detail-value" title={astro.skill_names || 'N/A'}>{(astro.skill_names || 'N/A').length > 25 ? (astro.skill_names || 'N/A').substring(0, 25) + '...' : (astro.skill_names || 'N/A')}</span>
                               </div>
                               <div className="react-astrologer-detail">
                                 <span className="react-detail-label">Price:</span>

@@ -13,6 +13,8 @@ import { checkUserApiKey, getUserData } from "../_helpers/common.js";
 import Language from "../_models/languages.js";
 import Skill from "../_models/skills.js";
 import Banner from "../_models/banners.js";
+import BannerCategory from "../_models/banner_categories.js";
+import BlogCategory from "../_models/blogCategory.js";
 import UserAddress from "../_models/userAddress.js";
 import { constants, CURRENCY, imagePath } from "../_config/constants.js";
 import { Op, Sequelize } from "sequelize";
@@ -781,6 +783,27 @@ router.post("/bannerList", upload.none(), async (req, res) => {
   }
 });
 
+// Get all banner categories
+router.post("/getBannerCategories", upload.none(), async (req, res) => {
+  try {
+    const records = await BannerCategory.findAll({
+      where: { status: '1' },
+      attributes: ["id", "title"],
+      order: [["id", "ASC"]]
+    });
+
+    const result = records.length > 0
+      ? { status: 1, data: records, msg: "Success" }
+      : { status: 0, data: [], msg: "No categories found" };
+
+    return res.json(result);
+  } catch (error) {
+    console.error("Banner categories fetch error:", error);
+    const result = { status: 0, msg: "Internal Server Error" };
+    return res.status(500).json(result);
+  }
+});
+
 router.post("/userAddressList", upload.none(), async (req, res) => {
   // const api = await saveApiLogs(req);
 
@@ -1256,6 +1279,27 @@ router.post('/astrologerFollow', upload.none(), async (req, res) => {
       error: err.message
     };
     // await updateApiLogs(apiLog, result);
+    return res.status(500).json(result);
+  }
+});
+
+// Get all blog categories
+router.post("/getBlogCategories", upload.none(), async (req, res) => {
+  try {
+    const records = await BlogCategory.findAll({
+      where: { status: 1 },
+      attributes: ["id", "title", "slug", "image"],
+      order: [["id", "ASC"]]
+    });
+
+    const result = records.length > 0
+      ? { status: 1, data: records, msg: "Success" }
+      : { status: 0, data: [], msg: "No categories found" };
+
+    return res.json(result);
+  } catch (error) {
+    console.error("Blog categories fetch error:", error);
+    const result = { status: 0, msg: "Internal Server Error" };
     return res.status(500).json(result);
   }
 });

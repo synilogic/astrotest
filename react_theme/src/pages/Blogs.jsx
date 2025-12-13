@@ -4,16 +4,35 @@ import usePageTitle from '../hooks/usePageTitle'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { Link } from 'react-router-dom'
-import { fetchBlogs } from '../utils/api'
+import { fetchBlogs, fetchBlogCategories, likeBlog, getCurrentUser } from '../utils/api'
 
 const Blogs = () => {
   useBreadStars()
   usePageTitle('Blogs - Astrology Theme')
 
   const [blogs, setBlogs] = useState([])
+  const [blogCategories, setBlogCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [failedImages, setFailedImages] = useState(new Set())
+  const [likedBlogs, setLikedBlogs] = useState({})  // Track liked status per blog
+  const [likeCounts, setLikeCounts] = useState({})  // Track like counts per blog
+
+  // Fetch blog categories on mount
+  useEffect(() => {
+    const loadBlogCategories = async () => {
+      try {
+        const response = await fetchBlogCategories()
+        console.log('[Blogs] Blog Categories response:', response)
+        if (response && response.status === 1 && response.data) {
+          setBlogCategories(response.data)
+        }
+      } catch (err) {
+        console.error('[Blogs] Error loading blog categories:', err)
+      }
+    }
+    loadBlogCategories()
+  }, [])
 
   useEffect(() => {
     const loadBlogs = async () => {
@@ -26,6 +45,15 @@ const Blogs = () => {
         console.log('[Blogs] First batch response:', firstBatch)
         if (firstBatch && firstBatch.status === 1 && Array.isArray(firstBatch.data) && firstBatch.data.length > 0) {
           setBlogs(firstBatch.data) // Show first batch immediately
+          // Initialize like states from blog data
+          const initialLiked = {}
+          const initialCounts = {}
+          firstBatch.data.forEach(blog => {
+            initialLiked[blog.id] = blog.is_likes || false
+            initialCounts[blog.id] = blog.like_count || 0
+          })
+          setLikedBlogs(initialLiked)
+          setLikeCounts(initialCounts)
           setLoading(false)
           
           // Fetch additional batches in background
@@ -40,6 +68,11 @@ const Blogs = () => {
                 if (blogsRes && blogsRes.status === 1 && Array.isArray(blogsRes.data) && blogsRes.data.length > 0) {
                   allBlogs = [...allBlogs, ...blogsRes.data]
                   setBlogs([...allBlogs]) // Update with more blogs
+                  // Update like states for new blogs
+                  blogsRes.data.forEach(blog => {
+                    setLikedBlogs(prev => ({ ...prev, [blog.id]: blog.is_likes || false }))
+                    setLikeCounts(prev => ({ ...prev, [blog.id]: blog.like_count || 0 }))
+                  })
                   currentOffset = blogsRes.offset || (currentOffset + blogsRes.data.length)
                 } else {
                   break
@@ -95,6 +128,46 @@ const Blogs = () => {
     if (originalSrc && !failedImages.has(originalSrc)) {
       setFailedImages(prev => new Set(prev).add(originalSrc))
       e.target.src = 'https://images.unsplash.com/photo-1543722530-d2c3201371e7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
+    }
+  }
+
+  // Handle like toggle
+  const handleLikeToggle = async (blogId) => {
+    const currentUser = getCurrentUser()
+    if (!currentUser || !currentUser.user_uni_id) {
+      alert('Please login to like blogs')
+      return
+    }
+
+    const isCurrentlyLiked = likedBlogs[blogId] || false
+    const newStatus = isCurrentlyLiked ? 0 : 1  // Toggle: if liked, unlike (0), else like (1)
+
+    // Optimistic update
+    setLikedBlogs(prev => ({ ...prev, [blogId]: !isCurrentlyLiked }))
+    setLikeCounts(prev => ({
+      ...prev,
+      [blogId]: (prev[blogId] || 0) + (isCurrentlyLiked ? -1 : 1)
+    }))
+
+    try {
+      const response = await likeBlog(blogId, newStatus)
+      if (response.status !== 1) {
+        // Revert on failure
+        setLikedBlogs(prev => ({ ...prev, [blogId]: isCurrentlyLiked }))
+        setLikeCounts(prev => ({
+          ...prev,
+          [blogId]: (prev[blogId] || 0) + (isCurrentlyLiked ? 1 : -1)
+        }))
+        console.error('[Blogs] Like failed:', response.msg)
+      }
+    } catch (err) {
+      // Revert on error
+      setLikedBlogs(prev => ({ ...prev, [blogId]: isCurrentlyLiked }))
+      setLikeCounts(prev => ({
+        ...prev,
+        [blogId]: (prev[blogId] || 0) + (isCurrentlyLiked ? 1 : -1)
+      }))
+      console.error('[Blogs] Like error:', err)
     }
   }
 
@@ -170,6 +243,18 @@ const Blogs = () => {
                         <div className="react-meta-item">
                           <i className="fa-solid fa-user"></i>
                           {authorName}
+                        </div>
+                        <div 
+                          className="react-meta-item react-like-btn"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            handleLikeToggle(blog.id)
+                          }}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <i className={`fa-${likedBlogs[blog.id] ? 'solid' : 'regular'} fa-heart`} 
+                             style={{ color: likedBlogs[blog.id] ? '#e74c3c' : 'inherit' }}></i>
+                          <span>{likeCounts[blog.id] || 0}</span>
                         </div>
                       </div>
                       <Link 

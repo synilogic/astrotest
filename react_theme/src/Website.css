@@ -138,6 +138,146 @@ p {
   background-color: rgba(109, 40, 217, 0.1);
 }
 
+/* Small Button */
+.react-btn-small {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.react-btn-small.react-btn-primary {
+  background-color: var(--react-primary);
+  color: white;
+}
+
+.react-btn-small.react-btn-primary:hover {
+  background-color: var(--react-astro-indigo);
+  transform: translateY(-1px);
+}
+
+/* Call Detail Modal Styles */
+.react-call-detail-modal {
+  max-width: 600px;
+}
+
+.react-call-info-section {
+  margin-bottom: 24px;
+}
+
+.react-call-info-section h3,
+.react-call-images-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+}
+
+.react-call-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.react-call-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.react-call-info-item .react-label {
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+}
+
+.react-call-info-item .react-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.react-call-images-section {
+  margin-top: 24px;
+}
+
+.react-call-images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 16px;
+}
+
+.react-call-image-item {
+  border: 1px solid #eee;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f9f9f9;
+}
+
+.react-call-image-item a {
+  display: block;
+  text-decoration: none;
+}
+
+.react-call-image-item img {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  display: block;
+}
+
+.react-call-image-item .react-file-icon,
+.react-call-image-item .react-file-placeholder {
+  width: 100%;
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  color: #666;
+}
+
+.react-call-image-item .react-file-icon i,
+.react-call-image-item .react-file-placeholder i {
+  font-size: 28px;
+  margin-bottom: 8px;
+  color: var(--react-primary);
+}
+
+.react-call-image-item .react-file-icon span,
+.react-call-image-item .react-file-placeholder span {
+  font-size: 11px;
+}
+
+.react-call-image-item .react-image-info {
+  padding: 8px;
+  text-align: center;
+  background: white;
+}
+
+.react-call-image-item .react-image-info small {
+  font-size: 11px;
+  color: #888;
+}
+
+@media (max-width: 480px) {
+  .react-call-info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .react-call-images-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 /* Icons */
 .react-gold-icon {
   /* color: var(--react-astro-gold); */
@@ -1315,6 +1455,30 @@ section {
 .react-meta-item i {
   margin-right: 0.5rem;
   color: var(--react-primary);
+}
+
+/* Like Button Styles */
+.react-like-btn {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  user-select: none;
+}
+
+.react-like-btn:hover {
+  transform: scale(1.1);
+}
+
+.react-like-btn i {
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.react-like-btn:active i {
+  transform: scale(1.3);
+}
+
+.react-like-btn span {
+  margin-left: 4px;
+  font-weight: 500;
 }
 
 .react-blog-link {

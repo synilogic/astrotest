@@ -4,7 +4,7 @@ import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import Pagination from '../components/Pagination'
 import Modal from '../components/Modal'
-import { getVendorDashboard, getCurrentUser, updateVendorProfile, fetchPublicCountryList, fetchPublicStateList, fetchPublicCityList, getWalletTransactions, getRechargeVouchers, proceedPaymentRequest, updateOnlinePayment, fetchWelcomeData, getWalletBalance, fetchProducts, fetchProductCategories, getVendorWithdrawalRequests, addVendorProduct, getImageUrl, fetchAstrologerGiftHistory } from '../utils/api'
+import { getVendorDashboard, getCurrentUser, updateVendorProfile, fetchPublicCountryList, fetchPublicStateList, fetchPublicCityList, getWalletTransactions, getRechargeVouchers, proceedPaymentRequest, updateOnlinePayment, fetchWelcomeData, getWalletBalance, fetchProducts, fetchProductCategories, getVendorWithdrawalRequests, addVendorProduct, getImageUrl, fetchAstrologerGiftHistory, getBankDetails, saveBankDetails } from '../utils/api'
 
 const Vendor_Dashboard = () => {
   const navigate = useNavigate()
@@ -69,6 +69,20 @@ const Vendor_Dashboard = () => {
   const [withdrawals, setWithdrawals] = useState([])
   const [loadingWithdrawals, setLoadingWithdrawals] = useState(false)
   const [chartData, setChartData] = useState({ months: [], income: [] })
+  
+  // Bank details state
+  const [bankDetails, setBankDetails] = useState({
+    bank_name: '',
+    account_no: '',
+    account_type: 'Savings',
+    ifsc_code: '',
+    account_name: '',
+    pan_no: ''
+  })
+  const [loadingBankDetails, setLoadingBankDetails] = useState(false)
+  const [savingBankDetails, setSavingBankDetails] = useState(false)
+  const [bankDetailsError, setBankDetailsError] = useState(null)
+  const [bankDetailsSuccess, setBankDetailsSuccess] = useState(false)
   const [productCategories, setProductCategories] = useState([])
 
   // Add product form state
@@ -559,6 +573,13 @@ const Vendor_Dashboard = () => {
       fetchVendorProducts()
     }
   }, [activeTab, productPage, productPageSize, fetchVendorProducts])
+
+  // Fetch bank details when bank-details tab is active
+  useEffect(() => {
+    if (activeTab === 'bank-details') {
+      loadBankDetails()
+    }
+  }, [activeTab])
 
   // Update profile form data when vendorProfile changes (from dashboard fetch)
   useEffect(() => {
@@ -1628,6 +1649,7 @@ const Vendor_Dashboard = () => {
     { id: 'received-gifts', label: 'Received Gifts', icon: 'fa-gift' },
     { id: 'products', label: 'My Product', icon: 'fa-box' },
     { id: 'add-product', label: 'Add Product', icon: 'fa-plus' },
+    { id: 'bank-details', label: 'Bank Details', icon: 'fa-university' },
     { id: 'withdrawals', label: 'Withdrawal Request', icon: 'fa-money-check-alt' },
   ]
 
@@ -2398,6 +2420,182 @@ const Vendor_Dashboard = () => {
     )
   }
 
+  // Load bank details
+  const loadBankDetails = async () => {
+    setLoadingBankDetails(true)
+    setBankDetailsError(null)
+    try {
+      const response = await getBankDetails()
+      if (response.status === 1 && response.bankDetail) {
+        setBankDetails({
+          bank_name: response.bankDetail.bank_name || '',
+          account_no: response.bankDetail.account_no || '',
+          account_type: response.bankDetail.account_type || 'Savings',
+          ifsc_code: response.bankDetail.ifsc_code || '',
+          account_name: response.bankDetail.account_name || '',
+          pan_no: response.bankDetail.pan_card || ''
+        })
+      }
+    } catch (error) {
+      console.error('[Vendor Dashboard] Error loading bank details:', error)
+      setBankDetailsError('Failed to load bank details')
+    } finally {
+      setLoadingBankDetails(false)
+    }
+  }
+
+  // Save bank details
+  const handleSaveBankDetails = async (e) => {
+    e.preventDefault()
+    setSavingBankDetails(true)
+    setBankDetailsError(null)
+    setBankDetailsSuccess(false)
+    
+    try {
+      const response = await saveBankDetails(bankDetails)
+      if (response.status === 1) {
+        setBankDetailsSuccess(true)
+        setTimeout(() => setBankDetailsSuccess(false), 3000)
+      } else {
+        setBankDetailsError(response.msg || 'Failed to save bank details')
+      }
+    } catch (error) {
+      console.error('[Vendor Dashboard] Error saving bank details:', error)
+      setBankDetailsError('Failed to save bank details')
+    } finally {
+      setSavingBankDetails(false)
+    }
+  }
+
+  const BankDetailsSection = () => (
+    <div className="react-account-section">
+      <div className="react-section-header">
+        <h2>Bank Details</h2>
+        <p>Add your bank account details for receiving payouts</p>
+      </div>
+      
+      {bankDetailsError && (
+        <div style={{ padding: '15px', marginBottom: '20px', backgroundColor: '#fee', color: '#c33', borderRadius: '5px' }}>
+          {bankDetailsError}
+        </div>
+      )}
+      {bankDetailsSuccess && (
+        <div style={{ padding: '15px', marginBottom: '20px', backgroundColor: '#efe', color: '#3c3', borderRadius: '5px' }}>
+          Bank details saved successfully!
+        </div>
+      )}
+      
+      {loadingBankDetails ? (
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <i className="fas fa-spinner fa-spin" style={{ fontSize: '24px' }}></i>
+          <p>Loading bank details...</p>
+        </div>
+      ) : (
+        <form className="react-profile-form" onSubmit={handleSaveBankDetails}>
+          <div className="react-form-row">
+            <div className="react-form-group">
+              <label>Account Holder Name <span style={{color:'red'}}>*</span></label>
+              <input 
+                className="react-form-input" 
+                placeholder="Enter account holder name" 
+                value={bankDetails.account_name}
+                onChange={(e) => setBankDetails({...bankDetails, account_name: e.target.value})}
+                required 
+              />
+            </div>
+            <div className="react-form-group">
+              <label>Bank Name <span style={{color:'red'}}>*</span></label>
+              <input 
+                className="react-form-input" 
+                placeholder="Enter bank name" 
+                value={bankDetails.bank_name}
+                onChange={(e) => setBankDetails({...bankDetails, bank_name: e.target.value})}
+                required 
+              />
+            </div>
+          </div>
+          
+          <div className="react-form-row">
+            <div className="react-form-group">
+              <label>Account Number <span style={{color:'red'}}>*</span></label>
+              <input 
+                className="react-form-input" 
+                placeholder="Enter account number" 
+                value={bankDetails.account_no}
+                onChange={(e) => setBankDetails({...bankDetails, account_no: e.target.value})}
+                required 
+              />
+            </div>
+            <div className="react-form-group">
+              <label>IFSC Code <span style={{color:'red'}}>*</span></label>
+              <input 
+                className="react-form-input" 
+                placeholder="Enter IFSC code" 
+                value={bankDetails.ifsc_code}
+                onChange={(e) => setBankDetails({...bankDetails, ifsc_code: e.target.value.toUpperCase()})}
+                required 
+              />
+            </div>
+          </div>
+          
+          <div className="react-form-row">
+            <div className="react-form-group">
+              <label>Account Type <span style={{color:'red'}}>*</span></label>
+              <select 
+                className="react-form-input"
+                value={bankDetails.account_type}
+                onChange={(e) => setBankDetails({...bankDetails, account_type: e.target.value})}
+                required
+              >
+                <option value="Savings">Savings</option>
+                <option value="Current">Current</option>
+              </select>
+            </div>
+            <div className="react-form-group">
+              <label>PAN Number</label>
+              <input 
+                className="react-form-input" 
+                placeholder="Enter PAN number" 
+                value={bankDetails.pan_no}
+                onChange={(e) => setBankDetails({...bankDetails, pan_no: e.target.value.toUpperCase()})}
+                maxLength={10}
+              />
+            </div>
+          </div>
+          
+          <div style={{display:'flex', gap:'0.75rem', justifyContent:'flex-end', marginTop: '20px'}}>
+            <button 
+              type="button" 
+              className="react-btn react-btn-outline" 
+              onClick={loadBankDetails}
+              disabled={loadingBankDetails}
+            >
+              <i className="fas fa-sync-alt" style={{marginRight:'6px'}}></i>
+              Refresh
+            </button>
+            <button 
+              type="submit" 
+              className="react-btn react-btn-primary"
+              disabled={savingBankDetails}
+            >
+              {savingBankDetails ? (
+                <>
+                  <i className="fas fa-spinner fa-spin" style={{marginRight:'6px'}}></i>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <i className="fas fa-save" style={{marginRight:'6px'}}></i>
+                  Save Bank Details
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      )}
+    </div>
+  )
+
   const WithdrawalSection = () => (
     <div className="react-account-section">
       <div className="react-section-header">
@@ -3094,6 +3292,7 @@ const Vendor_Dashboard = () => {
       case 'received-gifts': return <ReceivedGiftsSection />
       case 'products': return <ProductsSection />
       case 'add-product': return <AddProductSection />
+      case 'bank-details': return <BankDetailsSection />
       case 'withdrawals': return <WithdrawalSection />
       default: return <OverviewSection />
     }

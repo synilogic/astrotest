@@ -259,6 +259,10 @@ const InnerAstrologer = () => {
                       <span className="react-astrologers-info-label"><i className="fa-solid fa-clock react-inner-Icon"></i> Exp:</span>
                       <span className="react-astrologers-info-value">{astrologer.experience || 0} Years</span>
                     </div>
+                    <div className="react-astrologers-info-item">
+                      <span className="react-astrologers-info-label"><i className="fa fa-star react-inner-Icon"></i> Skills:</span>
+                      <span className="react-astrologers-info-value">{astrologer.skill_names || 'N/A'}</span>
+                    </div>
                   </div>
 
                   <div className="react-astrologers-consultation-buttons">

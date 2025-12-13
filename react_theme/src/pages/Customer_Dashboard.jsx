@@ -4,7 +4,7 @@ import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import Pagination from '../components/Pagination'
 import Modal from '../components/Modal'
-import { getCurrentUser, getCustomerDashboard, getWalletBalance, updateCustomerProfile, fetchUserKundaliRequests, getKundaliChart, getWalletTransactions, fetchUserCallHistory, getChatChannels, getRechargeVouchers, proceedPaymentRequest, updateOnlinePayment, fetchWelcomeData, getUserAddresses, addUserAddress, updateUserAddress, deleteUserAddress, fetchPublicCountryList, fetchPublicStateList, fetchPublicCityList, fetchProductOrders, getCustomerServiceOrders, fetchAskQuestionsList, getAdminChatChannels, getAdminChatChannelHistory, getAppointmentDurations, fetchAppointmentOrders, fetchArchitectRooms, fetchArchitectServiceOrders, fetchUserGiftHistory } from '../utils/api'
+import { getCurrentUser, getCustomerDashboard, getWalletBalance, updateCustomerProfile, fetchUserKundaliRequests, getKundaliChart, getWalletTransactions, fetchUserCallHistory, getChatChannels, getRechargeVouchers, proceedPaymentRequest, updateOnlinePayment, fetchWelcomeData, getUserAddresses, addUserAddress, updateUserAddress, deleteUserAddress, fetchPublicCountryList, fetchPublicStateList, fetchPublicCityList, fetchProductOrders, getCustomerServiceOrders, fetchAskQuestionsList, getAdminChatChannels, getAdminChatChannelHistory, getAppointmentDurations, fetchAppointmentOrders, fetchArchitectRooms, fetchArchitectServiceOrders, fetchUserGiftHistory, getUserApiKey, getFileOnCall } from '../utils/api'
 
 // Helper function to convert date to YYYY-MM-DD format (for HTML5 date input)
 const formatDateForInput = (dateStr) => {
@@ -447,6 +447,10 @@ const My_Account = () => {
   const waitingList = []
   const [calls, setCalls] = useState([])
   const [loadingCalls, setLoadingCalls] = useState(false)
+  const [selectedCall, setSelectedCall] = useState(null)
+  const [callImages, setCallImages] = useState([])
+  const [loadingCallImages, setLoadingCallImages] = useState(false)
+  const [showCallDetailModal, setShowCallDetailModal] = useState(false)
   const [adminChatChannels, setAdminChatChannels] = useState([])
   const [loadingAdminChats, setLoadingAdminChats] = useState(false)
   const [adminChatOffset, setAdminChatOffset] = useState(0)
@@ -1720,6 +1724,36 @@ const My_Account = () => {
       loadCallHistory()
     }
   }, [activeTab, callPage, callPageSize])
+
+  // Handle viewing call details with images
+  const handleViewCallDetails = async (call) => {
+    setSelectedCall(call)
+    setShowCallDetailModal(true)
+    setLoadingCallImages(true)
+    setCallImages([])
+
+    try {
+      const result = await getFileOnCall(call.uniqueId)
+      console.log('[Customer Dashboard] Call images result:', result)
+      if (result.status === 1 && Array.isArray(result.data)) {
+        setCallImages(result.data)
+      } else {
+        setCallImages([])
+      }
+    } catch (err) {
+      console.error('[Customer Dashboard] Error fetching call images:', err)
+      setCallImages([])
+    } finally {
+      setLoadingCallImages(false)
+    }
+  }
+
+  // Close call detail modal
+  const closeCallDetailModal = () => {
+    setShowCallDetailModal(false)
+    setSelectedCall(null)
+    setCallImages([])
+  }
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -5421,6 +5455,7 @@ const My_Account = () => {
               <th>Duration</th>
               <th>Status</th>
               <th>Charge</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -5463,11 +5498,20 @@ const My_Account = () => {
                   })()}
                 </td>
                 <td>₹{row.charge || 0}</td>
+                <td>
+                  <button 
+                    className="react-btn-small react-btn-primary"
+                    onClick={() => handleViewCallDetails(row)}
+                    title="View call details and shared files"
+                  >
+                    <i className="fas fa-eye"></i> View
+                  </button>
+                </td>
               </tr>
             ))}
             {filtered.length === 0 && !loadingCalls && (
               <tr>
-                <td colSpan="9" className="react-no-data">No Records Found</td>
+                <td colSpan="10" className="react-no-data">No Records Found</td>
               </tr>
             )}
           </tbody>
@@ -5652,6 +5696,101 @@ const My_Account = () => {
           </div>
         </div>
       </div>
+
+      {/* Call Detail Modal */}
+      {showCallDetailModal && selectedCall && (
+        <Modal onClose={closeCallDetailModal} title="Call Details">
+          <div className="react-call-detail-modal">
+            <div className="react-call-info-section">
+              <h3>Call Information</h3>
+              <div className="react-call-info-grid">
+                <div className="react-call-info-item">
+                  <span className="react-label">Astrologer:</span>
+                  <span className="react-value">{selectedCall.astrologer}</span>
+                </div>
+                <div className="react-call-info-item">
+                  <span className="react-label">Call ID:</span>
+                  <span className="react-value">{selectedCall.uniqueId}</span>
+                </div>
+                <div className="react-call-info-item">
+                  <span className="react-label">Date:</span>
+                  <span className="react-value">{selectedCall.orderDate}</span>
+                </div>
+                <div className="react-call-info-item">
+                  <span className="react-label">Duration:</span>
+                  <span className="react-value">{selectedCall.duration}</span>
+                </div>
+                <div className="react-call-info-item">
+                  <span className="react-label">Type:</span>
+                  <span className="react-value">{selectedCall.type || 'Voice Call'}</span>
+                </div>
+                <div className="react-call-info-item">
+                  <span className="react-label">Charge:</span>
+                  <span className="react-value">₹{selectedCall.charge || 0}</span>
+                </div>
+                <div className="react-call-info-item">
+                  <span className="react-label">Status:</span>
+                  <span className="react-value">{selectedCall.status}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="react-call-images-section">
+              <h3>Shared Files/Images</h3>
+              {loadingCallImages ? (
+                <div style={{ textAlign: 'center', padding: '20px' }}>
+                  <p>Loading files...</p>
+                </div>
+              ) : callImages.length > 0 ? (
+                <div className="react-call-images-grid">
+                  {callImages.map((img, index) => (
+                    <div key={img.id || index} className="react-call-image-item">
+                      <a href={img.file_url} target="_blank" rel="noopener noreferrer">
+                        {img.file_type === 'Image' || img.file_url?.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                          <img 
+                            src={img.file_url} 
+                            alt={`Shared file ${index + 1}`}
+                            onError={(e) => {
+                              e.target.style.display = 'none'
+                              e.target.nextSibling.style.display = 'flex'
+                            }}
+                          />
+                        ) : (
+                          <div className="react-file-icon">
+                            <i className="fas fa-file"></i>
+                            <span>{img.file_type || 'File'}</span>
+                          </div>
+                        )}
+                        <div className="react-file-placeholder" style={{ display: 'none' }}>
+                          <i className="fas fa-image"></i>
+                          <span>View File</span>
+                        </div>
+                      </a>
+                      <div className="react-image-info">
+                        <small>From: {img.user_uni_id?.startsWith('ASTRO') ? 'Astrologer' : 'You'}</small>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '20px', color: '#888' }}>
+                  <i className="fas fa-image" style={{ fontSize: '40px', marginBottom: '10px', opacity: 0.5 }}></i>
+                  <p>No files shared during this call</p>
+                </div>
+              )}
+            </div>
+
+            <div style={{ textAlign: 'center', marginTop: '20px' }}>
+              <button 
+                className="react-btn react-btn-secondary"
+                onClick={closeCallDetailModal}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       <Footer />
     </>

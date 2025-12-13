@@ -4,7 +4,7 @@ import usePageTitle from '../hooks/usePageTitle'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { Link } from 'react-router-dom'
-import { fetchAstrologers, getCurrentUser, getWalletBalance, checkCallDetail, startVoiceCall, startVideoCall, startChat, saveIntake, getChatChannels, getChatChannelHistory, saveChatMessage, getRemainingChatTime, endChat } from '../utils/api'
+import { fetchAstrologers, fetchFilters, getCurrentUser, getWalletBalance, checkCallDetail, startVoiceCall, startVideoCall, startChat, saveIntake, getChatChannels, getChatChannelHistory, saveChatMessage, getRemainingChatTime, endChat } from '../utils/api'
 
 const TalkToAstrologers = () => {
   useBreadStars()
@@ -58,11 +58,37 @@ const TalkToAstrologers = () => {
   const [sendingMessage, setSendingMessage] = useState(false)
   const [showChatList, setShowChatList] = useState(false) // Toggle between astrologer list and chat list
   
-  // Sample data for filters
-  const languageOptions = ['English', 'Hindi', 'Punjabi', 'Bengali', 'Tamil', 'Telugu', 'Gujarati', 'Marathi']
-  const categoryOptions = ['Vedic Astrology', 'Numerology', 'Tarot Reading', 'Palmistry', 'Vastu', 'Gemstone Consultation']
-  const skillOptions = ['Love & Relationship', 'Career Guidance', 'Health & Wellness', 'Financial Planning', 'Marriage Compatibility', 'Child Future']
+  // Filter options from backend
+  const [filterOptions, setFilterOptions] = useState({
+    languages: [],
+    categories: [],
+    skills: []
+  })
   const labelOptions = ['New', 'VIP', 'Most Choice', 'Top Rated']
+  
+  // Fetch filter options from backend
+  useEffect(() => {
+    const loadFilters = async () => {
+      try {
+        const response = await fetchFilters()
+        if (response && response.status === 1) {
+          setFilterOptions({
+            languages: response.languageList || [],
+            categories: response.categoryList || [],
+            skills: response.skillList || []
+          })
+          console.log('[TalkToAstrologers] Filters loaded:', {
+            languages: response.languageList?.length || 0,
+            skills: response.skillList?.length || 0,
+            categories: response.categoryList?.length || 0
+          })
+        }
+      } catch (error) {
+        console.error('[TalkToAstrologers] Error loading filters:', error)
+      }
+    }
+    loadFilters()
+  }, [])
 
   // Helper function to get availability status
   const getAvailabilityStatus = (astro) => {
@@ -725,8 +751,8 @@ const TalkToAstrologers = () => {
               onChange={(e) => handleFilterChange('languages', e.target.value)}
             >
               <option value="all">All Languages</option>
-              {languageOptions.map(lang => (
-                <option key={lang} value={lang}>{lang}</option>
+              {filterOptions.languages.map(lang => (
+                <option key={lang.id} value={lang.language_name}>{lang.language_name}</option>
               ))}
             </select>
           </div>
@@ -740,8 +766,8 @@ const TalkToAstrologers = () => {
               onChange={(e) => handleFilterChange('categories', e.target.value)}
             >
               <option value="all">All Categories</option>
-              {categoryOptions.map(category => (
-                <option key={category} value={category}>{category}</option>
+              {filterOptions.categories.map(category => (
+                <option key={category.id} value={category.category_title}>{category.category_title}</option>
               ))}
             </select>
           </div>
@@ -755,8 +781,8 @@ const TalkToAstrologers = () => {
               onChange={(e) => handleFilterChange('skills', e.target.value)}
             >
               <option value="all">All Skills</option>
-              {skillOptions.map(skill => (
-                <option key={skill} value={skill}>{skill}</option>
+              {filterOptions.skills.map(skill => (
+                <option key={skill.id} value={skill.skill_name}>{skill.skill_name}</option>
               ))}
             </select>
           </div>
@@ -995,6 +1021,7 @@ const TalkToAstrologers = () => {
                 const videoPrice = getPriceByService(astro.prices, 'video')
                 const categoryName = astro.category_names ? astro.category_names.split(',')[0] : 'Astrologer'
                 const languages = astro.language_name || 'N/A'
+                const skills = astro.skill_names || 'N/A'
                 const experience = astro.experience || 'N/A'
 
                 return (
@@ -1071,6 +1098,12 @@ const TalkToAstrologers = () => {
                               <i className="fa fa-language react-own-icOn"></i>Languages
                             </span>
                             <span className="react-own-info-value">{languages}</span>
+                          </div>
+                          <div className="react-own-info-item">
+                            <span className="react-own-info-label">
+                              <i className="fa fa-star react-own-icOn"></i>Skills
+                            </span>
+                            <span className="react-own-info-value" title={skills}>{skills.length > 30 ? skills.substring(0, 30) + '...' : skills}</span>
                           </div>
                         </div>
                       </div>

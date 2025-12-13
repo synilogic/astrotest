@@ -497,6 +497,57 @@ export const fetchBanners = async () => {
 }
 
 /**
+ * Fetch banner categories from backend
+ * Endpoint: POST /api/getBannerCategories (Welcome service - port 8005)
+ */
+export const fetchBannerCategories = async () => {
+  try {
+    const url = `${WELCOME_API}/getBannerCategories`
+    
+    const response = await fetch(url, getFetchConfig('POST', {}))
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}, message: ${errorText}` }
+    }
+
+    const data = await response.json()
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching banner categories:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Fetch filter options (languages, skills, categories) from backend
+ * Endpoint: POST /api/getFilters (Welcome service - port 8005)
+ */
+export const fetchFilters = async () => {
+  try {
+    const url = `${WELCOME_API}/getFilters`
+    
+    const response = await fetch(url, getFetchConfig('POST', {}))
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      return { status: 0, languageList: [], skillList: [], categoryList: [], msg: `HTTP error! status: ${response.status}, message: ${errorText}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Filters fetched:', { 
+      languages: data.languageList?.length || 0, 
+      skills: data.skillList?.length || 0, 
+      categories: data.categoryList?.length || 0 
+    })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching filters:', error)
+    return { status: 0, languageList: [], skillList: [], categoryList: [], msg: error.message }
+  }
+}
+
+/**
  * Fetch service categories from backend
  * Endpoint: POST /api/serviceCategory (Welcome service - port 8005)
  */
@@ -604,6 +655,63 @@ export const fetchServiceDetails = async (serviceIdOrSlug) => {
 
 // Alias for backward compatibility
 export const fetchServiceDetail = fetchServiceDetails
+
+/**
+ * Fetch blog categories from backend
+ * Endpoint: POST /api/getBlogCategories (Welcome service - port 8005)
+ */
+export const fetchBlogCategories = async () => {
+  try {
+    const url = `${WELCOME_API}/getBlogCategories`
+    
+    const response = await fetch(url, getFetchConfig('POST', {}))
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}, message: ${errorText}` }
+    }
+
+    const data = await response.json()
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching blog categories:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Like/Unlike a blog
+ * Endpoint: POST /api/blogLike (Product service - port 8007)
+ */
+export const likeBlog = async (blogId, status) => {
+  try {
+    const currentUser = getCurrentUser()
+    if (!currentUser || !currentUser.user_uni_id) {
+      return { status: 0, msg: 'Please login to like blogs' }
+    }
+
+    const url = `${PRODUCT_API}/blogLike`
+    const requestBody = {
+      api_key: currentUser.api_key,
+      user_uni_id: currentUser.user_uni_id,
+      blog_id: String(blogId),
+      status: status  // 1 = like, 0 = unlike
+    }
+
+    const response = await fetch(url, getFetchConfig('POST', requestBody))
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      return { status: 0, msg: `HTTP error! status: ${response.status}, message: ${errorText}` }
+    }
+
+    const data = await response.json()
+    return data
+  } catch (error) {
+    console.error('[API] Error liking blog:', error)
+    return { status: 0, msg: error.message }
+  }
+}
 
 /**
  * Fetch blogs from backend
@@ -721,7 +829,7 @@ const extractApiKey = (value) => {
  * We check which one actually exists and has a value
  * Returns null if neither exists (not empty string)
  */
-const getUserApiKey = (user) => {
+export const getUserApiKey = (user) => {
   if (!user) {
     console.error('[getUserApiKey] User object is null/undefined');
     return null;
@@ -4086,6 +4194,110 @@ export const addWithdrawalRequest = async (withdrawalData) => {
     }
   } catch (error) {
     return { status: 0, msg: error.message || 'An error occurred while adding withdrawal request' }
+  }
+}
+
+/**
+ * Get bank details for astrologer/vendor
+ * Endpoint: POST /api/getBankDetails (Astrologers service - port 8002)
+ */
+export const getBankDetails = async () => {
+  try {
+    const user = getCurrentUser()
+    if (!user) {
+      return { status: 0, bankDetail: null, msg: 'User not logged in' }
+    }
+
+    const apiKey = getUserApiKey(user)
+    const userId = user.user_uni_id || user.customer_uni_id
+
+    if (!apiKey || !userId) {
+      return { status: 0, bankDetail: null, msg: 'User missing required credentials' }
+    }
+
+    const url = `${API_BASE_URL}/getAstrologerProfile`
+    const requestBody = {
+      api_key: apiKey,
+      astrologer_uni_id: userId
+    }
+
+    const response = await fetch(url, getFetchConfig('POST', requestBody))
+    
+    if (!response.ok) {
+      return { status: 0, bankDetail: null, msg: `HTTP error: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] getBankDetails response:', { 
+      status: data.status, 
+      hasBankDetail: !!data.bankDetail 
+    })
+    
+    return {
+      status: data.status || 0,
+      bankDetail: data.bankDetail || null,
+      msg: data.msg || 'Bank details fetched'
+    }
+  } catch (error) {
+    console.error('[API] Error fetching bank details:', error)
+    return { status: 0, bankDetail: null, msg: error.message }
+  }
+}
+
+/**
+ * Save/Update bank details
+ * Endpoint: POST /api/addBankDetails (Astrologers service - port 8002)
+ */
+export const saveBankDetails = async (bankData) => {
+  try {
+    const user = getCurrentUser()
+    if (!user) {
+      return { status: 0, msg: 'User not logged in' }
+    }
+
+    const apiKey = getUserApiKey(user)
+    const userId = user.user_uni_id || user.customer_uni_id
+
+    if (!apiKey || !userId) {
+      return { status: 0, msg: 'User missing required credentials' }
+    }
+
+    const url = `${API_BASE_URL}/addBankDetails`
+    const requestBody = {
+      api_key: apiKey,
+      astrologer_uni_id: userId,
+      bank_name: bankData.bank_name || '',
+      account_no: bankData.account_no || '',
+      account_type: bankData.account_type || 'Savings',
+      ifsc_code: bankData.ifsc_code || '',
+      account_name: bankData.account_name || '',
+      pan_no: bankData.pan_no || ''
+    }
+
+    console.log('[API] Saving bank details:', { 
+      userId, 
+      bank_name: requestBody.bank_name,
+      account_no: requestBody.account_no ? '****' + requestBody.account_no.slice(-4) : ''
+    })
+
+    const response = await fetch(url, getFetchConfig('POST', requestBody))
+    
+    if (!response.ok) {
+      const errorText = await response.text()
+      return { status: 0, msg: `HTTP error: ${response.status} - ${errorText}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] saveBankDetails response:', data)
+    
+    return {
+      status: data.status || 0,
+      data: data.data || null,
+      msg: data.msg || (data.status === 1 ? 'Bank details saved successfully' : 'Failed to save bank details')
+    }
+  } catch (error) {
+    console.error('[API] Error saving bank details:', error)
+    return { status: 0, msg: error.message }
   }
 }
 
