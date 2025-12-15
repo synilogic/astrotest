@@ -92,3 +92,4 @@ const LiveTempleDarshan = sequelize.define('live_temple_darshans', {
 export default LiveTempleDarshan;
 
 
+

@@ -89,3 +89,4 @@ const ModuleAccess = sequelize.define('module_accesses', {
 
 module.exports = ModuleAccess;
 
+

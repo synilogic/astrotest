@@ -82,3 +82,4 @@ const Menu = sequelize.define('menus', {
 export default Menu;
 
 
+

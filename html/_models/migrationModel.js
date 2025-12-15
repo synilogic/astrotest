@@ -58,3 +58,4 @@ const Migration = sequelize.define('migrations', {
 export default Migration;
 
 
+

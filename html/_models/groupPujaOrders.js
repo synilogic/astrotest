@@ -90,3 +90,4 @@ const GroupPujaOrder = sequelize.define('GroupPujaOrder', {
 export default GroupPujaOrder;
 
 
+
