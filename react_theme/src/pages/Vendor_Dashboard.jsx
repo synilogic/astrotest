@@ -4,7 +4,7 @@ import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import Pagination from '../components/Pagination'
 import Modal from '../components/Modal'
-import { getVendorDashboard, getCurrentUser, updateVendorProfile, fetchPublicCountryList, fetchPublicStateList, fetchPublicCityList, getWalletTransactions, getRechargeVouchers, proceedPaymentRequest, updateOnlinePayment, fetchWelcomeData, getWalletBalance, fetchProducts, fetchProductCategories, getVendorWithdrawalRequests, addVendorProduct, getImageUrl, fetchAstrologerGiftHistory, getBankDetails, saveBankDetails } from '../utils/api'
+import { getVendorDashboard, getCurrentUser, updateVendorProfile, fetchPublicCountryList, fetchPublicStateList, fetchPublicCityList, getWalletTransactions, getRechargeVouchers, proceedPaymentRequest, updateOnlinePayment, fetchWelcomeData, getWalletBalance, fetchProducts, fetchProductCategories, getVendorWithdrawalRequests, addVendorProduct, getImageUrl, fetchAstrologerGiftHistory, getBankDetails, saveBankDetails, fetchNotices, fetchNotifications, fetchNotifyLogs, fetchOffers, fetchOfflineServiceCategories } from '../utils/api'
 
 const Vendor_Dashboard = () => {
   const navigate = useNavigate()
@@ -84,6 +84,34 @@ const Vendor_Dashboard = () => {
   const [bankDetailsError, setBankDetailsError] = useState(null)
   const [bankDetailsSuccess, setBankDetailsSuccess] = useState(false)
   const [productCategories, setProductCategories] = useState([])
+
+  // Notices state
+  const [notices, setNotices] = useState([])
+  const [loadingNotices, setLoadingNotices] = useState(false)
+
+  // Notifications state
+  const [notifications, setNotifications] = useState([])
+  const [loadingNotifications, setLoadingNotifications] = useState(false)
+  const [notificationsPage, setNotificationsPage] = useState(1)
+  const [notificationsPageSize, setNotificationsPageSize] = useState(10)
+
+  // Notify Logs state
+  const [notifyLogs, setNotifyLogs] = useState([])
+  const [loadingNotifyLogs, setLoadingNotifyLogs] = useState(false)
+  const [notifyLogsPage, setNotifyLogsPage] = useState(1)
+  const [notifyLogsPageSize, setNotifyLogsPageSize] = useState(10)
+
+  // Offers state
+  const [offers, setOffers] = useState([])
+  const [loadingOffers, setLoadingOffers] = useState(false)
+  const [offersPage, setOffersPage] = useState(1)
+  const [offersPageSize, setOffersPageSize] = useState(10)
+
+  // Offline Service Categories state
+  const [offlineServices, setOfflineServices] = useState([])
+  const [loadingOfflineServices, setLoadingOfflineServices] = useState(false)
+  const [offlineServicesPage, setOfflineServicesPage] = useState(1)
+  const [offlineServicesPageSize, setOfflineServicesPageSize] = useState(10)
 
   // Add product form state
   const [productFormData, setProductFormData] = useState({
@@ -1651,6 +1679,11 @@ const Vendor_Dashboard = () => {
     { id: 'add-product', label: 'Add Product', icon: 'fa-plus' },
     { id: 'bank-details', label: 'Bank Details', icon: 'fa-university' },
     { id: 'withdrawals', label: 'Withdrawal Request', icon: 'fa-money-check-alt' },
+    { id: 'notices', label: 'Notices', icon: 'fa-bullhorn' },
+    { id: 'notifications', label: 'Notifications', icon: 'fa-bell' },
+    { id: 'notify-logs', label: 'Notify Logs', icon: 'fa-history' },
+    { id: 'offers', label: 'Offers', icon: 'fa-tags' },
+    { id: 'offline-services', label: 'Offline Services', icon: 'fa-concierge-bell' },
   ]
 
   const OverviewCards = () => (
@@ -2466,6 +2499,157 @@ const Vendor_Dashboard = () => {
       setSavingBankDetails(false)
     }
   }
+
+  // Load notices from API
+  const loadNotices = useCallback(async () => {
+    setLoadingNotices(true)
+    try {
+      const result = await fetchNotices()
+      console.log('[Vendor Dashboard] Notices result:', result)
+      
+      if (result.status === 1) {
+        // API returns single notice object in data, convert to array for consistency
+        const noticesData = result.data ? (Array.isArray(result.data) ? result.data : [result.data]) : []
+        setNotices(noticesData)
+        console.log('[Vendor Dashboard] ✅ Notices loaded:', noticesData.length)
+      } else {
+        console.warn('[Vendor Dashboard] ⚠️ No notices or invalid response:', result)
+        setNotices([])
+      }
+    } catch (error) {
+      console.error('[Vendor Dashboard] Error loading notices:', error)
+      setNotices([])
+    } finally {
+      setLoadingNotices(false)
+    }
+  }, [])
+
+  // Fetch notices when notices tab is active
+  useEffect(() => {
+    if (activeTab === 'notices') {
+      loadNotices()
+    }
+  }, [activeTab, loadNotices])
+
+  // Load notifications from API
+  const loadNotifications = useCallback(async () => {
+    setLoadingNotifications(true)
+    try {
+      const offset = (notificationsPage - 1) * notificationsPageSize
+      const result = await fetchNotifications(offset)
+      console.log('[Vendor Dashboard] Notifications result:', result)
+      
+      if (result.status === 1 && Array.isArray(result.data)) {
+        setNotifications(result.data)
+        console.log('[Vendor Dashboard] ✅ Notifications loaded:', result.data.length)
+      } else {
+        console.warn('[Vendor Dashboard] ⚠️ No notifications or invalid response:', result)
+        setNotifications([])
+      }
+    } catch (error) {
+      console.error('[Vendor Dashboard] Error loading notifications:', error)
+      setNotifications([])
+    } finally {
+      setLoadingNotifications(false)
+    }
+  }, [notificationsPage, notificationsPageSize])
+
+  // Fetch notifications when notifications tab is active
+  useEffect(() => {
+    if (activeTab === 'notifications') {
+      loadNotifications()
+    }
+  }, [activeTab, loadNotifications])
+
+  // Load notify logs from API
+  const loadNotifyLogs = useCallback(async () => {
+    setLoadingNotifyLogs(true)
+    try {
+      const offset = (notifyLogsPage - 1) * notifyLogsPageSize
+      const result = await fetchNotifyLogs(offset)
+      console.log('[Vendor Dashboard] Notify Logs result:', result)
+      
+      if (result.status === 1 && Array.isArray(result.data)) {
+        setNotifyLogs(result.data)
+        console.log('[Vendor Dashboard] ✅ Notify Logs loaded:', result.data.length)
+      } else {
+        console.warn('[Vendor Dashboard] ⚠️ No notify logs or invalid response:', result)
+        setNotifyLogs([])
+      }
+    } catch (error) {
+      console.error('[Vendor Dashboard] Error loading notify logs:', error)
+      setNotifyLogs([])
+    } finally {
+      setLoadingNotifyLogs(false)
+    }
+  }, [notifyLogsPage, notifyLogsPageSize])
+
+  // Fetch notify logs when notify-logs tab is active
+  useEffect(() => {
+    if (activeTab === 'notify-logs') {
+      loadNotifyLogs()
+    }
+  }, [activeTab, loadNotifyLogs])
+
+  // Load offers from API
+  const loadOffers = useCallback(async () => {
+    setLoadingOffers(true)
+    try {
+      const offset = (offersPage - 1) * offersPageSize
+      const result = await fetchOffers({ offset })
+      console.log('[Vendor Dashboard] Offers result:', result)
+      
+      if (result.status === 1 && Array.isArray(result.data)) {
+        setOffers(result.data)
+        console.log('[Vendor Dashboard] ✅ Offers loaded:', result.data.length)
+      } else {
+        console.warn('[Vendor Dashboard] ⚠️ No offers or invalid response:', result)
+        setOffers([])
+      }
+    } catch (error) {
+      console.error('[Vendor Dashboard] Error loading offers:', error)
+      setOffers([])
+    } finally {
+      setLoadingOffers(false)
+    }
+  }, [offersPage, offersPageSize])
+
+  // Fetch offers when offers tab is active
+  useEffect(() => {
+    if (activeTab === 'offers') {
+      loadOffers()
+    }
+  }, [activeTab, loadOffers])
+
+  // Load offline service categories from API
+  const loadOfflineServices = useCallback(async () => {
+    setLoadingOfflineServices(true)
+    try {
+      const offset = (offlineServicesPage - 1) * offlineServicesPageSize
+      const result = await fetchOfflineServiceCategories(offset)
+      console.log('[Vendor Dashboard] Offline Services result:', result)
+      
+      if (result.status === 1 && Array.isArray(result.data)) {
+        setOfflineServices(result.data)
+        console.log('[Vendor Dashboard] ✅ Offline Services loaded:', result.data.length)
+      } else {
+        console.warn('[Vendor Dashboard] ⚠️ No offline services or invalid response:', result)
+        setOfflineServices([])
+      }
+    } catch (error) {
+      console.error('[Vendor Dashboard] Error loading offline services:', error)
+      setOfflineServices([])
+    } finally {
+      setLoadingOfflineServices(false)
+    }
+  }, [offlineServicesPage, offlineServicesPageSize])
+
+  // Fetch offline services when offline-services tab is active
+  useEffect(() => {
+    if (activeTab === 'offline-services') {
+      loadOfflineServices()
+    }
+  }, [activeTab, loadOfflineServices])
 
   const BankDetailsSection = () => (
     <div className="react-account-section">
@@ -3283,6 +3467,629 @@ const Vendor_Dashboard = () => {
     </div>
   )
 
+  const NoticesSection = () => (
+    <div className="react-account-section">
+      <div className="react-section-header">
+        <h2>Notices</h2>
+        <p>View all notices and announcements</p>
+      </div>
+      
+      {loadingNotices ? (
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <i className="fas fa-spinner fa-spin" style={{ fontSize: '24px' }}></i>
+          <p>Loading notices...</p>
+        </div>
+      ) : notices.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+          <i className="fas fa-bullhorn" style={{ fontSize: '48px', marginBottom: '15px', opacity: 0.5 }}></i>
+          <p>No notices found</p>
+        </div>
+      ) : (
+        <div className="react-notices-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '20px' }}>
+          {notices.map((notice) => (
+            <div key={notice.id} style={{ 
+              backgroundColor: '#fff', 
+              borderRadius: '10px', 
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)', 
+              overflow: 'hidden',
+              border: '1px solid #eee'
+            }}>
+              {notice.notice_image && (
+                <div style={{ width: '100%', height: '180px', overflow: 'hidden' }}>
+                  <img 
+                    src={notice.notice_image} 
+                    alt={notice.title} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => {
+                      e.target.style.display = 'none'
+                    }}
+                  />
+                </div>
+              )}
+              <div style={{ padding: '15px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: '#333' }}>{notice.title}</h3>
+                  <span style={{ 
+                    padding: '4px 8px', 
+                    borderRadius: '4px', 
+                    fontSize: '11px',
+                    backgroundColor: notice.status === 1 || notice.status === '1' ? '#e8f5e9' : '#ffebee',
+                    color: notice.status === 1 || notice.status === '1' ? '#2e7d32' : '#c62828'
+                  }}>
+                    {notice.status === 1 || notice.status === '1' ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+                
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '10px', flexWrap: 'wrap' }}>
+                  {notice.type && (
+                    <span style={{ 
+                      padding: '3px 8px', 
+                      borderRadius: '4px', 
+                      fontSize: '11px',
+                      backgroundColor: '#e3f2fd',
+                      color: '#1565c0'
+                    }}>
+                      {notice.type}
+                    </span>
+                  )}
+                  {notice.notice_for && (
+                    <span style={{ 
+                      padding: '3px 8px', 
+                      borderRadius: '4px', 
+                      fontSize: '11px',
+                      backgroundColor: '#f3e5f5',
+                      color: '#7b1fa2'
+                    }}>
+                      For: {notice.notice_for}
+                    </span>
+                  )}
+                </div>
+                
+                {notice.description && (
+                  <p style={{ 
+                    margin: '0 0 10px 0', 
+                    fontSize: '14px', 
+                    color: '#666',
+                    lineHeight: '1.5',
+                    maxHeight: '60px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}>
+                    {notice.description}
+                  </p>
+                )}
+                
+                {notice.notice_link && (
+                  <a 
+                    href={notice.notice_link} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{ 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      gap: '5px',
+                      color: '#007bff', 
+                      textDecoration: 'none',
+                      fontSize: '13px'
+                    }}
+                  >
+                    <i className="fas fa-external-link-alt"></i> View Link
+                  </a>
+                )}
+                
+                <div style={{ 
+                  marginTop: '10px', 
+                  paddingTop: '10px', 
+                  borderTop: '1px solid #eee',
+                  fontSize: '12px',
+                  color: '#999'
+                }}>
+                  <i className="fas fa-calendar-alt" style={{ marginRight: '5px' }}></i>
+                  {notice.created_at || 'N/A'}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+
+  const NotificationsSection = () => (
+    <div className="react-account-section">
+      <div className="react-section-header">
+        <h2>Notifications</h2>
+        <p>View all your notifications</p>
+      </div>
+      
+      {loadingNotifications ? (
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <i className="fas fa-spinner fa-spin" style={{ fontSize: '24px' }}></i>
+          <p>Loading notifications...</p>
+        </div>
+      ) : notifications.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+          <i className="fas fa-bell-slash" style={{ fontSize: '48px', marginBottom: '15px', opacity: 0.5 }}></i>
+          <p>No notifications found</p>
+        </div>
+      ) : (
+        <>
+          <div className="react-notifications-list" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {notifications.map((notification) => (
+              <div key={notification.id} style={{ 
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '15px',
+                padding: '15px',
+                backgroundColor: '#fff', 
+                borderRadius: '10px', 
+                boxShadow: '0 2px 6px rgba(0,0,0,0.08)', 
+                border: notification.status === 0 ? '1px solid #e3f2fd' : '1px solid #eee',
+                backgroundColor: notification.status === 0 ? '#f8fbff' : '#fff'
+              }}>
+                <div style={{ 
+                  flexShrink: 0,
+                  width: '50px', 
+                  height: '50px', 
+                  borderRadius: '50%',
+                  overflow: 'hidden',
+                  backgroundColor: '#f0f0f0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  {notification.image ? (
+                    <img 
+                      src={notification.image} 
+                      alt="" 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={(e) => {
+                        e.target.style.display = 'none'
+                        e.target.parentElement.innerHTML = '<i class="fas fa-bell" style="color: #999; font-size: 20px;"></i>'
+                      }}
+                    />
+                  ) : (
+                    <i className="fas fa-bell" style={{ color: '#999', fontSize: '20px' }}></i>
+                  )}
+                </div>
+                
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '5px' }}>
+                    <h4 style={{ 
+                      margin: 0, 
+                      fontSize: '15px', 
+                      fontWeight: notification.status === 0 ? '600' : '500', 
+                      color: '#333'
+                    }}>
+                      {notification.title || 'Notification'}
+                    </h4>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      {notification.status === 0 && (
+                        <span style={{ 
+                          width: '8px', 
+                          height: '8px', 
+                          borderRadius: '50%', 
+                          backgroundColor: '#2196f3'
+                        }}></span>
+                      )}
+                      <span style={{ 
+                        padding: '3px 8px', 
+                        borderRadius: '4px', 
+                        fontSize: '11px',
+                        backgroundColor: notification.send_status === 1 ? '#e8f5e9' : '#fff3e0',
+                        color: notification.send_status === 1 ? '#2e7d32' : '#ef6c00'
+                      }}>
+                        {notification.send_status === 1 ? 'Sent' : 'Pending'}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {notification.msg && (
+                    <p style={{ 
+                      margin: '0 0 8px 0', 
+                      fontSize: '14px', 
+                      color: '#666',
+                      lineHeight: '1.4'
+                    }}>
+                      {notification.msg}
+                    </p>
+                  )}
+                  
+                  <div style={{ 
+                    fontSize: '12px',
+                    color: '#999',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px'
+                  }}>
+                    <i className="fas fa-clock"></i>
+                    {notification.created_at || 'N/A'}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <Pagination
+            page={notificationsPage}
+            pageSize={notificationsPageSize}
+            total={notifications.length}
+            onPageChange={setNotificationsPage}
+            onPageSizeChange={(size) => { setNotificationsPageSize(size); setNotificationsPage(1) }}
+          />
+        </>
+      )}
+    </div>
+  )
+
+  const NotifyLogsSection = () => (
+    <div className="react-account-section">
+      <div className="react-section-header">
+        <h2>Notify Logs</h2>
+        <p>View notification delivery logs</p>
+      </div>
+      
+      {loadingNotifyLogs ? (
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <i className="fas fa-spinner fa-spin" style={{ fontSize: '24px' }}></i>
+          <p>Loading notify logs...</p>
+        </div>
+      ) : notifyLogs.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+          <i className="fas fa-history" style={{ fontSize: '48px', marginBottom: '15px', opacity: 0.5 }}></i>
+          <p>No notify logs found</p>
+        </div>
+      ) : (
+        <>
+          <div className="react-table-wrapper" style={{ overflowX: 'auto' }}>
+            <table className="react-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#f5f5f5' }}>
+                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>ID</th>
+                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Title</th>
+                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Message</th>
+                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Type</th>
+                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Status</th>
+                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Sent At</th>
+                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Created At</th>
+                </tr>
+              </thead>
+              <tbody>
+                {notifyLogs.map((log) => (
+                  <tr key={log.id} style={{ borderBottom: '1px solid #eee' }}>
+                    <td style={{ padding: '12px' }}>{log.id}</td>
+                    <td style={{ padding: '12px', fontWeight: '500' }}>{log.title || '-'}</td>
+                    <td style={{ padding: '12px', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {log.message || '-'}
+                    </td>
+                    <td style={{ padding: '12px' }}>
+                      <span style={{ 
+                        padding: '4px 8px', 
+                        borderRadius: '4px', 
+                        fontSize: '12px',
+                        backgroundColor: log.type === 'push' ? '#e3f2fd' : log.type === 'sms' ? '#f3e5f5' : log.type === 'email' ? '#fff3e0' : '#e8f5e9',
+                        color: log.type === 'push' ? '#1565c0' : log.type === 'sms' ? '#7b1fa2' : log.type === 'email' ? '#ef6c00' : '#2e7d32'
+                      }}>
+                        {log.type || 'push'}
+                      </span>
+                    </td>
+                    <td style={{ padding: '12px' }}>
+                      <span style={{ 
+                        padding: '4px 8px', 
+                        borderRadius: '4px', 
+                        fontSize: '12px',
+                        backgroundColor: log.status === 'sent' ? '#e8f5e9' : log.status === 'failed' ? '#ffebee' : '#fff3e0',
+                        color: log.status === 'sent' ? '#2e7d32' : log.status === 'failed' ? '#c62828' : '#ef6c00'
+                      }}>
+                        {log.status || 'pending'}
+                      </span>
+                    </td>
+                    <td style={{ padding: '12px', fontSize: '13px', color: '#666' }}>{log.sent_at || '-'}</td>
+                    <td style={{ padding: '12px', fontSize: '13px', color: '#666' }}>{log.created_at || '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          <Pagination
+            page={notifyLogsPage}
+            pageSize={notifyLogsPageSize}
+            total={notifyLogs.length}
+            onPageChange={setNotifyLogsPage}
+            onPageSizeChange={(size) => { setNotifyLogsPageSize(size); setNotifyLogsPage(1) }}
+          />
+        </>
+      )}
+    </div>
+  )
+
+  const OffersSection = () => (
+    <div className="react-account-section">
+      <div className="react-section-header">
+        <h2>Offers</h2>
+        <p>View all available offers and coupons</p>
+      </div>
+      
+      {loadingOffers ? (
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <i className="fas fa-spinner fa-spin" style={{ fontSize: '24px' }}></i>
+          <p>Loading offers...</p>
+        </div>
+      ) : offers.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+          <i className="fas fa-tags" style={{ fontSize: '48px', marginBottom: '15px', opacity: 0.5 }}></i>
+          <p>No offers found</p>
+        </div>
+      ) : (
+        <>
+          <div className="react-offers-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+            {offers.map((offer) => (
+              <div key={offer.id} style={{ 
+                backgroundColor: '#fff', 
+                borderRadius: '12px', 
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)', 
+                overflow: 'hidden',
+                border: '1px solid #eee',
+                position: 'relative'
+              }}>
+                {/* Offer Badge */}
+                <div style={{ 
+                  position: 'absolute', 
+                  top: '10px', 
+                  right: '10px',
+                  backgroundColor: offer.status === 1 ? '#4caf50' : '#9e9e9e',
+                  color: '#fff',
+                  padding: '4px 10px',
+                  borderRadius: '20px',
+                  fontSize: '11px',
+                  fontWeight: '600'
+                }}>
+                  {offer.status === 1 ? 'Active' : 'Inactive'}
+                </div>
+                
+                {/* Offer Header */}
+                <div style={{ 
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  padding: '20px',
+                  color: '#fff'
+                }}>
+                  <div style={{ fontSize: '12px', opacity: 0.9, marginBottom: '5px' }}>
+                    {offer.offer_category || 'General'}
+                  </div>
+                  <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', fontWeight: '600' }}>
+                    {offer.offer_name || 'Special Offer'}
+                  </h3>
+                  <div style={{ 
+                    display: 'inline-block',
+                    backgroundColor: 'rgba(255,255,255,0.2)',
+                    padding: '8px 15px',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    fontWeight: '700',
+                    letterSpacing: '1px'
+                  }}>
+                    {offer.offer_code || 'N/A'}
+                  </div>
+                </div>
+                
+                {/* Offer Details */}
+                <div style={{ padding: '15px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <div>
+                      <div style={{ fontSize: '12px', color: '#999' }}>Discount</div>
+                      <div style={{ fontSize: '20px', fontWeight: '700', color: '#4caf50' }}>
+                        {offer.discount || '0'}%
+                      </div>
+                    </div>
+                    {offer.discount_amount && (
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '12px', color: '#999' }}>Max Discount</div>
+                        <div style={{ fontSize: '18px', fontWeight: '600', color: '#333' }}>
+                          ₹{parseFloat(offer.discount_amount).toFixed(0)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div style={{ borderTop: '1px dashed #eee', paddingTop: '12px', marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}>
+                      <span style={{ color: '#666' }}>Min Order:</span>
+                      <span style={{ fontWeight: '500' }}>₹{offer.minimum_order_amount || '0'}</span>
+                    </div>
+                    {offer.max_order_amount && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}>
+                        <span style={{ color: '#666' }}>Max Order:</span>
+                        <span style={{ fontWeight: '500' }}>₹{offer.max_order_amount}</span>
+                      </div>
+                    )}
+                    {offer.user_restriction && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                        <span style={{ color: '#666' }}>Usage Limit:</span>
+                        <span style={{ fontWeight: '500' }}>{offer.user_restriction}x per user</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Validity */}
+                  <div style={{ 
+                    backgroundColor: '#f5f5f5', 
+                    padding: '10px', 
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    color: '#666'
+                  }}>
+                    <i className="fas fa-calendar-alt" style={{ marginRight: '5px' }}></i>
+                    Valid: {offer.offer_validity_from || 'N/A'} to {offer.offer_validity_to || 'N/A'}
+                  </div>
+                  
+                  {offer.coupon_description && (
+                    <p style={{ 
+                      margin: '10px 0 0 0', 
+                      fontSize: '13px', 
+                      color: '#666',
+                      lineHeight: '1.4'
+                    }}>
+                      {offer.coupon_description}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <Pagination
+            page={offersPage}
+            pageSize={offersPageSize}
+            total={offers.length}
+            onPageChange={setOffersPage}
+            onPageSizeChange={(size) => { setOffersPageSize(size); setOffersPage(1) }}
+          />
+        </>
+      )}
+    </div>
+  )
+
+  const OfflineServicesSection = () => (
+    <div className="react-account-section">
+      <div className="react-section-header">
+        <h2>Offline Services</h2>
+        <p>View all offline service categories</p>
+      </div>
+      
+      {loadingOfflineServices ? (
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <i className="fas fa-spinner fa-spin" style={{ fontSize: '24px' }}></i>
+          <p>Loading offline services...</p>
+        </div>
+      ) : offlineServices.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+          <i className="fas fa-concierge-bell" style={{ fontSize: '48px', marginBottom: '15px', opacity: 0.5 }}></i>
+          <p>No offline services found</p>
+        </div>
+      ) : (
+        <>
+          <div className="react-services-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+            {offlineServices.map((service) => (
+              <div key={service.id} style={{ 
+                backgroundColor: '#fff', 
+                borderRadius: '12px', 
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)', 
+                overflow: 'hidden',
+                border: '1px solid #eee',
+                transition: 'transform 0.2s, box-shadow 0.2s'
+              }}>
+                {/* Service Image */}
+                <div style={{ 
+                  height: '150px', 
+                  backgroundColor: '#f5f5f5',
+                  overflow: 'hidden',
+                  position: 'relative'
+                }}>
+                  {service.image ? (
+                    <img 
+                      src={service.image} 
+                      alt={service.title} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={(e) => {
+                        e.target.style.display = 'none'
+                        e.target.parentElement.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="fas fa-concierge-bell" style="font-size:40px;color:#ccc;"></i></div>'
+                      }}
+                    />
+                  ) : (
+                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <i className="fas fa-concierge-bell" style={{ fontSize: '40px', color: '#ccc' }}></i>
+                    </div>
+                  )}
+                  
+                  {/* Status Badge */}
+                  <div style={{ 
+                    position: 'absolute', 
+                    top: '10px', 
+                    right: '10px',
+                    backgroundColor: service.status === 1 ? '#4caf50' : '#9e9e9e',
+                    color: '#fff',
+                    padding: '4px 10px',
+                    borderRadius: '20px',
+                    fontSize: '11px',
+                    fontWeight: '600'
+                  }}>
+                    {service.status === 1 ? 'Active' : 'Inactive'}
+                  </div>
+                </div>
+                
+                {/* Service Details */}
+                <div style={{ padding: '15px' }}>
+                  <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '600', color: '#333' }}>
+                    {service.title}
+                  </h3>
+                  
+                  {service.slug && (
+                    <div style={{ 
+                      fontSize: '12px', 
+                      color: '#999', 
+                      marginBottom: '8px',
+                      fontFamily: 'monospace',
+                      backgroundColor: '#f5f5f5',
+                      padding: '3px 8px',
+                      borderRadius: '4px',
+                      display: 'inline-block'
+                    }}>
+                      /{service.slug}
+                    </div>
+                  )}
+                  
+                  {service.description && (
+                    <p style={{ 
+                      margin: '0 0 10px 0', 
+                      fontSize: '13px', 
+                      color: '#666',
+                      lineHeight: '1.4',
+                      maxHeight: '40px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}>
+                      {service.description}
+                    </p>
+                  )}
+                  
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    paddingTop: '10px',
+                    borderTop: '1px solid #eee',
+                    fontSize: '12px',
+                    color: '#999'
+                  }}>
+                    <span>
+                      <i className="fas fa-hashtag" style={{ marginRight: '4px' }}></i>
+                      ID: {service.id}
+                    </span>
+                    {service.parent_id > 0 && (
+                      <span>
+                        <i className="fas fa-sitemap" style={{ marginRight: '4px' }}></i>
+                        Parent: {service.parent_id}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <Pagination
+            page={offlineServicesPage}
+            pageSize={offlineServicesPageSize}
+            total={offlineServices.length}
+            onPageChange={setOfflineServicesPage}
+            onPageSizeChange={(size) => { setOfflineServicesPageSize(size); setOfflineServicesPage(1) }}
+          />
+        </>
+      )}
+    </div>
+  )
+
   const renderContent = () => {
     switch (activeTab) {
       case 'overview': return <OverviewSection />
@@ -3294,6 +4101,11 @@ const Vendor_Dashboard = () => {
       case 'add-product': return <AddProductSection />
       case 'bank-details': return <BankDetailsSection />
       case 'withdrawals': return <WithdrawalSection />
+      case 'notices': return <NoticesSection />
+      case 'notifications': return <NotificationsSection />
+      case 'notify-logs': return <NotifyLogsSection />
+      case 'offers': return <OffersSection />
+      case 'offline-services': return <OfflineServicesSection />
       default: return <OverviewSection />
     }
   }

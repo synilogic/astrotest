@@ -23,6 +23,7 @@ import {
   getCustomerById,
   sendNotification,
    saveIntake,
+   getIntakes,
    checkFirebaseCustomAuthToken,
   generateAgoraRtcToken,
   getAstrologerQueueList
@@ -827,6 +828,41 @@ router.post("/saveIntake", upload.none(), async (req, res) =>  {
 
   const result = await saveIntake(attributes);
   // await updateApiLogs(api, result);
+  return res.json(result);
+});
+
+// Get user intakes list
+router.post("/getIntakes", upload.none(), async (req, res) => {
+  const schema = Joi.object({
+    api_key: Joi.string().required(),
+    user_uni_id: Joi.string().required(),
+    offset: Joi.number().optional().default(0),
+    limit: Joi.number().optional().default(20)
+  });
+
+  const { error, value } = schema.validate(req.body, { abortEarly: false });
+
+  if (error) {
+    const messages = error.details.map(e => e.message);
+    return res.status(400).json({
+      status: 0,
+      error_code: 400,
+      msg: messages.join(', ')
+    });
+  }
+
+  const attributes = value;
+  const isValidUser = await checkUserApiKey(attributes.api_key, attributes.user_uni_id);
+
+  if (!isValidUser) {
+    return res.status(401).json({
+      status: 0,
+      error_code: 101,
+      msg: 'Unauthorized User... Please login again'
+    });
+  }
+
+  const result = await getIntakes(attributes.user_uni_id, attributes.offset, attributes.limit);
   return res.json(result);
 });
 

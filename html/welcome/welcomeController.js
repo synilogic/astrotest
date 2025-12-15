@@ -44,6 +44,21 @@ import { ServiceAssign } from '../_models/serviceAssign.js';
 import Reviews from "../_models/reviews.js";
 import { PredefinedMessage } from "../_models/predefinedMessage.js";
 import { getFromCache, setToCache, CACHE_TTL } from "../_helpers/cacheHelper.js";
+import LiveTempleDarshan from "../_models/liveTempleDarshanModel.js";
+import Menu from "../_models/menuModel.js";
+import Migration from "../_models/migrationModel.js";
+import Module from "../_models/moduleModel.js";
+import NotifyLog from "../_models/notifyLogs.js";
+import ModuleAccess from "../_models/moduleAccessModel.js";
+import OfflineServiceCategory from "../_models/offlineServiceCategory.js";
+import OfflineServiceAssign from "../_models/offlineServiceAssign.js";
+import OfflineServiceGallery from "../_models/offlineServiceGallery.js";
+import OfflineServiceOrder from "../_models/offlineServiceOrder.js";
+import OpenAiPrediction from "../_models/openAiPrediction.js";
+import OpenAiProfile from "../_models/openAiProfile.js";
+import Order from "../_models/order.js";
+import OurService from "../_models/ourService.js";
+import Package from "../_models/package.js";
 
 
 const upload = multer();
@@ -2678,6 +2693,1189 @@ router.post("/getFilters", upload.none(), async (req, res) => {
     return res.status(500).json(result);
   }
 })
+
+router.post("/liveTempleDarshanList", upload.none(), async (req, res) => {
+  try {
+    const body = req.body || {};
+
+    const schema = Joi.object({
+      offset: Joi.number().integer().min(0).optional(),
+      is_live: Joi.number().integer().optional(),
+      city: Joi.string().optional().allow(null, ''),
+    });
+
+    const { error } = schema.validate(body);
+    if (error) {
+      return res.status(400).json({
+        status: 0,
+        errors: error.details,
+        message: 'Validation error',
+        msg: error.details.map(err => err.message).join('\n'),
+      });
+    }
+
+    const offset = parseInt(body.offset) || 0;
+    const pageLimit = constants.api_page_limit || 10;
+
+    const whereClause = { status: 1 };
+    
+    if (body.is_live !== undefined && body.is_live !== null && body.is_live !== '') {
+      whereClause.is_live = parseInt(body.is_live);
+    }
+    
+    if (body.city && body.city.trim() !== '') {
+      whereClause.city = { [Op.like]: `%${body.city.trim()}%` };
+    }
+
+    const records = await LiveTempleDarshan.findAll({
+      where: whereClause,
+      offset,
+      limit: pageLimit,
+      order: [['is_live', 'DESC'], ['id', 'DESC']],
+    });
+
+    const hostUrl = `${req.protocol}://${req.get("host")}/`;
+
+    const formatted = records.map(record => ({
+      id: record.id,
+      temple_name: record.temple_name,
+      location: record.location,
+      city: record.city,
+      state: record.state,
+      country: record.country,
+      description: record.description,
+      live_url: record.live_url,
+      thumbnail_image: record.thumbnail_image
+        ? `${hostUrl}uploads/temple_darshan/${record.thumbnail_image}`
+        : `${hostUrl}${constants.default_image_path}`,
+      schedule_type: record.schedule_type,
+      start_time: record.start_time,
+      end_time: record.end_time,
+      is_live: record.is_live,
+      viewers_count: record.viewers_count,
+      status: record.status,
+      created_at: dayjs(record.created_at).format('YYYY-MM-DD HH:mm:ss'),
+      updated_at: dayjs(record.updated_at).format('YYYY-MM-DD HH:mm:ss'),
+    }));
+
+    return res.status(200).json({
+      status: 1,
+      msg: 'Live Temple Darshan List',
+      offset: offset + pageLimit,
+      data: formatted
+    });
+
+  } catch (err) {
+    console.error('Error in liveTempleDarshanList:', err);
+    return res.status(500).json({
+      status: 0,
+      msg: 'Something went wrong.. Try Again',
+    });
+  }
+});
+
+router.post("/menuList", upload.none(), async (req, res) => {
+  try {
+    const body = req.body || {};
+
+    const schema = Joi.object({
+      offset: Joi.number().integer().min(0).optional(),
+      menu_type: Joi.string().optional().allow(null, ''),
+      parent_id: Joi.number().integer().optional().allow(null, ''),
+    });
+
+    const { error } = schema.validate(body);
+    if (error) {
+      return res.status(400).json({
+        status: 0,
+        errors: error.details,
+        message: 'Validation error',
+        msg: error.details.map(err => err.message).join('\n'),
+      });
+    }
+
+    const offset = parseInt(body.offset) || 0;
+    const pageLimit = constants.api_page_limit || 20;
+
+    const whereClause = { status: 1 };
+    
+    if (body.menu_type && body.menu_type.trim() !== '') {
+      whereClause.menu_type = body.menu_type.trim();
+    }
+    
+    if (body.parent_id !== undefined && body.parent_id !== null && body.parent_id !== '') {
+      whereClause.parent_id = parseInt(body.parent_id);
+    }
+
+    const records = await Menu.findAll({
+      where: whereClause,
+      offset,
+      limit: pageLimit,
+      order: [['menu_order', 'ASC'], ['id', 'ASC']],
+    });
+
+    const hostUrl = `${req.protocol}://${req.get("host")}/`;
+
+    const formatted = records.map(record => ({
+      id: record.id,
+      menu_name: record.menu_name,
+      menu_slug: record.menu_slug,
+      menu_url: record.menu_url,
+      menu_icon: record.menu_icon,
+      menu_image: record.menu_image
+        ? `${hostUrl}uploads/menus/${record.menu_image}`
+        : null,
+      parent_id: record.parent_id,
+      menu_order: record.menu_order,
+      menu_type: record.menu_type,
+      target: record.target,
+      description: record.description,
+      status: record.status,
+      created_at: dayjs(record.created_at).format('YYYY-MM-DD HH:mm:ss'),
+      updated_at: dayjs(record.updated_at).format('YYYY-MM-DD HH:mm:ss'),
+    }));
+
+    return res.status(200).json({
+      status: 1,
+      msg: 'Menu List',
+      offset: offset + pageLimit,
+      data: formatted
+    });
+
+  } catch (err) {
+    console.error('Error in menuList:', err);
+    return res.status(500).json({
+      status: 0,
+      msg: 'Something went wrong.. Try Again',
+    });
+  }
+});
+
+router.post("/migrationList", upload.none(), async (req, res) => {
+  try {
+    const body = req.body || {};
+
+    const schema = Joi.object({
+      offset: Joi.number().integer().min(0).optional(),
+      status: Joi.string().optional().allow(null, ''),
+      batch: Joi.number().integer().optional().allow(null, ''),
+    });
+
+    const { error } = schema.validate(body);
+    if (error) {
+      return res.status(400).json({
+        status: 0,
+        errors: error.details,
+        message: 'Validation error',
+        msg: error.details.map(err => err.message).join('\n'),
+      });
+    }
+
+    const offset = parseInt(body.offset) || 0;
+    const pageLimit = constants.api_page_limit || 20;
+
+    const whereClause = {};
+    
+    if (body.status && body.status.trim() !== '') {
+      whereClause.status = body.status.trim();
+    }
+    
+    if (body.batch !== undefined && body.batch !== null && body.batch !== '') {
+      whereClause.batch = parseInt(body.batch);
+    }
+
+    const records = await Migration.findAll({
+      where: whereClause,
+      offset,
+      limit: pageLimit,
+      order: [['id', 'DESC']],
+    });
+
+    const formatted = records.map(record => ({
+      id: record.id,
+      migration_name: record.migration_name,
+      migration_version: record.migration_version,
+      description: record.description,
+      batch: record.batch,
+      executed_at: record.executed_at ? dayjs(record.executed_at).format('YYYY-MM-DD HH:mm:ss') : null,
+      status: record.status,
+      created_at: dayjs(record.created_at).format('YYYY-MM-DD HH:mm:ss'),
+      updated_at: dayjs(record.updated_at).format('YYYY-MM-DD HH:mm:ss'),
+    }));
+
+    return res.status(200).json({
+      status: 1,
+      msg: 'Migration List',
+      offset: offset + pageLimit,
+      data: formatted
+    });
+
+  } catch (err) {
+    console.error('Error in migrationList:', err);
+    return res.status(500).json({
+      status: 0,
+      msg: 'Something went wrong.. Try Again',
+    });
+  }
+});
+
+router.post("/moduleList", upload.none(), async (req, res) => {
+  try {
+    const body = req.body || {};
+
+    const schema = Joi.object({
+      offset: Joi.number().integer().min(0).optional(),
+      module_type: Joi.string().optional().allow(null, ''),
+      is_active: Joi.number().integer().optional().allow(null, ''),
+      parent_id: Joi.number().integer().optional().allow(null, ''),
+    });
+
+    const { error } = schema.validate(body);
+    if (error) {
+      return res.status(400).json({
+        status: 0,
+        errors: error.details,
+        message: 'Validation error',
+        msg: error.details.map(err => err.message).join('\n'),
+      });
+    }
+
+    const offset = parseInt(body.offset) || 0;
+    const pageLimit = constants.api_page_limit || 20;
+
+    const whereClause = { status: 1 };
+    
+    if (body.module_type && body.module_type.trim() !== '') {
+      whereClause.module_type = body.module_type.trim();
+    }
+    
+    if (body.is_active !== undefined && body.is_active !== null && body.is_active !== '') {
+      whereClause.is_active = parseInt(body.is_active);
+    }
+    
+    if (body.parent_id !== undefined && body.parent_id !== null && body.parent_id !== '') {
+      whereClause.parent_id = parseInt(body.parent_id);
+    }
+
+    const records = await Module.findAll({
+      where: whereClause,
+      offset,
+      limit: pageLimit,
+      order: [['module_order', 'ASC'], ['id', 'ASC']],
+    });
+
+    const hostUrl = `${req.protocol}://${req.get("host")}/`;
+
+    const formatted = records.map(record => ({
+      id: record.id,
+      module_name: record.module_name,
+      module_slug: record.module_slug,
+      module_key: record.module_key,
+      module_icon: record.module_icon,
+      module_image: record.module_image
+        ? `${hostUrl}uploads/modules/${record.module_image}`
+        : null,
+      description: record.description,
+      module_type: record.module_type,
+      parent_id: record.parent_id,
+      module_order: record.module_order,
+      is_active: record.is_active,
+      is_premium: record.is_premium,
+      settings: record.settings ? JSON.parse(record.settings) : null,
+      status: record.status,
+      created_at: dayjs(record.created_at).format('YYYY-MM-DD HH:mm:ss'),
+      updated_at: dayjs(record.updated_at).format('YYYY-MM-DD HH:mm:ss'),
+    }));
+
+    return res.status(200).json({
+      status: 1,
+      msg: 'Module List',
+      offset: offset + pageLimit,
+      data: formatted
+    });
+
+  } catch (err) {
+    console.error('Error in moduleList:', err);
+    return res.status(500).json({
+      status: 0,
+      msg: 'Something went wrong.. Try Again',
+    });
+  }
+});
+
+router.post("/moduleAccessList", upload.none(), async (req, res) => {
+  try {
+    const body = req.body || {};
+
+    const schema = Joi.object({
+      offset: Joi.number().integer().min(0).optional(),
+      user_id: Joi.number().integer().optional().allow(null, ''),
+      user_type: Joi.string().optional().allow(null, ''),
+      module_id: Joi.number().integer().optional().allow(null, ''),
+      access_type: Joi.string().optional().allow(null, ''),
+      is_granted: Joi.number().integer().optional().allow(null, ''),
+    });
+
+    const { error } = schema.validate(body);
+    if (error) {
+      return res.status(400).json({
+        status: 0,
+        errors: error.details,
+        message: 'Validation error',
+        msg: error.details.map(err => err.message).join('\n'),
+      });
+    }
+
+    const offset = parseInt(body.offset) || 0;
+    const pageLimit = constants.api_page_limit || 20;
+
+    const whereClause = { status: 1 };
+    
+    if (body.user_id !== undefined && body.user_id !== null && body.user_id !== '') {
+      whereClause.user_id = parseInt(body.user_id);
+    }
+    
+    if (body.user_type && body.user_type.trim() !== '') {
+      whereClause.user_type = body.user_type.trim();
+    }
+    
+    if (body.module_id !== undefined && body.module_id !== null && body.module_id !== '') {
+      whereClause.module_id = parseInt(body.module_id);
+    }
+    
+    if (body.access_type && body.access_type.trim() !== '') {
+      whereClause.access_type = body.access_type.trim();
+    }
+    
+    if (body.is_granted !== undefined && body.is_granted !== null && body.is_granted !== '') {
+      whereClause.is_granted = parseInt(body.is_granted);
+    }
+
+    const records = await ModuleAccess.findAll({
+      where: whereClause,
+      offset,
+      limit: pageLimit,
+      order: [['id', 'DESC']],
+    });
+
+    const formatted = records.map(record => ({
+      id: record.id,
+      user_id: record.user_id,
+      user_type: record.user_type,
+      module_id: record.module_id,
+      module_name: record.module_name,
+      module_key: record.module_key,
+      access_type: record.access_type,
+      permissions: record.permissions ? JSON.parse(record.permissions) : null,
+      is_granted: record.is_granted,
+      granted_by: record.granted_by,
+      granted_at: record.granted_at ? dayjs(record.granted_at).format('YYYY-MM-DD HH:mm:ss') : null,
+      expires_at: record.expires_at ? dayjs(record.expires_at).format('YYYY-MM-DD HH:mm:ss') : null,
+      notes: record.notes,
+      status: record.status,
+      created_at: dayjs(record.created_at).format('YYYY-MM-DD HH:mm:ss'),
+      updated_at: dayjs(record.updated_at).format('YYYY-MM-DD HH:mm:ss'),
+    }));
+
+    return res.status(200).json({
+      status: 1,
+      msg: 'Module Access List',
+      offset: offset + pageLimit,
+      data: formatted
+    });
+
+  } catch (err) {
+    console.error('Error in moduleAccessList:', err);
+    return res.status(500).json({
+      status: 0,
+      msg: 'Something went wrong.. Try Again',
+    });
+  }
+});
+
+router.post("/notifyLogList", upload.none(), async (req, res) => {
+  try {
+    const body = req.body || {};
+
+    const schema = Joi.object({
+      api_key: Joi.string().optional().allow(null, ''),
+      user_uni_id: Joi.string().optional().allow(null, ''),
+      offset: Joi.number().integer().min(0).optional(),
+      type: Joi.string().optional().allow(null, ''),
+      status: Joi.string().optional().allow(null, ''),
+    });
+
+    const { error } = schema.validate(body);
+    if (error) {
+      return res.status(400).json({
+        status: 0,
+        errors: error.details,
+        message: 'Validation error',
+        msg: error.details.map(err => err.message).join('\n'),
+      });
+    }
+
+    const offset = parseInt(body.offset) || 0;
+    const pageLimit = constants.api_page_limit || 20;
+
+    const whereClause = {};
+    
+    if (body.user_uni_id && body.user_uni_id.trim() !== '') {
+      whereClause.user_uni_id = body.user_uni_id.trim();
+    }
+    
+    if (body.type && body.type.trim() !== '') {
+      whereClause.type = body.type.trim();
+    }
+    
+    if (body.status && body.status.trim() !== '') {
+      whereClause.status = body.status.trim();
+    }
+
+    const records = await NotifyLog.findAll({
+      where: whereClause,
+      offset,
+      limit: pageLimit,
+      order: [['id', 'DESC']],
+    });
+
+    const formatted = records.map(record => ({
+      id: record.id,
+      user_uni_id: record.user_uni_id,
+      title: record.title,
+      message: record.message,
+      type: record.type,
+      notification_id: record.notification_id,
+      status: record.status,
+      sent_at: record.sent_at ? dayjs(record.sent_at).format('YYYY-MM-DD HH:mm:ss') : null,
+      created_at: dayjs(record.created_at).format('YYYY-MM-DD HH:mm:ss'),
+      updated_at: record.updated_at ? dayjs(record.updated_at).format('YYYY-MM-DD HH:mm:ss') : null,
+    }));
+
+    return res.status(200).json({
+      status: 1,
+      msg: 'Notify Log List',
+      offset: offset + pageLimit,
+      data: formatted
+    });
+
+  } catch (err) {
+    console.error('Error in notifyLogList:', err);
+    return res.status(500).json({
+      status: 0,
+      msg: 'Something went wrong.. Try Again',
+    });
+  }
+});
+
+router.post("/offlineServiceCategoryList", upload.none(), async (req, res) => {
+  try {
+    const body = req.body || {};
+
+    const schema = Joi.object({
+      offset: Joi.number().integer().min(0).optional(),
+      status: Joi.number().integer().optional().allow(null, ''),
+      parent_id: Joi.number().integer().optional().allow(null, ''),
+      search: Joi.string().optional().allow(null, ''),
+    });
+
+    const { error } = schema.validate(body);
+    if (error) {
+      return res.status(400).json({
+        status: 0,
+        errors: error.details,
+        message: 'Validation error',
+        msg: error.details.map(err => err.message).join('\n'),
+      });
+    }
+
+    const offset = parseInt(body.offset) || 0;
+    const pageLimit = constants.api_page_limit || 20;
+
+    const whereClause = { status: 1 };
+    
+    if (body.status !== undefined && body.status !== null && body.status !== '') {
+      whereClause.status = parseInt(body.status);
+    }
+    
+    if (body.parent_id !== undefined && body.parent_id !== null && body.parent_id !== '') {
+      whereClause.parent_id = parseInt(body.parent_id);
+    }
+    
+    if (body.search && body.search.trim() !== '') {
+      whereClause.title = { [Op.like]: `%${body.search.trim()}%` };
+    }
+
+    const records = await OfflineServiceCategory.findAll({
+      where: whereClause,
+      offset,
+      limit: pageLimit,
+      order: [['title', 'ASC'], ['id', 'ASC']],
+    });
+
+    const hostUrl = `${req.protocol}://${req.get("host")}/`;
+    const imagePath = constants.offline_service_category_image_path || 'uploads/offline_service_category/';
+
+    const formatted = records.map(record => ({
+      id: record.id,
+      parent_id: record.parent_id,
+      title: record.title,
+      slug: record.slug,
+      description: record.description,
+      image: record.image ? `${hostUrl}${imagePath}${record.image}` : null,
+      meta_key: record.meta_key,
+      meta_title: record.meta_title,
+      meta_description: record.meta_description,
+      status: record.status,
+      created_at: dayjs(record.created_at).format('YYYY-MM-DD HH:mm:ss'),
+      updated_at: dayjs(record.updated_at).format('YYYY-MM-DD HH:mm:ss'),
+    }));
+
+    return res.status(200).json({
+      status: 1,
+      msg: 'Offline Service Category List',
+      offset: offset + pageLimit,
+      data: formatted
+    });
+
+  } catch (err) {
+    console.error('Error in offlineServiceCategoryList:', err);
+    return res.status(500).json({
+      status: 0,
+      msg: 'Something went wrong.. Try Again',
+    });
+  }
+});
+
+router.post("/offlineServiceAssignList", upload.none(), async (req, res) => {
+  try {
+    const body = req.body || {};
+
+    const schema = Joi.object({
+      offset: Joi.number().integer().min(0).optional(),
+      status: Joi.number().integer().optional().allow(null, ''),
+      offline_service_category_id: Joi.number().integer().optional().allow(null, ''),
+      astrologer_uni_id: Joi.string().optional().allow(null, ''),
+    });
+
+    const { error } = schema.validate(body);
+    if (error) {
+      return res.status(400).json({
+        status: 0,
+        errors: error.details,
+        message: 'Validation error',
+        msg: error.details.map(err => err.message).join('\n'),
+      });
+    }
+
+    const offset = parseInt(body.offset) || 0;
+    const pageLimit = constants.api_page_limit || 20;
+
+    const whereClause = { status: 1 };
+    
+    if (body.status !== undefined && body.status !== null && body.status !== '') {
+      whereClause.status = parseInt(body.status);
+    }
+    
+    if (body.offline_service_category_id !== undefined && body.offline_service_category_id !== null && body.offline_service_category_id !== '') {
+      whereClause.offline_service_category_id = parseInt(body.offline_service_category_id);
+    }
+    
+    if (body.astrologer_uni_id && body.astrologer_uni_id.trim() !== '') {
+      whereClause.astrologer_uni_id = body.astrologer_uni_id.trim();
+    }
+
+    const records = await OfflineServiceAssign.findAll({
+      where: whereClause,
+      offset,
+      limit: pageLimit,
+      order: [['id', 'DESC']],
+    });
+
+    const hostUrl = `${req.protocol}://${req.get("host")}/`;
+    const imagePath = 'uploads/offline_service_assign/';
+
+    const formatted = records.map(record => ({
+      id: record.id,
+      offline_service_category_id: record.offline_service_category_id,
+      astrologer_uni_id: record.astrologer_uni_id,
+      title: record.title,
+      description: record.description,
+      price: record.price,
+      actual_price: record.actual_price,
+      duration: record.duration,
+      image: record.image ? `${hostUrl}${imagePath}${record.image}` : null,
+      status: record.status,
+      created_at: dayjs(record.created_at).format('YYYY-MM-DD HH:mm:ss'),
+      updated_at: record.updated_at ? dayjs(record.updated_at).format('YYYY-MM-DD HH:mm:ss') : null,
+    }));
+
+    return res.status(200).json({
+      status: 1,
+      msg: 'Offline Service Assign List',
+      offset: offset + pageLimit,
+      data: formatted
+    });
+
+  } catch (err) {
+    console.error('Error in offlineServiceAssignList:', err);
+    return res.status(500).json({
+      status: 0,
+      msg: 'Something went wrong.. Try Again',
+    });
+  }
+});
+
+router.post("/offlineServiceGalleryList", upload.none(), async (req, res) => {
+  try {
+    const body = req.body || {};
+
+    const schema = Joi.object({
+      offset: Joi.number().integer().min(0).optional(),
+      status: Joi.number().integer().optional().allow(null, ''),
+      offline_service_id: Joi.number().integer().optional().allow(null, ''),
+    });
+
+    const { error } = schema.validate(body);
+    if (error) {
+      return res.status(400).json({
+        status: 0,
+        errors: error.details,
+        message: 'Validation error',
+        msg: error.details.map(err => err.message).join('\n'),
+      });
+    }
+
+    const offset = parseInt(body.offset) || 0;
+    const pageLimit = constants.api_page_limit || 20;
+
+    const whereClause = { status: 1 };
+    
+    if (body.status !== undefined && body.status !== null && body.status !== '') {
+      whereClause.status = parseInt(body.status);
+    }
+    
+    if (body.offline_service_id !== undefined && body.offline_service_id !== null && body.offline_service_id !== '') {
+      whereClause.offline_service_id = parseInt(body.offline_service_id);
+    }
+
+    const records = await OfflineServiceGallery.findAll({
+      where: whereClause,
+      offset,
+      limit: pageLimit,
+      order: [['id', 'DESC']],
+    });
+
+    const hostUrl = `${req.protocol}://${req.get("host")}/`;
+    const imagePath = 'uploads/offline_service_gallery/';
+
+    const formatted = records.map(record => ({
+      id: record.id,
+      offline_service_id: record.offline_service_id,
+      image: record.image ? `${hostUrl}${imagePath}${record.image}` : null,
+      status: record.status,
+      created_at: dayjs(record.created_at).format('YYYY-MM-DD HH:mm:ss'),
+      updated_at: record.updated_at ? dayjs(record.updated_at).format('YYYY-MM-DD HH:mm:ss') : null,
+    }));
+
+    return res.status(200).json({
+      status: 1,
+      msg: 'Offline Service Gallery List',
+      offset: offset + pageLimit,
+      data: formatted
+    });
+
+  } catch (err) {
+    console.error('Error in offlineServiceGalleryList:', err);
+    return res.status(500).json({
+      status: 0,
+      msg: 'Something went wrong.. Try Again',
+    });
+  }
+});
+
+router.post("/offlineServiceOrderList", upload.none(), async (req, res) => {
+  try {
+    const body = req.body || {};
+
+    const schema = Joi.object({
+      api_key: Joi.string().optional().allow(null, ''),
+      user_uni_id: Joi.string().optional().allow(null, ''),
+      offset: Joi.number().integer().min(0).optional(),
+      customer_uni_id: Joi.string().optional().allow(null, ''),
+      service_id: Joi.string().optional().allow(null, ''),
+      status: Joi.string().optional().allow(null, ''),
+      payment_status: Joi.string().optional().allow(null, ''),
+    });
+
+    const { error } = schema.validate(body);
+    if (error) {
+      return res.status(400).json({
+        status: 0,
+        errors: error.details,
+        message: 'Validation error',
+        msg: error.details.map(err => err.message).join('\n'),
+      });
+    }
+
+    const offset = parseInt(body.offset) || 0;
+    const pageLimit = constants.api_page_limit || 20;
+
+    const whereClause = {};
+    
+    // Filter by customer_uni_id or user_uni_id
+    if (body.customer_uni_id && body.customer_uni_id.trim() !== '') {
+      whereClause.customer_uni_id = body.customer_uni_id.trim();
+    } else if (body.user_uni_id && body.user_uni_id.trim() !== '') {
+      whereClause.customer_uni_id = body.user_uni_id.trim();
+    }
+    
+    if (body.service_id && body.service_id.trim() !== '') {
+      whereClause.service_id = body.service_id.trim();
+    }
+    
+    if (body.status && body.status.trim() !== '') {
+      whereClause.status = body.status.trim();
+    }
+    
+    if (body.payment_status && body.payment_status.trim() !== '') {
+      whereClause.payment_status = body.payment_status.trim();
+    }
+
+    const records = await OfflineServiceOrder.findAll({
+      where: whereClause,
+      offset,
+      limit: pageLimit,
+      order: [['id', 'DESC']],
+    });
+
+    const formatted = records.map(record => ({
+      id: record.id,
+      order_id: record.order_id,
+      customer_uni_id: record.customer_uni_id,
+      service_id: record.service_id,
+      price: record.price,
+      date: record.date,
+      time: record.time,
+      remark: record.remark,
+      reference_id: record.reference_id,
+      reference_percent: record.reference_percent,
+      reference_amount: record.reference_amount,
+      offer_percent: record.offer_percent,
+      offer_amount: record.offer_amount,
+      total_amount: record.total_amount,
+      samagri_status: record.samagri_status,
+      status: record.status,
+      address_id: record.address_id,
+      payment_status: record.payment_status,
+      created_at: record.created_at ? dayjs(record.created_at).format('YYYY-MM-DD HH:mm:ss') : null,
+      updated_at: record.updated_at ? dayjs(record.updated_at).format('YYYY-MM-DD HH:mm:ss') : null,
+    }));
+
+    return res.status(200).json({
+      status: 1,
+      msg: 'Offline Service Order List',
+      offset: offset + pageLimit,
+      data: formatted
+    });
+
+  } catch (err) {
+    console.error('Error in offlineServiceOrderList:', err);
+    return res.status(500).json({
+      status: 0,
+      msg: 'Something went wrong.. Try Again',
+    });
+  }
+});
+
+router.post("/openAiPredictionList", upload.none(), async (req, res) => {
+  try {
+    const body = req.body || {};
+
+    const schema = Joi.object({
+      api_key: Joi.string().optional().allow(null, ''),
+      user_uni_id: Joi.string().optional().allow(null, ''),
+      offset: Joi.number().integer().min(0).optional(),
+      status: Joi.number().integer().optional().allow(null, ''),
+      message_type: Joi.string().optional().allow(null, ''),
+    });
+
+    const { error } = schema.validate(body);
+    if (error) {
+      return res.status(400).json({
+        status: 0,
+        errors: error.details,
+        message: 'Validation error',
+        msg: error.details.map(err => err.message).join('\n'),
+      });
+    }
+
+    const offset = parseInt(body.offset) || 0;
+    const pageLimit = constants.api_page_limit || 20;
+
+    const whereClause = {};
+    
+    // Filter by user_uni_id
+    if (body.user_uni_id && body.user_uni_id.trim() !== '') {
+      whereClause.user_uni_id = body.user_uni_id.trim();
+    }
+    
+    if (body.status !== undefined && body.status !== null && body.status !== '') {
+      whereClause.status = parseInt(body.status);
+    }
+    
+    if (body.message_type && body.message_type.trim() !== '') {
+      whereClause.message_type = body.message_type.trim();
+    }
+
+    const records = await OpenAiPrediction.findAll({
+      where: whereClause,
+      offset,
+      limit: pageLimit,
+      order: [['id', 'DESC']],
+    });
+
+    const formatted = records.map(record => ({
+      id: record.id,
+      user_uni_id: record.user_uni_id,
+      order_id: record.order_id,
+      question: record.question,
+      open_ai_response: record.open_ai_response,
+      message_type: record.message_type,
+      total_amount: record.total_amount,
+      open_ai_profile_id: record.open_ai_profile_id,
+      status: record.status,
+      created_at: record.created_at ? dayjs(record.created_at).format('YYYY-MM-DD HH:mm:ss') : null,
+      updated_at: record.updated_at ? dayjs(record.updated_at).format('YYYY-MM-DD HH:mm:ss') : null,
+    }));
+
+    return res.status(200).json({
+      status: 1,
+      msg: 'OpenAI Prediction List',
+      offset: offset + pageLimit,
+      data: formatted
+    });
+
+  } catch (err) {
+    console.error('Error in openAiPredictionList:', err);
+    return res.status(500).json({
+      status: 0,
+      msg: 'Something went wrong.. Try Again',
+    });
+  }
+});
+
+router.post("/openAiProfileList", upload.none(), async (req, res) => {
+  try {
+    const body = req.body || {};
+
+    const schema = Joi.object({
+      api_key: Joi.string().optional().allow(null, ''),
+      user_uni_id: Joi.string().optional().allow(null, ''),
+      customer_uni_id: Joi.string().optional().allow(null, ''),
+      offset: Joi.number().integer().min(0).optional(),
+      is_selected: Joi.number().integer().optional().allow(null, ''),
+      is_self_profile: Joi.number().integer().optional().allow(null, ''),
+    });
+
+    const { error } = schema.validate(body);
+    if (error) {
+      return res.status(400).json({
+        status: 0,
+        errors: error.details,
+        message: 'Validation error',
+        msg: error.details.map(err => err.message).join('\n'),
+      });
+    }
+
+    const offset = parseInt(body.offset) || 0;
+    const pageLimit = constants.api_page_limit || 20;
+
+    const whereClause = { status: 1 };
+    
+    // Filter by customer_uni_id or user_uni_id
+    if (body.customer_uni_id && body.customer_uni_id.trim() !== '') {
+      whereClause.customer_uni_id = body.customer_uni_id.trim();
+    } else if (body.user_uni_id && body.user_uni_id.trim() !== '') {
+      whereClause.customer_uni_id = body.user_uni_id.trim();
+    }
+    
+    if (body.is_selected !== undefined && body.is_selected !== null && body.is_selected !== '') {
+      whereClause.is_selected = parseInt(body.is_selected);
+    }
+    
+    if (body.is_self_profile !== undefined && body.is_self_profile !== null && body.is_self_profile !== '') {
+      whereClause.is_self_profile = parseInt(body.is_self_profile);
+    }
+
+    const records = await OpenAiProfile.findAll({
+      where: whereClause,
+      offset,
+      limit: pageLimit,
+      order: [['is_selected', 'DESC'], ['id', 'DESC']],
+    });
+
+    const formatted = records.map(record => ({
+      id: record.id,
+      customer_uni_id: record.customer_uni_id,
+      name: record.name,
+      gender: record.gender,
+      dob: record.dob,
+      tob: record.tob,
+      pob: record.pob,
+      lat: record.lat,
+      lon: record.lon,
+      lang: record.lang,
+      is_selected: record.is_selected,
+      is_self_profile: record.is_self_profile,
+      status: record.status,
+      created_at: record.created_at ? dayjs(record.created_at).format('YYYY-MM-DD HH:mm:ss') : null,
+      updated_at: record.updated_at ? dayjs(record.updated_at).format('YYYY-MM-DD HH:mm:ss') : null,
+    }));
+
+    return res.status(200).json({
+      status: 1,
+      msg: 'OpenAI Profile List',
+      offset: offset + pageLimit,
+      data: formatted
+    });
+
+  } catch (err) {
+    console.error('Error in openAiProfileList:', err);
+    return res.status(500).json({
+      status: 0,
+      msg: 'Something went wrong.. Try Again',
+    });
+  }
+});
+
+router.post("/orderList", upload.none(), async (req, res) => {
+  try {
+    const body = req.body || {};
+
+    const schema = Joi.object({
+      api_key: Joi.string().optional().allow(null, ''),
+      user_uni_id: Joi.string().optional().allow(null, ''),
+      offset: Joi.number().integer().min(0).optional(),
+      status: Joi.string().optional().allow(null, ''),
+      payment_status: Joi.string().optional().allow(null, ''),
+    });
+
+    const { error } = schema.validate(body);
+    if (error) {
+      return res.status(400).json({
+        status: 0,
+        errors: error.details,
+        message: 'Validation error',
+        msg: error.details.map(err => err.message).join('\n'),
+      });
+    }
+
+    const offset = parseInt(body.offset) || 0;
+    const pageLimit = constants.api_page_limit || 20;
+
+    const whereClause = {};
+    
+    // Filter by user_uni_id
+    if (body.user_uni_id && body.user_uni_id.trim() !== '') {
+      whereClause.user_uni_id = body.user_uni_id.trim();
+    }
+    
+    if (body.status && body.status.trim() !== '') {
+      whereClause.status = body.status.trim();
+    }
+    
+    if (body.payment_status && body.payment_status.trim() !== '') {
+      whereClause.payment_status = body.payment_status.trim();
+    }
+
+    const records = await Order.findAll({
+      where: whereClause,
+      offset,
+      limit: pageLimit,
+      order: [['id', 'DESC']],
+    });
+
+    const formatted = records.map(record => ({
+      id: record.id,
+      order_id: record.order_id,
+      vendor_uni_id: record.vendor_uni_id,
+      reference_id: record.reference_id,
+      user_uni_id: record.user_uni_id,
+      address_id: record.address_id,
+      description: record.description,
+      sub_total_amount: record.sub_total_amount,
+      gst_percent: record.gst_percent,
+      gst_amount: record.gst_amount,
+      admin_percentage: record.admin_percentage,
+      delivery_charge: record.delivery_charge,
+      offer_amount: record.offer_amount,
+      reference_amount: record.reference_amount,
+      total_amount: record.total_amount,
+      status: record.status,
+      payment_status: record.payment_status,
+      return_valid_date: record.return_valid_date ? dayjs(record.return_valid_date).format('YYYY-MM-DD') : null,
+      created_at: record.created_at ? dayjs(record.created_at).format('YYYY-MM-DD HH:mm:ss') : null,
+      updated_at: record.updated_at ? dayjs(record.updated_at).format('YYYY-MM-DD HH:mm:ss') : null,
+    }));
+
+    return res.status(200).json({
+      status: 1,
+      msg: 'Order List',
+      offset: offset + pageLimit,
+      data: formatted
+    });
+
+  } catch (err) {
+    console.error('Error in orderList:', err);
+    return res.status(500).json({
+      status: 0,
+      msg: 'Something went wrong.. Try Again',
+    });
+  }
+});
+
+router.post("/ourServiceList", upload.none(), async (req, res) => {
+  try {
+    const body = req.body || {};
+
+    const schema = Joi.object({
+      offset: Joi.number().integer().min(0).optional(),
+      slug: Joi.string().optional().allow(null, ''),
+      status: Joi.string().optional().allow(null, ''),
+    });
+
+    const { error } = schema.validate(body);
+    if (error) {
+      return res.status(400).json({
+        status: 0,
+        errors: error.details,
+        message: 'Validation error',
+        msg: error.details.map(err => err.message).join('\n'),
+      });
+    }
+
+    const offset = parseInt(body.offset) || 0;
+    const pageLimit = constants.api_page_limit || 20;
+
+    const whereClause = { status: '1' };
+    
+    if (body.slug && body.slug.trim() !== '') {
+      whereClause.slug = body.slug.trim();
+    }
+    
+    if (body.status && body.status.trim() !== '') {
+      whereClause.status = body.status.trim();
+    }
+
+    const records = await OurService.findAll({
+      where: whereClause,
+      offset,
+      limit: pageLimit,
+      order: [['id', 'DESC']],
+    });
+
+    const hostUrl = `${req.protocol}://${req.get("host")}/`;
+    const imagePath = 'uploads/our_services/';
+
+    const formatted = records.map(record => ({
+      id: record.id,
+      title: record.title,
+      slug: record.slug,
+      content: record.content,
+      image: record.image ? `${hostUrl}${imagePath}${record.image}` : null,
+      meta_title: record.meta_title,
+      meta_key: record.meta_key,
+      meta_description: record.meta_description,
+      status: record.status,
+      created_at: record.created_at ? dayjs(record.created_at).format('YYYY-MM-DD HH:mm:ss') : null,
+      updated_at: record.updated_at ? dayjs(record.updated_at).format('YYYY-MM-DD HH:mm:ss') : null,
+    }));
+
+    return res.status(200).json({
+      status: 1,
+      msg: 'Our Services List',
+      offset: offset + pageLimit,
+      data: formatted
+    });
+
+  } catch (err) {
+    console.error('Error in ourServiceList:', err);
+    return res.status(500).json({
+      status: 0,
+      msg: 'Something went wrong.. Try Again',
+    });
+  }
+});
+
+router.post("/packageList", upload.none(), async (req, res) => {
+  try {
+    const body = req.body || {};
+
+    const schema = Joi.object({
+      offset: Joi.number().integer().min(0).optional(),
+      package_type: Joi.string().optional().allow(null, ''),
+      status: Joi.number().integer().optional().allow(null, ''),
+    });
+
+    const { error } = schema.validate(body);
+    if (error) {
+      return res.status(400).json({
+        status: 0,
+        errors: error.details,
+        message: 'Validation error',
+        msg: error.details.map(err => err.message).join('\n'),
+      });
+    }
+
+    const offset = parseInt(body.offset) || 0;
+    const pageLimit = constants.api_page_limit || 20;
+
+    const whereClause = { status: 1, trash: 0 };
+    
+    if (body.package_type && body.package_type.trim() !== '') {
+      whereClause.package_type = body.package_type.trim();
+    }
+    
+    if (body.status !== undefined && body.status !== null && body.status !== '') {
+      whereClause.status = parseInt(body.status);
+    }
+
+    const records = await Package.findAll({
+      where: whereClause,
+      offset,
+      limit: pageLimit,
+      order: [['id', 'DESC']],
+    });
+
+    const formatted = records.map(record => ({
+      id: record.id,
+      package_type: record.package_type,
+      package_uni_id: record.package_uni_id,
+      name: record.name,
+      price: record.price,
+      duration: record.duration,
+      description: record.description,
+      status: record.status,
+      created_at: record.created_at ? dayjs(record.created_at).format('YYYY-MM-DD HH:mm:ss') : null,
+      updated_at: record.updated_at ? dayjs(record.updated_at).format('YYYY-MM-DD HH:mm:ss') : null,
+    }));
+
+    return res.status(200).json({
+      status: 1,
+      msg: 'Package List',
+      offset: offset + pageLimit,
+      data: formatted
+    });
+
+  } catch (err) {
+    console.error('Error in packageList:', err);
+    return res.status(500).json({
+      status: 0,
+      msg: 'Something went wrong.. Try Again',
+    });
+  }
+});
 
 router.post("/productOrderList", upload.none(), async (req, res) => {
   // const apiLog = await saveApiLogs(req.body);

@@ -4,7 +4,7 @@ import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import Pagination from '../components/Pagination'
 import Modal from '../components/Modal'
-import { getCurrentUser, getCustomerDashboard, getWalletBalance, updateCustomerProfile, fetchUserKundaliRequests, getKundaliChart, getWalletTransactions, fetchUserCallHistory, getChatChannels, getRechargeVouchers, proceedPaymentRequest, updateOnlinePayment, fetchWelcomeData, getUserAddresses, addUserAddress, updateUserAddress, deleteUserAddress, fetchPublicCountryList, fetchPublicStateList, fetchPublicCityList, fetchProductOrders, getCustomerServiceOrders, fetchAskQuestionsList, getAdminChatChannels, getAdminChatChannelHistory, getAppointmentDurations, fetchAppointmentOrders, fetchArchitectRooms, fetchArchitectServiceOrders, fetchUserGiftHistory, getUserApiKey, getFileOnCall, fetchCourses, fetchMyCourses, getCustomerRefunds, getCoverImages } from '../utils/api'
+import { getCurrentUser, getCustomerDashboard, getWalletBalance, updateCustomerProfile, fetchUserKundaliRequests, getKundaliChart, getWalletTransactions, fetchUserCallHistory, getChatChannels, getRechargeVouchers, proceedPaymentRequest, updateOnlinePayment, fetchWelcomeData, getUserAddresses, addUserAddress, updateUserAddress, deleteUserAddress, fetchPublicCountryList, fetchPublicStateList, fetchPublicCityList, fetchProductOrders, getCustomerServiceOrders, fetchAskQuestionsList, getAdminChatChannels, getAdminChatChannelHistory, getAppointmentDurations, fetchAppointmentOrders, fetchArchitectRooms, fetchArchitectServiceOrders, fetchUserGiftHistory, getUserApiKey, getFileOnCall, fetchCourses, fetchMyCourses, getCustomerRefunds, getCoverImages, getGroupPujaOrders, fetchIntakes, fetchModuleAccesses, fetchOffers, fetchOfflineServiceCategories, fetchOfflineServiceAssigns, fetchOfflineServiceGalleries, fetchOfflineServiceOrders, fetchOpenAiPredictions, fetchOpenAiProfiles, fetchOrders, fetchOurServices, fetchPackages } from '../utils/api'
 
 // Helper function to convert date to YYYY-MM-DD format (for HTML5 date input)
 const formatDateForInput = (dateStr) => {
@@ -159,6 +159,61 @@ const My_Account = () => {
   const [refundsPage, setRefundsPage] = useState(1)
   const refundsPageSize = 10
   const [refundsTotal, setRefundsTotal] = useState(0)
+
+  // Offers state
+  const [offers, setOffers] = useState([])
+  const [loadingOffers, setLoadingOffers] = useState(false)
+  const [offersPage, setOffersPage] = useState(1)
+  const offersPageSize = 10
+
+  // Offline Services state
+  const [offlineServices, setOfflineServices] = useState([])
+  const [loadingOfflineServices, setLoadingOfflineServices] = useState(false)
+  const [offlineServicesPage, setOfflineServicesPage] = useState(1)
+  const offlineServicesPageSize = 10
+
+  // Offline Service Assigns state
+  const [offlineServiceAssigns, setOfflineServiceAssigns] = useState([])
+  const [loadingOfflineServiceAssigns, setLoadingOfflineServiceAssigns] = useState(false)
+  const [offlineServiceAssignsPage, setOfflineServiceAssignsPage] = useState(1)
+  const offlineServiceAssignsPageSize = 10
+
+  // Offline Service Galleries state
+  const [serviceGalleries, setServiceGalleries] = useState([])
+  const [loadingServiceGalleries, setLoadingServiceGalleries] = useState(false)
+  const [serviceGalleriesPage, setServiceGalleriesPage] = useState(1)
+  const serviceGalleriesPageSize = 12
+
+  // Offline Service Orders state
+  const [offlineOrders, setOfflineOrders] = useState([])
+  const [loadingOfflineOrders, setLoadingOfflineOrders] = useState(false)
+  const [offlineOrdersPage, setOfflineOrdersPage] = useState(1)
+  const offlineOrdersPageSize = 10
+
+  // OpenAI Predictions state
+  const [aiPredictions, setAiPredictions] = useState([])
+  const [loadingAiPredictions, setLoadingAiPredictions] = useState(false)
+  const [aiPredictionsPage, setAiPredictionsPage] = useState(1)
+  const aiPredictionsPageSize = 10
+  const [selectedPrediction, setSelectedPrediction] = useState(null)
+
+  // OpenAI Profiles state
+  const [aiProfiles, setAiProfiles] = useState([])
+  const [loadingAiProfiles, setLoadingAiProfiles] = useState(false)
+  const [aiProfilesPage, setAiProfilesPage] = useState(1)
+  const aiProfilesPageSize = 10
+
+  // Our Services state
+  const [ourServices, setOurServices] = useState([])
+  const [loadingOurServices, setLoadingOurServices] = useState(false)
+  const [ourServicesPage, setOurServicesPage] = useState(1)
+  const ourServicesPageSize = 10
+
+  // Packages state
+  const [packages, setPackages] = useState([])
+  const [loadingPackages, setLoadingPackages] = useState(false)
+  const [packagesPage, setPackagesPage] = useState(1)
+  const packagesPageSize = 10
   
   // State for cover images
   const [coverImages, setCoverImages] = useState([])
@@ -202,6 +257,29 @@ const My_Account = () => {
   const [loadingArchitectServiceOrders, setLoadingArchitectServiceOrders] = useState(false)
   const [architectServiceOrdersOffset, setArchitectServiceOrdersOffset] = useState(0)
   const [hasMoreArchitectServiceOrders, setHasMoreArchitectServiceOrders] = useState(true)
+
+  // State for puja bookings (fetched from backend)
+  const [pujaBookings, setPujaBookings] = useState([])
+  const [loadingPujaBookings, setLoadingPujaBookings] = useState(false)
+  const [pujaBookingsPage, setPujaBookingsPage] = useState(1)
+  const pujaBookingsPageSize = 10
+  const [pujaBookingsTotal, setPujaBookingsTotal] = useState(0)
+  const [selectedPujaBooking, setSelectedPujaBooking] = useState(null)
+  const [showPujaBookingDetails, setShowPujaBookingDetails] = useState(false)
+
+  // State for intakes (fetched from backend)
+  const [intakes, setIntakes] = useState([])
+  const [loadingIntakes, setLoadingIntakes] = useState(false)
+  const [intakesOffset, setIntakesOffset] = useState(0)
+  const [hasMoreIntakes, setHasMoreIntakes] = useState(true)
+  const [selectedIntake, setSelectedIntake] = useState(null)
+  const [showIntakeDetails, setShowIntakeDetails] = useState(false)
+
+  // State for module accesses (fetched from backend)
+  const [moduleAccesses, setModuleAccesses] = useState([])
+  const [loadingModuleAccesses, setLoadingModuleAccesses] = useState(false)
+  const [moduleAccessesOffset, setModuleAccessesOffset] = useState(0)
+  const [hasMoreModuleAccesses, setHasMoreModuleAccesses] = useState(true)
 
   // Use ref to prevent multiple simultaneous calls
   const isFetchingOrders = useRef(false)
@@ -712,6 +790,118 @@ const My_Account = () => {
       setHasMoreArchitectServiceOrders(false)
     } finally {
       setLoadingArchitectServiceOrders(false)
+    }
+  }
+
+  // Fetch puja bookings from backend
+  const fetchPujaBookingsData = async (page = 1) => {
+    const user = getCurrentUser()
+    if (!user) {
+      console.error('[Customer Dashboard] ❌ User not logged in')
+      setPujaBookings([])
+      setLoadingPujaBookings(false)
+      return
+    }
+    
+    setLoadingPujaBookings(true)
+    try {
+      const result = await getGroupPujaOrders({ page, limit: pujaBookingsPageSize })
+      console.log('[Customer Dashboard] ===== Puja Bookings API Response =====')
+      console.log('[Customer Dashboard] Status:', result.status)
+      console.log('[Customer Dashboard] Data length:', result.data?.length || 0)
+      console.log('[Customer Dashboard] Total:', result.total)
+      
+      if (result.status === 1 && Array.isArray(result.data)) {
+        setPujaBookings(result.data)
+        setPujaBookingsTotal(result.total || result.data.length)
+        setPujaBookingsPage(page)
+      } else {
+        setPujaBookings([])
+        setPujaBookingsTotal(0)
+      }
+    } catch (err) {
+      console.error('[Customer Dashboard] Error fetching puja bookings:', err)
+      setPujaBookings([])
+      setPujaBookingsTotal(0)
+    } finally {
+      setLoadingPujaBookings(false)
+    }
+  }
+
+  // Fetch intakes from backend
+  const fetchIntakesData = async (offset = 0, append = false) => {
+    const user = getCurrentUser()
+    if (!user) {
+      console.error('[Customer Dashboard] ❌ User not logged in')
+      setIntakes([])
+      setLoadingIntakes(false)
+      return
+    }
+    
+    setLoadingIntakes(true)
+    try {
+      const result = await fetchIntakes(offset, 20)
+      console.log('[Customer Dashboard] ===== Intakes API Response =====')
+      console.log('[Customer Dashboard] Status:', result.status)
+      console.log('[Customer Dashboard] Data length:', result.data?.length || 0)
+      console.log('[Customer Dashboard] Total:', result.total)
+      
+      if (result.status === 1 && Array.isArray(result.data)) {
+        if (append) {
+          setIntakes(prev => [...prev, ...result.data])
+        } else {
+          setIntakes(result.data)
+        }
+        setIntakesOffset(result.offset || offset + result.data.length)
+        setHasMoreIntakes(result.data.length >= 20)
+      } else {
+        if (!append) {
+          setIntakes([])
+        }
+        setHasMoreIntakes(false)
+      }
+    } catch (err) {
+      console.error('[Customer Dashboard] Error fetching intakes:', err)
+      if (!append) {
+        setIntakes([])
+      }
+      setHasMoreIntakes(false)
+    } finally {
+      setLoadingIntakes(false)
+    }
+  }
+
+  // Fetch module accesses from backend
+  const fetchModuleAccessesData = async (offset = 0, append = false) => {
+    setLoadingModuleAccesses(true)
+    try {
+      const result = await fetchModuleAccesses(offset)
+      console.log('[Customer Dashboard] ===== Module Accesses API Response =====')
+      console.log('[Customer Dashboard] Status:', result.status)
+      console.log('[Customer Dashboard] Data length:', result.data?.length || 0)
+      
+      if (result.status === 1 && Array.isArray(result.data)) {
+        if (append) {
+          setModuleAccesses(prev => [...prev, ...result.data])
+        } else {
+          setModuleAccesses(result.data)
+        }
+        setModuleAccessesOffset(result.offset || offset + result.data.length)
+        setHasMoreModuleAccesses(result.data.length >= 20)
+      } else {
+        if (!append) {
+          setModuleAccesses([])
+        }
+        setHasMoreModuleAccesses(false)
+      }
+    } catch (err) {
+      console.error('[Customer Dashboard] Error fetching module accesses:', err)
+      if (!append) {
+        setModuleAccesses([])
+      }
+      setHasMoreModuleAccesses(false)
+    } finally {
+      setLoadingModuleAccesses(false)
     }
   }
 
@@ -1262,18 +1452,30 @@ const My_Account = () => {
     { id: 'addresses', label: 'My Addresses', icon: 'fa-map-marker-alt' },
     { id: 'orders', label: 'My Orders', icon: 'fa-shopping-bag' },
     { id: 'service-orders', label: 'My Service Orders', icon: 'fa-concierge-bell' },
+    { id: 'puja-bookings', label: 'My Puja Bookings', icon: 'fa-om' },
     { id: 'ask-questions', label: 'My Questions', icon: 'fa-question-circle' },
     { id: 'appointments', label: 'My Appointments', icon: 'fa-calendar-check' },
     { id: 'architect-rooms', label: 'My Architect Rooms', icon: 'fa-home' },
     { id: 'architect-service-orders', label: 'My Architect Orders', icon: 'fa-clipboard-list' },
     { id: 'kundlis', label: 'My Kundli List', icon: 'fa-star' },
+    { id: 'intakes', label: 'My Intakes', icon: 'fa-file-alt' },
     { id: 'chat-history', label: 'My Chat History', icon: 'fa-comments' },
     { id: 'waiting-list', label: 'My Waiting List', icon: 'fa-clock' },
     { id: 'call-history', label: 'My Call History', icon: 'fa-phone' },
     { id: 'horoscope', label: 'My Daily Horoscope', icon: 'fa-sun' },
     { id: 'support', label: 'My Support Ticket', icon: 'fa-ticket-alt' },
     { id: 'courses', label: 'My Courses', icon: 'fa-graduation-cap' },
-    { id: 'refunds', label: 'My Refunds', icon: 'fa-undo-alt' }
+    { id: 'refunds', label: 'My Refunds', icon: 'fa-undo-alt' },
+    { id: 'offers', label: 'Offers', icon: 'fa-tags' },
+    { id: 'offline-services', label: 'Offline Services', icon: 'fa-concierge-bell' },
+    { id: 'service-assigns', label: 'Service Assigns', icon: 'fa-user-cog' },
+    { id: 'service-gallery', label: 'Service Gallery', icon: 'fa-images' },
+    { id: 'offline-orders', label: 'Offline Orders', icon: 'fa-file-invoice' },
+    { id: 'ai-predictions', label: 'AI Predictions', icon: 'fa-robot' },
+    { id: 'ai-profiles', label: 'AI Profiles', icon: 'fa-user-astronaut' },
+    { id: 'our-services', label: 'Our Services', icon: 'fa-th-large' },
+    { id: 'packages', label: 'Packages', icon: 'fa-box-open' },
+    { id: 'module-accesses', label: 'Module Accesses', icon: 'fa-key' }
   ]
 
   // Check if user is admin (role_id === 1 typically means admin)
@@ -2027,6 +2229,39 @@ const My_Account = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab])
 
+  // Fetch puja bookings when puja-bookings tab becomes active
+  useEffect(() => {
+    if (activeTab === 'puja-bookings') {
+      console.log('[Customer Dashboard] ===== Puja Bookings tab activated =====')
+      if (!loadingPujaBookings && pujaBookings.length === 0) {
+        fetchPujaBookingsData(1)
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab])
+
+  // Fetch intakes when intakes tab becomes active
+  useEffect(() => {
+    if (activeTab === 'intakes') {
+      console.log('[Customer Dashboard] ===== Intakes tab activated =====')
+      if (!loadingIntakes && intakes.length === 0) {
+        fetchIntakesData(0, false)
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab])
+
+  // Fetch module accesses when module-accesses tab becomes active
+  useEffect(() => {
+    if (activeTab === 'module-accesses') {
+      console.log('[Customer Dashboard] ===== Module Accesses tab activated =====')
+      if (!loadingModuleAccesses && moduleAccesses.length === 0) {
+        fetchModuleAccessesData(0, false)
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab])
+
   // Fetch admin chat channels when admin-chats tab becomes active
   useEffect(() => {
     if (activeTab === 'admin-chats') {
@@ -2276,6 +2511,267 @@ const My_Account = () => {
       loadRefunds()
     }
   }, [activeTab, refundsPage, loadRefunds])
+
+  // Load offers from API
+  const loadOffers = useCallback(async () => {
+    setLoadingOffers(true)
+    try {
+      const offset = (offersPage - 1) * offersPageSize
+      const result = await fetchOffers({ offset })
+      console.log('[Customer Dashboard] Offers result:', result)
+      
+      if (result.status === 1 && Array.isArray(result.data)) {
+        setOffers(result.data)
+        console.log('[Customer Dashboard] ✅ Offers loaded:', result.data.length)
+      } else {
+        setOffers([])
+      }
+    } catch (error) {
+      console.error('[Customer Dashboard] Error loading offers:', error)
+      setOffers([])
+    } finally {
+      setLoadingOffers(false)
+    }
+  }, [offersPage, offersPageSize])
+
+  // Fetch offers when offers tab becomes active
+  useEffect(() => {
+    if (activeTab === 'offers') {
+      loadOffers()
+    }
+  }, [activeTab, offersPage, loadOffers])
+
+  // Load offline service categories from API
+  const loadOfflineServices = useCallback(async () => {
+    setLoadingOfflineServices(true)
+    try {
+      const offset = (offlineServicesPage - 1) * offlineServicesPageSize
+      const result = await fetchOfflineServiceCategories(offset)
+      console.log('[Customer Dashboard] Offline Services result:', result)
+      
+      if (result.status === 1 && Array.isArray(result.data)) {
+        setOfflineServices(result.data)
+        console.log('[Customer Dashboard] ✅ Offline Services loaded:', result.data.length)
+      } else {
+        setOfflineServices([])
+      }
+    } catch (error) {
+      console.error('[Customer Dashboard] Error loading offline services:', error)
+      setOfflineServices([])
+    } finally {
+      setLoadingOfflineServices(false)
+    }
+  }, [offlineServicesPage, offlineServicesPageSize])
+
+  // Fetch offline services when tab becomes active
+  useEffect(() => {
+    if (activeTab === 'offline-services') {
+      loadOfflineServices()
+    }
+  }, [activeTab, offlineServicesPage, loadOfflineServices])
+
+  // Load offline service assigns from API
+  const loadOfflineServiceAssigns = useCallback(async () => {
+    setLoadingOfflineServiceAssigns(true)
+    try {
+      const offset = (offlineServiceAssignsPage - 1) * offlineServiceAssignsPageSize
+      const result = await fetchOfflineServiceAssigns(offset)
+      console.log('[Customer Dashboard] Offline Service Assigns result:', result)
+      
+      if (result.status === 1 && Array.isArray(result.data)) {
+        setOfflineServiceAssigns(result.data)
+        console.log('[Customer Dashboard] ✅ Offline Service Assigns loaded:', result.data.length)
+      } else {
+        setOfflineServiceAssigns([])
+      }
+    } catch (error) {
+      console.error('[Customer Dashboard] Error loading offline service assigns:', error)
+      setOfflineServiceAssigns([])
+    } finally {
+      setLoadingOfflineServiceAssigns(false)
+    }
+  }, [offlineServiceAssignsPage, offlineServiceAssignsPageSize])
+
+  // Fetch offline service assigns when tab becomes active
+  useEffect(() => {
+    if (activeTab === 'service-assigns') {
+      loadOfflineServiceAssigns()
+    }
+  }, [activeTab, offlineServiceAssignsPage, loadOfflineServiceAssigns])
+
+  // Load offline service galleries from API
+  const loadServiceGalleries = useCallback(async () => {
+    setLoadingServiceGalleries(true)
+    try {
+      const offset = (serviceGalleriesPage - 1) * serviceGalleriesPageSize
+      const result = await fetchOfflineServiceGalleries(offset)
+      console.log('[Customer Dashboard] Service Galleries result:', result)
+      
+      if (result.status === 1 && Array.isArray(result.data)) {
+        setServiceGalleries(result.data)
+        console.log('[Customer Dashboard] ✅ Service Galleries loaded:', result.data.length)
+      } else {
+        setServiceGalleries([])
+      }
+    } catch (error) {
+      console.error('[Customer Dashboard] Error loading service galleries:', error)
+      setServiceGalleries([])
+    } finally {
+      setLoadingServiceGalleries(false)
+    }
+  }, [serviceGalleriesPage, serviceGalleriesPageSize])
+
+  // Fetch service galleries when tab becomes active
+  useEffect(() => {
+    if (activeTab === 'service-gallery') {
+      loadServiceGalleries()
+    }
+  }, [activeTab, serviceGalleriesPage, loadServiceGalleries])
+
+  // Load offline service orders from API
+  const loadOfflineOrders = useCallback(async () => {
+    setLoadingOfflineOrders(true)
+    try {
+      const offset = (offlineOrdersPage - 1) * offlineOrdersPageSize
+      const result = await fetchOfflineServiceOrders(offset)
+      console.log('[Customer Dashboard] Offline Orders result:', result)
+      
+      if (result.status === 1 && Array.isArray(result.data)) {
+        setOfflineOrders(result.data)
+        console.log('[Customer Dashboard] ✅ Offline Orders loaded:', result.data.length)
+      } else {
+        setOfflineOrders([])
+      }
+    } catch (error) {
+      console.error('[Customer Dashboard] Error loading offline orders:', error)
+      setOfflineOrders([])
+    } finally {
+      setLoadingOfflineOrders(false)
+    }
+  }, [offlineOrdersPage, offlineOrdersPageSize])
+
+  // Fetch offline orders when tab becomes active
+  useEffect(() => {
+    if (activeTab === 'offline-orders') {
+      loadOfflineOrders()
+    }
+  }, [activeTab, offlineOrdersPage, loadOfflineOrders])
+
+  // Load OpenAI predictions from API
+  const loadAiPredictions = useCallback(async () => {
+    setLoadingAiPredictions(true)
+    try {
+      const offset = (aiPredictionsPage - 1) * aiPredictionsPageSize
+      const result = await fetchOpenAiPredictions(offset)
+      console.log('[Customer Dashboard] AI Predictions result:', result)
+      
+      if (result.status === 1 && Array.isArray(result.data)) {
+        setAiPredictions(result.data)
+        console.log('[Customer Dashboard] ✅ AI Predictions loaded:', result.data.length)
+      } else {
+        setAiPredictions([])
+      }
+    } catch (error) {
+      console.error('[Customer Dashboard] Error loading AI predictions:', error)
+      setAiPredictions([])
+    } finally {
+      setLoadingAiPredictions(false)
+    }
+  }, [aiPredictionsPage, aiPredictionsPageSize])
+
+  // Fetch AI predictions when tab becomes active
+  useEffect(() => {
+    if (activeTab === 'ai-predictions') {
+      loadAiPredictions()
+    }
+  }, [activeTab, aiPredictionsPage, loadAiPredictions])
+
+  // Load OpenAI profiles from API
+  const loadAiProfiles = useCallback(async () => {
+    setLoadingAiProfiles(true)
+    try {
+      const offset = (aiProfilesPage - 1) * aiProfilesPageSize
+      const result = await fetchOpenAiProfiles(offset)
+      console.log('[Customer Dashboard] AI Profiles result:', result)
+      
+      if (result.status === 1 && Array.isArray(result.data)) {
+        setAiProfiles(result.data)
+        console.log('[Customer Dashboard] ✅ AI Profiles loaded:', result.data.length)
+      } else {
+        setAiProfiles([])
+      }
+    } catch (error) {
+      console.error('[Customer Dashboard] Error loading AI profiles:', error)
+      setAiProfiles([])
+    } finally {
+      setLoadingAiProfiles(false)
+    }
+  }, [aiProfilesPage, aiProfilesPageSize])
+
+  // Fetch AI profiles when tab becomes active
+  useEffect(() => {
+    if (activeTab === 'ai-profiles') {
+      loadAiProfiles()
+    }
+  }, [activeTab, aiProfilesPage, loadAiProfiles])
+
+  // Load our services from API
+  const loadOurServices = useCallback(async () => {
+    setLoadingOurServices(true)
+    try {
+      const offset = (ourServicesPage - 1) * ourServicesPageSize
+      const result = await fetchOurServices(offset)
+      console.log('[Customer Dashboard] Our Services result:', result)
+      
+      if (result.status === 1 && Array.isArray(result.data)) {
+        setOurServices(result.data)
+        console.log('[Customer Dashboard] ✅ Our Services loaded:', result.data.length)
+      } else {
+        setOurServices([])
+      }
+    } catch (error) {
+      console.error('[Customer Dashboard] Error loading our services:', error)
+      setOurServices([])
+    } finally {
+      setLoadingOurServices(false)
+    }
+  }, [ourServicesPage, ourServicesPageSize])
+
+  // Fetch our services when tab becomes active
+  useEffect(() => {
+    if (activeTab === 'our-services') {
+      loadOurServices()
+    }
+  }, [activeTab, ourServicesPage, loadOurServices])
+
+  // Load packages from API
+  const loadPackages = useCallback(async () => {
+    setLoadingPackages(true)
+    try {
+      const offset = (packagesPage - 1) * packagesPageSize
+      const result = await fetchPackages(offset)
+      console.log('[Customer Dashboard] Packages result:', result)
+      
+      if (result.status === 1 && Array.isArray(result.data)) {
+        setPackages(result.data)
+        console.log('[Customer Dashboard] ✅ Packages loaded:', result.data.length)
+      } else {
+        setPackages([])
+      }
+    } catch (error) {
+      console.error('[Customer Dashboard] Error loading packages:', error)
+      setPackages([])
+    } finally {
+      setLoadingPackages(false)
+    }
+  }, [packagesPage, packagesPageSize])
+
+  // Fetch packages when tab becomes active
+  useEffect(() => {
+    if (activeTab === 'packages') {
+      loadPackages()
+    }
+  }, [activeTab, packagesPage, loadPackages])
 
   // Fetch cover images function
   const loadCoverImages = useCallback(async () => {
@@ -4875,6 +5371,836 @@ const My_Account = () => {
     )
   }
 
+  // Render Puja Bookings Section
+  const renderPujaBookingsSection = () => {
+    const getStatusBadgeStyle = (status) => {
+      const statusLower = String(status || '').toLowerCase()
+      switch (statusLower) {
+        case 'completed':
+        case '1':
+          return { bg: '#d4edda', color: '#155724', text: 'Completed' }
+        case 'confirmed':
+        case 'booked':
+          return { bg: '#cfe2ff', color: '#084298', text: 'Confirmed' }
+        case 'pending':
+        case '0':
+          return { bg: '#fff3cd', color: '#856404', text: 'Pending' }
+        case 'cancelled':
+        case '2':
+          return { bg: '#f8d7da', color: '#721c24', text: 'Cancelled' }
+        case 'upcoming':
+          return { bg: '#e0cffc', color: '#59359a', text: 'Upcoming' }
+        default:
+          return { bg: '#e9ecef', color: '#6c757d', text: status || 'Unknown' }
+      }
+    }
+
+    const getPaymentBadgeStyle = (paymentStatus) => {
+      const statusLower = String(paymentStatus || '').toLowerCase()
+      if (statusLower === 'paid' || statusLower === '1' || paymentStatus === 1) {
+        return { bg: '#d4edda', color: '#155724', text: 'Paid' }
+      } else if (statusLower === 'pending' || statusLower === '0' || paymentStatus === 0) {
+        return { bg: '#fff3cd', color: '#856404', text: 'Pending' }
+      } else if (statusLower === 'failed' || statusLower === '2' || paymentStatus === 2) {
+        return { bg: '#f8d7da', color: '#721c24', text: 'Failed' }
+      }
+      return { bg: '#f8d7da', color: '#721c24', text: 'Unpaid' }
+    }
+
+    const formatDate = (dateStr) => {
+      if (!dateStr) return 'N/A'
+      try {
+        return new Date(dateStr).toLocaleDateString('en-IN', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        })
+      } catch {
+        return dateStr
+      }
+    }
+
+    const formatDateTime = (dateStr) => {
+      if (!dateStr) return 'N/A'
+      try {
+        return new Date(dateStr).toLocaleString('en-IN', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+      } catch {
+        return dateStr
+      }
+    }
+
+    const isPujaUpcoming = (pujaDate) => {
+      if (!pujaDate) return false
+      try {
+        return new Date(pujaDate) > new Date()
+      } catch {
+        return false
+      }
+    }
+
+    // Split into upcoming and past bookings
+    const upcomingBookings = pujaBookings.filter(b => isPujaUpcoming(b.puja_date || b.group_puja?.puja_date))
+    const pastBookings = pujaBookings.filter(b => !isPujaUpcoming(b.puja_date || b.group_puja?.puja_date))
+
+    if (loadingPujaBookings && pujaBookings.length === 0) {
+      return (
+        <div className="react-account-section">
+          <div className="react-section-header">
+            <h2>My Puja Bookings</h2>
+            <p>View your past & upcoming puja bookings</p>
+          </div>
+          <div className="react-no-data" style={{padding: '2rem'}}>Loading puja bookings...</div>
+        </div>
+      )
+    }
+
+    if (pujaBookings.length === 0) {
+      return (
+        <div className="react-account-section">
+          <div className="react-section-header">
+            <h2>My Puja Bookings</h2>
+            <p>View your past & upcoming puja bookings</p>
+          </div>
+          <div className="react-no-data" style={{
+            padding: '3rem',
+            textAlign: 'center',
+            backgroundColor: '#f8f9fa',
+            borderRadius: '8px'
+          }}>
+            <i className="fas fa-om" style={{ fontSize: '3rem', color: '#ccc', marginBottom: '1rem', display: 'block' }}></i>
+            <p style={{ color: '#666', marginBottom: '1rem' }}>No puja bookings found</p>
+            <p style={{ color: '#999', fontSize: '0.9rem' }}>Book a puja to see your bookings here</p>
+          </div>
+        </div>
+      )
+    }
+
+    const renderBookingRow = (booking, idx, isUpcoming = false) => {
+      const statusStyle = getStatusBadgeStyle(isUpcoming ? 'upcoming' : booking.status)
+      const paymentStyle = getPaymentBadgeStyle(booking.payment_status)
+      const puja = booking.group_puja || {}
+      
+      return (
+        <tr key={booking.id || idx}>
+          <td>{idx + 1}</td>
+          <td>
+            <span style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
+              #{booking.id || booking.order_id || 'N/A'}
+            </span>
+          </td>
+          <td>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              {puja.puja_image && (
+                <img 
+                  src={puja.puja_image} 
+                  alt={puja.puja_name || 'Puja'}
+                  style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }}
+                  onError={(e) => { e.target.style.display = 'none' }}
+                />
+              )}
+              <div>
+                <div style={{ fontWeight: '500' }}>{puja.puja_name || booking.puja_name || 'N/A'}</div>
+                {puja.puja_type && <div style={{ fontSize: '0.8rem', color: '#666' }}>{puja.puja_type}</div>}
+              </div>
+            </div>
+          </td>
+          <td>{formatDate(booking.puja_date || puja.puja_date)}</td>
+          <td style={{ fontWeight: '500', color: '#ee5a24' }}>
+            ₹{parseFloat(booking.amount || booking.total_amount || puja.price || 0).toFixed(2)}
+          </td>
+          <td>
+            <span style={{
+              padding: '0.25rem 0.75rem',
+              borderRadius: '4px',
+              fontSize: '0.85rem',
+              backgroundColor: statusStyle.bg,
+              color: statusStyle.color
+            }}>
+              {statusStyle.text}
+            </span>
+          </td>
+          <td>
+            <span style={{
+              padding: '0.25rem 0.75rem',
+              borderRadius: '4px',
+              fontSize: '0.85rem',
+              backgroundColor: paymentStyle.bg,
+              color: paymentStyle.color
+            }}>
+              {paymentStyle.text}
+            </span>
+          </td>
+          <td>
+            <button
+              onClick={() => {
+                setSelectedPujaBooking(booking)
+                setShowPujaBookingDetails(true)
+              }}
+              style={{
+                padding: '0.4rem 0.75rem',
+                backgroundColor: '#ee5a24',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.85rem'
+              }}
+            >
+              <i className="fas fa-eye" style={{ marginRight: '0.25rem' }}></i>
+              View
+            </button>
+          </td>
+        </tr>
+      )
+    }
+
+    return (
+      <div className="react-account-section">
+        <div className="react-section-header">
+          <h2>My Puja Bookings</h2>
+          <p>View your past & upcoming puja bookings</p>
+        </div>
+
+        {/* Upcoming Bookings Section */}
+        {upcomingBookings.length > 0 && (
+          <div style={{ marginBottom: '2rem' }}>
+            <h3 style={{ 
+              fontSize: '1.1rem', 
+              color: '#59359a', 
+              marginBottom: '1rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              <i className="fas fa-calendar-alt"></i>
+              Upcoming Pujas ({upcomingBookings.length})
+            </h3>
+            <div className="react-table-container">
+              <table className="react-data-table">
+                <thead>
+                  <tr>
+                    <th>S. No.</th>
+                    <th>Order ID</th>
+                    <th>Puja Name</th>
+                    <th>Puja Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Payment</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {upcomingBookings.map((booking, idx) => renderBookingRow(booking, idx, true))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Past Bookings Section */}
+        <div>
+          <h3 style={{ 
+            fontSize: '1.1rem', 
+            color: '#666', 
+            marginBottom: '1rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}>
+            <i className="fas fa-history"></i>
+            {upcomingBookings.length > 0 ? 'Past Pujas' : 'All Puja Bookings'} ({pastBookings.length > 0 ? pastBookings.length : pujaBookings.length})
+          </h3>
+          <div className="react-table-container">
+            <table className="react-data-table">
+              <thead>
+                <tr>
+                  <th>S. No.</th>
+                  <th>Order ID</th>
+                  <th>Puja Name</th>
+                  <th>Puja Date</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Payment</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(pastBookings.length > 0 ? pastBookings : pujaBookings).map((booking, idx) => renderBookingRow(booking, idx, false))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        {/* Pagination */}
+        {pujaBookingsTotal > pujaBookingsPageSize && (
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem', gap: '0.5rem' }}>
+            <button
+              onClick={() => fetchPujaBookingsData(pujaBookingsPage - 1)}
+              disabled={pujaBookingsPage <= 1 || loadingPujaBookings}
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: pujaBookingsPage <= 1 ? '#ccc' : '#ee5a24',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: pujaBookingsPage <= 1 ? 'not-allowed' : 'pointer'
+              }}
+            >
+              <i className="fas fa-chevron-left"></i> Previous
+            </button>
+            <span style={{ padding: '0.5rem 1rem', color: '#666' }}>
+              Page {pujaBookingsPage} of {Math.ceil(pujaBookingsTotal / pujaBookingsPageSize)}
+            </span>
+            <button
+              onClick={() => fetchPujaBookingsData(pujaBookingsPage + 1)}
+              disabled={pujaBookingsPage >= Math.ceil(pujaBookingsTotal / pujaBookingsPageSize) || loadingPujaBookings}
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: pujaBookingsPage >= Math.ceil(pujaBookingsTotal / pujaBookingsPageSize) ? '#ccc' : '#ee5a24',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: pujaBookingsPage >= Math.ceil(pujaBookingsTotal / pujaBookingsPageSize) ? 'not-allowed' : 'pointer'
+              }}
+            >
+              Next <i className="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        )}
+
+        {/* Booking Details Modal */}
+        {showPujaBookingDetails && selectedPujaBooking && (
+          <Modal 
+            isOpen={showPujaBookingDetails} 
+            onClose={() => {
+              setShowPujaBookingDetails(false)
+              setSelectedPujaBooking(null)
+            }}
+            title="Puja Booking Details"
+          >
+            <div style={{ padding: '1rem' }}>
+              {/* Puja Info */}
+              <div style={{ 
+                backgroundColor: '#f8f9fa', 
+                padding: '1rem', 
+                borderRadius: '8px', 
+                marginBottom: '1rem' 
+              }}>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                  {(selectedPujaBooking.group_puja?.puja_image || selectedPujaBooking.puja_image) && (
+                    <img 
+                      src={selectedPujaBooking.group_puja?.puja_image || selectedPujaBooking.puja_image} 
+                      alt="Puja"
+                      style={{ 
+                        width: '100px', 
+                        height: '100px', 
+                        objectFit: 'cover', 
+                        borderRadius: '8px' 
+                      }}
+                      onError={(e) => { e.target.style.display = 'none' }}
+                    />
+                  )}
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ margin: '0 0 0.5rem 0', color: '#333' }}>
+                      {selectedPujaBooking.group_puja?.puja_name || selectedPujaBooking.puja_name || 'Puja'}
+                    </h3>
+                    {selectedPujaBooking.group_puja?.puja_type && (
+                      <p style={{ margin: '0 0 0.5rem 0', color: '#666', fontSize: '0.9rem' }}>
+                        <i className="fas fa-tag" style={{ marginRight: '0.5rem' }}></i>
+                        {selectedPujaBooking.group_puja.puja_type}
+                      </p>
+                    )}
+                    {selectedPujaBooking.group_puja?.temple_name && (
+                      <p style={{ margin: '0 0 0.5rem 0', color: '#666', fontSize: '0.9rem' }}>
+                        <i className="fas fa-gopuram" style={{ marginRight: '0.5rem' }}></i>
+                        {selectedPujaBooking.group_puja.temple_name}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Order Details Grid */}
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(2, 1fr)', 
+                gap: '1rem',
+                marginBottom: '1rem' 
+              }}>
+                <div style={{ backgroundColor: '#fff', padding: '0.75rem', borderRadius: '4px', border: '1px solid #eee' }}>
+                  <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.25rem' }}>Order ID</div>
+                  <div style={{ fontWeight: '500', fontFamily: 'monospace' }}>#{selectedPujaBooking.id || selectedPujaBooking.order_id}</div>
+                </div>
+                <div style={{ backgroundColor: '#fff', padding: '0.75rem', borderRadius: '4px', border: '1px solid #eee' }}>
+                  <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.25rem' }}>Booking Date</div>
+                  <div style={{ fontWeight: '500' }}>{formatDateTime(selectedPujaBooking.created_at)}</div>
+                </div>
+                <div style={{ backgroundColor: '#fff', padding: '0.75rem', borderRadius: '4px', border: '1px solid #eee' }}>
+                  <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.25rem' }}>Puja Date</div>
+                  <div style={{ fontWeight: '500' }}>{formatDate(selectedPujaBooking.puja_date || selectedPujaBooking.group_puja?.puja_date)}</div>
+                </div>
+                <div style={{ backgroundColor: '#fff', padding: '0.75rem', borderRadius: '4px', border: '1px solid #eee' }}>
+                  <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.25rem' }}>Puja Time</div>
+                  <div style={{ fontWeight: '500' }}>{selectedPujaBooking.puja_time || selectedPujaBooking.group_puja?.puja_time || 'N/A'}</div>
+                </div>
+                <div style={{ backgroundColor: '#fff', padding: '0.75rem', borderRadius: '4px', border: '1px solid #eee' }}>
+                  <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.25rem' }}>Status</div>
+                  <span style={{
+                    padding: '0.25rem 0.75rem',
+                    borderRadius: '4px',
+                    fontSize: '0.85rem',
+                    backgroundColor: getStatusBadgeStyle(selectedPujaBooking.status).bg,
+                    color: getStatusBadgeStyle(selectedPujaBooking.status).color
+                  }}>
+                    {getStatusBadgeStyle(selectedPujaBooking.status).text}
+                  </span>
+                </div>
+                <div style={{ backgroundColor: '#fff', padding: '0.75rem', borderRadius: '4px', border: '1px solid #eee' }}>
+                  <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.25rem' }}>Payment Status</div>
+                  <span style={{
+                    padding: '0.25rem 0.75rem',
+                    borderRadius: '4px',
+                    fontSize: '0.85rem',
+                    backgroundColor: getPaymentBadgeStyle(selectedPujaBooking.payment_status).bg,
+                    color: getPaymentBadgeStyle(selectedPujaBooking.payment_status).color
+                  }}>
+                    {getPaymentBadgeStyle(selectedPujaBooking.payment_status).text}
+                  </span>
+                </div>
+              </div>
+
+              {/* Devotee Details */}
+              {(selectedPujaBooking.devotee_name || selectedPujaBooking.gotra || selectedPujaBooking.nakshatra) && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <h4 style={{ fontSize: '1rem', color: '#333', marginBottom: '0.75rem' }}>
+                    <i className="fas fa-user" style={{ marginRight: '0.5rem', color: '#ee5a24' }}></i>
+                    Devotee Details
+                  </h4>
+                  <div style={{ 
+                    backgroundColor: '#fff', 
+                    padding: '1rem', 
+                    borderRadius: '4px', 
+                    border: '1px solid #eee' 
+                  }}>
+                    {selectedPujaBooking.devotee_name && (
+                      <p style={{ margin: '0 0 0.5rem 0' }}><strong>Name:</strong> {selectedPujaBooking.devotee_name}</p>
+                    )}
+                    {selectedPujaBooking.gotra && (
+                      <p style={{ margin: '0 0 0.5rem 0' }}><strong>Gotra:</strong> {selectedPujaBooking.gotra}</p>
+                    )}
+                    {selectedPujaBooking.nakshatra && (
+                      <p style={{ margin: '0 0 0.5rem 0' }}><strong>Nakshatra:</strong> {selectedPujaBooking.nakshatra}</p>
+                    )}
+                    {selectedPujaBooking.rashi && (
+                      <p style={{ margin: '0' }}><strong>Rashi:</strong> {selectedPujaBooking.rashi}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Price Breakdown */}
+              <div style={{ 
+                backgroundColor: '#fff4e6', 
+                padding: '1rem', 
+                borderRadius: '8px',
+                border: '1px solid #ee5a24' 
+              }}>
+                <h4 style={{ fontSize: '1rem', color: '#333', marginBottom: '0.75rem' }}>
+                  <i className="fas fa-receipt" style={{ marginRight: '0.5rem', color: '#ee5a24' }}></i>
+                  Price Details
+                </h4>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <span>Puja Amount:</span>
+                  <span>₹{parseFloat(selectedPujaBooking.puja_amount || selectedPujaBooking.group_puja?.price || 0).toFixed(2)}</span>
+                </div>
+                {selectedPujaBooking.prasad_amount && parseFloat(selectedPujaBooking.prasad_amount) > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                    <span>Prasad Amount:</span>
+                    <span>₹{parseFloat(selectedPujaBooking.prasad_amount).toFixed(2)}</span>
+                  </div>
+                )}
+                {selectedPujaBooking.dakshina_amount && parseFloat(selectedPujaBooking.dakshina_amount) > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                    <span>Dakshina:</span>
+                    <span>₹{parseFloat(selectedPujaBooking.dakshina_amount).toFixed(2)}</span>
+                  </div>
+                )}
+                {selectedPujaBooking.discount_amount && parseFloat(selectedPujaBooking.discount_amount) > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', color: '#28a745' }}>
+                    <span>Discount:</span>
+                    <span>-₹{parseFloat(selectedPujaBooking.discount_amount).toFixed(2)}</span>
+                  </div>
+                )}
+                <hr style={{ margin: '0.5rem 0', borderColor: '#ee5a24' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '1.1rem', color: '#ee5a24' }}>
+                  <span>Total Amount:</span>
+                  <span>₹{parseFloat(selectedPujaBooking.amount || selectedPujaBooking.total_amount || 0).toFixed(2)}</span>
+                </div>
+              </div>
+
+              {/* Special Requests */}
+              {selectedPujaBooking.special_request && (
+                <div style={{ marginTop: '1rem' }}>
+                  <h4 style={{ fontSize: '1rem', color: '#333', marginBottom: '0.5rem' }}>
+                    <i className="fas fa-comment-alt" style={{ marginRight: '0.5rem', color: '#ee5a24' }}></i>
+                    Special Request
+                  </h4>
+                  <p style={{ 
+                    backgroundColor: '#f8f9fa', 
+                    padding: '0.75rem', 
+                    borderRadius: '4px',
+                    margin: 0,
+                    fontStyle: 'italic',
+                    color: '#666'
+                  }}>
+                    "{selectedPujaBooking.special_request}"
+                  </p>
+                </div>
+              )}
+            </div>
+          </Modal>
+        )}
+      </div>
+    )
+  }
+
+  // Render Intakes Section
+  const renderIntakesSection = () => {
+    const formatDate = (dateStr) => {
+      if (!dateStr) return 'N/A'
+      try {
+        return new Date(dateStr).toLocaleDateString('en-IN', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        })
+      } catch {
+        return dateStr
+      }
+    }
+
+    const formatDateTime = (dateStr) => {
+      if (!dateStr) return 'N/A'
+      try {
+        return new Date(dateStr).toLocaleString('en-IN', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+      } catch {
+        return dateStr
+      }
+    }
+
+    const getIntakeTypeLabel = (type) => {
+      switch(type?.toLowerCase()) {
+        case 'chat': return { text: 'Chat', bg: '#cfe2ff', color: '#084298' }
+        case 'call': return { text: 'Call', bg: '#d4edda', color: '#155724' }
+        case 'video': return { text: 'Video Call', bg: '#e0cffc', color: '#59359a' }
+        default: return { text: type || 'N/A', bg: '#e9ecef', color: '#6c757d' }
+      }
+    }
+
+    if (loadingIntakes && intakes.length === 0) {
+      return (
+        <div className="react-account-section">
+          <div className="react-section-header">
+            <h2>My Intakes</h2>
+            <p>View your consultation intake forms</p>
+          </div>
+          <div className="react-no-data" style={{padding: '2rem'}}>Loading intakes...</div>
+        </div>
+      )
+    }
+
+    if (intakes.length === 0) {
+      return (
+        <div className="react-account-section">
+          <div className="react-section-header">
+            <h2>My Intakes</h2>
+            <p>View your consultation intake forms</p>
+          </div>
+          <div className="react-no-data" style={{
+            padding: '3rem',
+            textAlign: 'center',
+            backgroundColor: '#f8f9fa',
+            borderRadius: '8px'
+          }}>
+            <i className="fas fa-file-alt" style={{ fontSize: '3rem', color: '#ccc', marginBottom: '1rem', display: 'block' }}></i>
+            <p style={{ color: '#666', marginBottom: '1rem' }}>No intake forms found</p>
+            <p style={{ color: '#999', fontSize: '0.9rem' }}>Your intake form data will appear here after consultations</p>
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <div className="react-account-section">
+        <div className="react-section-header">
+          <h2>My Intakes</h2>
+          <p>View your consultation intake forms</p>
+        </div>
+
+        <div className="react-table-container">
+          <table className="react-data-table">
+            <thead>
+              <tr>
+                <th>S. No.</th>
+                <th>Name</th>
+                <th>Date of Birth</th>
+                <th>Birth Place</th>
+                <th>Topic</th>
+                <th>Type</th>
+                <th>Created At</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {intakes.map((intake, idx) => {
+                const typeStyle = getIntakeTypeLabel(intake.intake_type)
+                return (
+                  <tr key={intake.id || idx}>
+                    <td>{idx + 1}</td>
+                    <td style={{ fontWeight: '500' }}>{intake.name || 'N/A'}</td>
+                    <td>{formatDate(intake.dob)}</td>
+                    <td>{intake.birth_place || 'N/A'}</td>
+                    <td>{intake.topic || 'N/A'}</td>
+                    <td>
+                      <span style={{
+                        padding: '0.25rem 0.75rem',
+                        borderRadius: '4px',
+                        fontSize: '0.85rem',
+                        backgroundColor: typeStyle.bg,
+                        color: typeStyle.color
+                      }}>
+                        {typeStyle.text}
+                      </span>
+                    </td>
+                    <td>{formatDateTime(intake.created_at)}</td>
+                    <td>
+                      <button
+                        onClick={() => {
+                          setSelectedIntake(intake)
+                          setShowIntakeDetails(true)
+                        }}
+                        style={{
+                          padding: '0.4rem 0.75rem',
+                          backgroundColor: '#ee5a24',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '0.85rem'
+                        }}
+                      >
+                        <i className="fas fa-eye" style={{ marginRight: '0.25rem' }}></i>
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+        
+        {/* Load More Button */}
+        {hasMoreIntakes && (
+          <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+            <button 
+              className="react-load-more-btn"
+              onClick={() => fetchIntakesData(intakesOffset, true)}
+              disabled={loadingIntakes}
+              style={{
+                padding: '0.75rem 2rem',
+                backgroundColor: '#ee5a24',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: loadingIntakes ? 'not-allowed' : 'pointer',
+                opacity: loadingIntakes ? 0.6 : 1
+              }}
+            >
+              {loadingIntakes ? 'Loading...' : 'Load More'}
+            </button>
+          </div>
+        )}
+
+        {/* Intake Details Modal */}
+        {showIntakeDetails && selectedIntake && (
+          <Modal 
+            isOpen={showIntakeDetails} 
+            onClose={() => {
+              setShowIntakeDetails(false)
+              setSelectedIntake(null)
+            }}
+            title="Intake Details"
+          >
+            <div style={{ padding: '1rem' }}>
+              {/* Primary Details */}
+              <div style={{ marginBottom: '1.5rem' }}>
+                <h4 style={{ fontSize: '1rem', color: '#333', marginBottom: '0.75rem', borderBottom: '2px solid #ee5a24', paddingBottom: '0.5rem' }}>
+                  <i className="fas fa-user" style={{ marginRight: '0.5rem', color: '#ee5a24' }}></i>
+                  Personal Details
+                </h4>
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(2, 1fr)', 
+                  gap: '1rem'
+                }}>
+                  <div style={{ backgroundColor: '#f8f9fa', padding: '0.75rem', borderRadius: '4px' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.25rem' }}>Name</div>
+                    <div style={{ fontWeight: '500' }}>{selectedIntake.name || 'N/A'}</div>
+                  </div>
+                  <div style={{ backgroundColor: '#f8f9fa', padding: '0.75rem', borderRadius: '4px' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.25rem' }}>Gender</div>
+                    <div style={{ fontWeight: '500', textTransform: 'capitalize' }}>{selectedIntake.gender || 'N/A'}</div>
+                  </div>
+                  <div style={{ backgroundColor: '#f8f9fa', padding: '0.75rem', borderRadius: '4px' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.25rem' }}>Date of Birth</div>
+                    <div style={{ fontWeight: '500' }}>{formatDate(selectedIntake.dob)}</div>
+                  </div>
+                  <div style={{ backgroundColor: '#f8f9fa', padding: '0.75rem', borderRadius: '4px' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.25rem' }}>Time of Birth</div>
+                    <div style={{ fontWeight: '500' }}>{selectedIntake.tob || 'N/A'}</div>
+                  </div>
+                  <div style={{ backgroundColor: '#f8f9fa', padding: '0.75rem', borderRadius: '4px' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.25rem' }}>Birth Place</div>
+                    <div style={{ fontWeight: '500' }}>{selectedIntake.birth_place || 'N/A'}</div>
+                  </div>
+                  <div style={{ backgroundColor: '#f8f9fa', padding: '0.75rem', borderRadius: '4px' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.25rem' }}>Marital Status</div>
+                    <div style={{ fontWeight: '500', textTransform: 'capitalize' }}>{selectedIntake.marital_status || 'N/A'}</div>
+                  </div>
+                  <div style={{ backgroundColor: '#f8f9fa', padding: '0.75rem', borderRadius: '4px' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.25rem' }}>Occupation</div>
+                    <div style={{ fontWeight: '500' }}>{selectedIntake.occupation || 'N/A'}</div>
+                  </div>
+                  <div style={{ backgroundColor: '#f8f9fa', padding: '0.75rem', borderRadius: '4px' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.25rem' }}>Intake Type</div>
+                    <span style={{
+                      padding: '0.25rem 0.75rem',
+                      borderRadius: '4px',
+                      fontSize: '0.85rem',
+                      backgroundColor: getIntakeTypeLabel(selectedIntake.intake_type).bg,
+                      color: getIntakeTypeLabel(selectedIntake.intake_type).color
+                    }}>
+                      {getIntakeTypeLabel(selectedIntake.intake_type).text}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Topic & Other Info */}
+              {(selectedIntake.topic || selectedIntake.other) && (
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <h4 style={{ fontSize: '1rem', color: '#333', marginBottom: '0.75rem', borderBottom: '2px solid #ee5a24', paddingBottom: '0.5rem' }}>
+                    <i className="fas fa-comment-alt" style={{ marginRight: '0.5rem', color: '#ee5a24' }}></i>
+                    Consultation Topic
+                  </h4>
+                  {selectedIntake.topic && (
+                    <div style={{ backgroundColor: '#fff4e6', padding: '1rem', borderRadius: '4px', marginBottom: '0.5rem', border: '1px solid #ee5a24' }}>
+                      <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.25rem' }}>Topic</div>
+                      <div style={{ fontWeight: '500' }}>{selectedIntake.topic}</div>
+                    </div>
+                  )}
+                  {selectedIntake.other && (
+                    <div style={{ backgroundColor: '#f8f9fa', padding: '1rem', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.25rem' }}>Additional Info</div>
+                      <div>{selectedIntake.other}</div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Partner Details (if available) */}
+              {(selectedIntake.partner_name || selectedIntake.partner_dob || selectedIntake.partner_birth_place) && (
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <h4 style={{ fontSize: '1rem', color: '#333', marginBottom: '0.75rem', borderBottom: '2px solid #e0cffc', paddingBottom: '0.5rem' }}>
+                    <i className="fas fa-heart" style={{ marginRight: '0.5rem', color: '#59359a' }}></i>
+                    Partner Details
+                  </h4>
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(2, 1fr)', 
+                    gap: '1rem'
+                  }}>
+                    <div style={{ backgroundColor: '#f8f9fa', padding: '0.75rem', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.25rem' }}>Partner Name</div>
+                      <div style={{ fontWeight: '500' }}>{selectedIntake.partner_name || 'N/A'}</div>
+                    </div>
+                    <div style={{ backgroundColor: '#f8f9fa', padding: '0.75rem', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.25rem' }}>Partner Gender</div>
+                      <div style={{ fontWeight: '500', textTransform: 'capitalize' }}>{selectedIntake.partner_gender || 'N/A'}</div>
+                    </div>
+                    <div style={{ backgroundColor: '#f8f9fa', padding: '0.75rem', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.25rem' }}>Partner DOB</div>
+                      <div style={{ fontWeight: '500' }}>{formatDate(selectedIntake.partner_dob)}</div>
+                    </div>
+                    <div style={{ backgroundColor: '#f8f9fa', padding: '0.75rem', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.25rem' }}>Partner Time of Birth</div>
+                      <div style={{ fontWeight: '500' }}>{selectedIntake.partner_tob || 'N/A'}</div>
+                    </div>
+                    <div style={{ backgroundColor: '#f8f9fa', padding: '0.75rem', borderRadius: '4px', gridColumn: 'span 2' }}>
+                      <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.25rem' }}>Partner Birth Place</div>
+                      <div style={{ fontWeight: '500' }}>{selectedIntake.partner_birth_place || 'N/A'}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Location Details */}
+              {(selectedIntake.lat || selectedIntake.long) && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <h4 style={{ fontSize: '1rem', color: '#333', marginBottom: '0.75rem', borderBottom: '2px solid #cfe2ff', paddingBottom: '0.5rem' }}>
+                    <i className="fas fa-map-marker-alt" style={{ marginRight: '0.5rem', color: '#084298' }}></i>
+                    Location Coordinates
+                  </h4>
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(2, 1fr)', 
+                    gap: '1rem'
+                  }}>
+                    <div style={{ backgroundColor: '#f8f9fa', padding: '0.75rem', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.25rem' }}>Latitude</div>
+                      <div style={{ fontWeight: '500', fontFamily: 'monospace' }}>{selectedIntake.lat || 'N/A'}</div>
+                    </div>
+                    <div style={{ backgroundColor: '#f8f9fa', padding: '0.75rem', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.25rem' }}>Longitude</div>
+                      <div style={{ fontWeight: '500', fontFamily: 'monospace' }}>{selectedIntake.long || 'N/A'}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Meta Info */}
+              <div style={{ 
+                backgroundColor: '#e9ecef', 
+                padding: '0.75rem', 
+                borderRadius: '4px',
+                fontSize: '0.85rem',
+                color: '#666',
+                display: 'flex',
+                justifyContent: 'space-between'
+              }}>
+                <span><strong>ID:</strong> #{selectedIntake.id}</span>
+                <span><strong>Created:</strong> {formatDateTime(selectedIntake.created_at)}</span>
+              </div>
+            </div>
+          </Modal>
+        )}
+      </div>
+    )
+  }
+
   const renderAdminChatChannelsSection = () => {
     console.log('[Customer Dashboard] renderAdminChatChannelsSection - channels:', adminChatChannels.length, 'loading:', loadingAdminChats)
     
@@ -5887,6 +7213,1206 @@ const My_Account = () => {
     </div>
   )
 
+  const renderOffersSection = () => (
+    <div className="react-account-section">
+      <div className="react-section-header">
+        <h2>Offers & Coupons</h2>
+        <p>View all available offers and discount coupons</p>
+      </div>
+
+      {loadingOffers ? (
+        <div className="react-loading">Loading offers...</div>
+      ) : offers.length === 0 ? (
+        <div className="react-no-data">
+          <i className="fas fa-tags"></i>
+          <p>No offers available at the moment</p>
+        </div>
+      ) : (
+        <div className="react-offers-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+          {offers.map((offer) => (
+            <div key={offer.id} style={{ 
+              backgroundColor: '#fff', 
+              borderRadius: '12px', 
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)', 
+              overflow: 'hidden',
+              border: '1px solid #eee',
+              position: 'relative'
+            }}>
+              {/* Offer Badge */}
+              <div style={{ 
+                position: 'absolute', 
+                top: '10px', 
+                right: '10px',
+                backgroundColor: offer.status === 1 ? '#4caf50' : '#9e9e9e',
+                color: '#fff',
+                padding: '4px 10px',
+                borderRadius: '20px',
+                fontSize: '11px',
+                fontWeight: '600'
+              }}>
+                {offer.status === 1 ? 'Active' : 'Inactive'}
+              </div>
+              
+              {/* Offer Header */}
+              <div style={{ 
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                padding: '20px',
+                color: '#fff'
+              }}>
+                <div style={{ fontSize: '12px', opacity: 0.9, marginBottom: '5px' }}>
+                  {offer.offer_category || 'General'}
+                </div>
+                <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', fontWeight: '600' }}>
+                  {offer.offer_name || 'Special Offer'}
+                </h3>
+                <div style={{ 
+                  display: 'inline-block',
+                  backgroundColor: 'rgba(255,255,255,0.2)',
+                  padding: '8px 15px',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  fontWeight: '700',
+                  letterSpacing: '1px'
+                }}>
+                  {offer.offer_code || 'N/A'}
+                </div>
+              </div>
+              
+              {/* Offer Details */}
+              <div style={{ padding: '15px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <div>
+                    <div style={{ fontSize: '12px', color: '#999' }}>Discount</div>
+                    <div style={{ fontSize: '20px', fontWeight: '700', color: '#4caf50' }}>
+                      {offer.discount || '0'}%
+                    </div>
+                  </div>
+                  {offer.discount_amount && (
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '12px', color: '#999' }}>Max Discount</div>
+                      <div style={{ fontSize: '18px', fontWeight: '600', color: '#333' }}>
+                        ₹{parseFloat(offer.discount_amount).toFixed(0)}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                <div style={{ borderTop: '1px dashed #eee', paddingTop: '12px', marginBottom: '10px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}>
+                    <span style={{ color: '#666' }}>Min Order:</span>
+                    <span style={{ fontWeight: '500' }}>₹{offer.minimum_order_amount || '0'}</span>
+                  </div>
+                  {offer.max_order_amount && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}>
+                      <span style={{ color: '#666' }}>Max Order:</span>
+                      <span style={{ fontWeight: '500' }}>₹{offer.max_order_amount}</span>
+                    </div>
+                  )}
+                  {offer.user_restriction && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                      <span style={{ color: '#666' }}>Usage Limit:</span>
+                      <span style={{ fontWeight: '500' }}>{offer.user_restriction}x per user</span>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Validity */}
+                <div style={{ 
+                  backgroundColor: '#f5f5f5', 
+                  padding: '10px', 
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                  color: '#666'
+                }}>
+                  <i className="fas fa-calendar-alt" style={{ marginRight: '5px' }}></i>
+                  Valid: {offer.offer_validity_from || 'N/A'} to {offer.offer_validity_to || 'N/A'}
+                </div>
+                
+                {offer.coupon_description && (
+                  <p style={{ 
+                    margin: '10px 0 0 0', 
+                    fontSize: '13px', 
+                    color: '#666',
+                    lineHeight: '1.4'
+                  }}>
+                    {offer.coupon_description}
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {offers.length > offersPageSize && (
+        <Pagination
+          currentPage={offersPage}
+          totalItems={offers.length}
+          pageSize={offersPageSize}
+          onPageChange={setOffersPage}
+        />
+      )}
+    </div>
+  )
+
+  const renderOfflineServicesSection = () => (
+    <div className="react-account-section">
+      <div className="react-section-header">
+        <h2>Offline Services</h2>
+        <p>Browse available offline service categories</p>
+      </div>
+
+      {loadingOfflineServices ? (
+        <div className="react-loading">Loading offline services...</div>
+      ) : offlineServices.length === 0 ? (
+        <div className="react-no-data">
+          <i className="fas fa-concierge-bell"></i>
+          <p>No offline services available</p>
+        </div>
+      ) : (
+        <div className="react-services-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+          {offlineServices.map((service) => (
+            <div key={service.id} style={{ 
+              backgroundColor: '#fff', 
+              borderRadius: '12px', 
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)', 
+              overflow: 'hidden',
+              border: '1px solid #eee',
+              transition: 'transform 0.2s, box-shadow 0.2s',
+              cursor: 'pointer'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = 'translateY(-5px)'
+              e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)'
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'
+            }}
+            >
+              {/* Service Image */}
+              <div style={{ 
+                height: '160px', 
+                backgroundColor: '#f5f5f5',
+                overflow: 'hidden',
+                position: 'relative'
+              }}>
+                {service.image ? (
+                  <img 
+                    src={service.image} 
+                    alt={service.title} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => {
+                      e.target.style.display = 'none'
+                      e.target.parentElement.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);"><i class="fas fa-concierge-bell" style="font-size:50px;color:#fff;"></i></div>'
+                    }}
+                  />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+                    <i className="fas fa-concierge-bell" style={{ fontSize: '50px', color: '#fff' }}></i>
+                  </div>
+                )}
+                
+                {/* Status Badge */}
+                <div style={{ 
+                  position: 'absolute', 
+                  top: '10px', 
+                  right: '10px',
+                  backgroundColor: service.status === 1 ? '#4caf50' : '#9e9e9e',
+                  color: '#fff',
+                  padding: '4px 10px',
+                  borderRadius: '20px',
+                  fontSize: '11px',
+                  fontWeight: '600'
+                }}>
+                  {service.status === 1 ? 'Available' : 'Unavailable'}
+                </div>
+              </div>
+              
+              {/* Service Details */}
+              <div style={{ padding: '15px' }}>
+                <h3 style={{ margin: '0 0 8px 0', fontSize: '17px', fontWeight: '600', color: '#333' }}>
+                  {service.title}
+                </h3>
+                
+                {service.description && (
+                  <p style={{ 
+                    margin: '0 0 12px 0', 
+                    fontSize: '13px', 
+                    color: '#666',
+                    lineHeight: '1.5',
+                    maxHeight: '40px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}>
+                    {service.description}
+                  </p>
+                )}
+                
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  paddingTop: '10px',
+                  borderTop: '1px solid #eee'
+                }}>
+                  <span style={{ fontSize: '12px', color: '#999' }}>
+                    <i className="fas fa-hashtag" style={{ marginRight: '4px' }}></i>
+                    ID: {service.id}
+                  </span>
+                  <button style={{
+                    backgroundColor: '#667eea',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    fontWeight: '500'
+                  }}>
+                    View Details
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {offlineServices.length > offlineServicesPageSize && (
+        <Pagination
+          currentPage={offlineServicesPage}
+          totalItems={offlineServices.length}
+          pageSize={offlineServicesPageSize}
+          onPageChange={setOfflineServicesPage}
+        />
+      )}
+    </div>
+  )
+
+  const renderServiceAssignsSection = () => (
+    <div className="react-account-section">
+      <div className="react-section-header">
+        <h2>Service Assignments</h2>
+        <p>View services offered by astrologers with pricing</p>
+      </div>
+
+      {loadingOfflineServiceAssigns ? (
+        <div className="react-loading">Loading service assignments...</div>
+      ) : offlineServiceAssigns.length === 0 ? (
+        <div className="react-no-data">
+          <i className="fas fa-user-cog"></i>
+          <p>No service assignments available</p>
+        </div>
+      ) : (
+        <div className="react-table-container" style={{ overflowX: 'auto' }}>
+          <table className="react-data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ backgroundColor: '#f5f5f5' }}>
+                <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Image</th>
+                <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Title</th>
+                <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Description</th>
+                <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Price</th>
+                <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Duration</th>
+                <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {offlineServiceAssigns.map((assign) => (
+                <tr key={assign.id} style={{ borderBottom: '1px solid #eee' }}>
+                  <td style={{ padding: '12px' }}>
+                    {assign.image ? (
+                      <img 
+                        src={assign.image} 
+                        alt={assign.title} 
+                        style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '8px' }}
+                        onError={(e) => {
+                          e.target.style.display = 'none'
+                        }}
+                      />
+                    ) : (
+                      <div style={{ width: '60px', height: '60px', backgroundColor: '#f0f0f0', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <i className="fas fa-user-cog" style={{ color: '#999', fontSize: '20px' }}></i>
+                      </div>
+                    )}
+                  </td>
+                  <td style={{ padding: '12px', fontWeight: '500' }}>{assign.title || '-'}</td>
+                  <td style={{ padding: '12px', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#666' }}>
+                    {assign.description || '-'}
+                  </td>
+                  <td style={{ padding: '12px' }}>
+                    <div>
+                      <span style={{ fontSize: '16px', fontWeight: '600', color: '#4caf50' }}>₹{assign.price || 0}</span>
+                      {assign.actual_price && assign.actual_price > assign.price && (
+                        <span style={{ fontSize: '12px', color: '#999', textDecoration: 'line-through', marginLeft: '8px' }}>
+                          ₹{assign.actual_price}
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td style={{ padding: '12px' }}>
+                    {assign.duration ? (
+                      <span style={{ 
+                        padding: '4px 8px', 
+                        borderRadius: '4px', 
+                        fontSize: '12px',
+                        backgroundColor: '#e3f2fd',
+                        color: '#1565c0'
+                      }}>
+                        {assign.duration} mins
+                      </span>
+                    ) : '-'}
+                  </td>
+                  <td style={{ padding: '12px' }}>
+                    <span style={{ 
+                      padding: '4px 10px', 
+                      borderRadius: '20px', 
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      backgroundColor: assign.status === 1 ? '#e8f5e9' : '#ffebee',
+                      color: assign.status === 1 ? '#2e7d32' : '#c62828'
+                    }}>
+                      {assign.status === 1 ? 'Active' : 'Inactive'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {offlineServiceAssigns.length > offlineServiceAssignsPageSize && (
+        <Pagination
+          currentPage={offlineServiceAssignsPage}
+          totalItems={offlineServiceAssigns.length}
+          pageSize={offlineServiceAssignsPageSize}
+          onPageChange={setOfflineServiceAssignsPage}
+        />
+      )}
+    </div>
+  )
+
+  const renderServiceGallerySection = () => (
+    <div className="react-account-section">
+      <div className="react-section-header">
+        <h2>Service Gallery</h2>
+        <p>Browse service images</p>
+      </div>
+
+      {loadingServiceGalleries ? (
+        <div className="react-loading">Loading gallery...</div>
+      ) : serviceGalleries.length === 0 ? (
+        <div className="react-no-data">
+          <i className="fas fa-images"></i>
+          <p>No gallery items available</p>
+        </div>
+      ) : (
+        <div className="react-gallery-grid" style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
+          gap: '16px' 
+        }}>
+          {serviceGalleries.map((item) => (
+            <div key={item.id} style={{ 
+              backgroundColor: '#fff', 
+              borderRadius: '12px', 
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)', 
+              overflow: 'hidden',
+              border: '1px solid #eee',
+              transition: 'transform 0.2s, box-shadow 0.2s',
+              cursor: 'pointer'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = 'scale(1.02)'
+              e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)'
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = 'scale(1)'
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'
+            }}
+            >
+              {/* Image Container */}
+              <div style={{ 
+                height: '180px', 
+                backgroundColor: '#f5f5f5',
+                overflow: 'hidden',
+                position: 'relative'
+              }}>
+                {item.image ? (
+                  <img 
+                    src={item.image} 
+                    alt={`Gallery ${item.id}`} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => {
+                      e.target.style.display = 'none'
+                      e.target.parentElement.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f0f0f0;"><i class="fas fa-image" style="font-size:40px;color:#ccc;"></i></div>'
+                    }}
+                  />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f0f0f0' }}>
+                    <i className="fas fa-image" style={{ fontSize: '40px', color: '#ccc' }}></i>
+                  </div>
+                )}
+                
+                {/* ID Badge */}
+                <div style={{ 
+                  position: 'absolute', 
+                  top: '10px', 
+                  right: '10px',
+                  backgroundColor: 'rgba(0,0,0,0.6)',
+                  color: '#fff',
+                  padding: '4px 10px',
+                  borderRadius: '20px',
+                  fontSize: '10px',
+                  fontWeight: '600'
+                }}>
+                  #{item.id}
+                </div>
+              </div>
+              
+              {/* Details */}
+              <div style={{ padding: '10px', fontSize: '11px', color: '#888', textAlign: 'center' }}>
+                {item.created_at || '-'}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {serviceGalleries.length > serviceGalleriesPageSize && (
+        <Pagination
+          currentPage={serviceGalleriesPage}
+          totalItems={serviceGalleries.length}
+          pageSize={serviceGalleriesPageSize}
+          onPageChange={setServiceGalleriesPage}
+        />
+      )}
+    </div>
+  )
+
+  const renderOfflineOrdersSection = () => (
+    <div className="react-account-section">
+      <div className="react-section-header">
+        <h2>Offline Service Orders</h2>
+        <p>View your offline service bookings and orders</p>
+      </div>
+
+      {loadingOfflineOrders ? (
+        <div className="react-loading">Loading orders...</div>
+      ) : offlineOrders.length === 0 ? (
+        <div className="react-no-data">
+          <i className="fas fa-file-invoice"></i>
+          <p>No offline service orders found</p>
+        </div>
+      ) : (
+        <div className="react-table-container" style={{ overflowX: 'auto' }}>
+          <table className="react-data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ backgroundColor: '#f5f5f5' }}>
+                <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Order ID</th>
+                <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Price</th>
+                <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Total</th>
+                <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Payment</th>
+                <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Status</th>
+                <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Date/Time</th>
+                <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Remark</th>
+              </tr>
+            </thead>
+            <tbody>
+              {offlineOrders.map((order) => (
+                <tr key={order.id} style={{ borderBottom: '1px solid #eee' }}>
+                  <td style={{ padding: '12px' }}>
+                    <span style={{ 
+                      fontFamily: 'monospace', 
+                      backgroundColor: '#f0f0f0', 
+                      padding: '4px 8px', 
+                      borderRadius: '4px',
+                      fontSize: '12px'
+                    }}>
+                      {order.order_id || `#${order.id}`}
+                    </span>
+                  </td>
+                  <td style={{ padding: '12px' }}>
+                    <span style={{ fontSize: '14px', color: '#666' }}>₹{order.price || 0}</span>
+                    {parseFloat(order.offer_amount) > 0 && (
+                      <div style={{ fontSize: '10px', color: '#4caf50' }}>
+                        Offer: -₹{order.offer_amount}
+                      </div>
+                    )}
+                  </td>
+                  <td style={{ padding: '12px' }}>
+                    <span style={{ fontSize: '15px', fontWeight: '600', color: '#333' }}>₹{order.total_amount || 0}</span>
+                  </td>
+                  <td style={{ padding: '12px' }}>
+                    <span style={{ 
+                      padding: '4px 10px', 
+                      borderRadius: '20px', 
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      textTransform: 'capitalize',
+                      backgroundColor: order.payment_status === 'paid' ? '#e8f5e9' : order.payment_status === 'failed' ? '#ffebee' : order.payment_status === 'refunded' ? '#e3f2fd' : '#fff3e0',
+                      color: order.payment_status === 'paid' ? '#2e7d32' : order.payment_status === 'failed' ? '#c62828' : order.payment_status === 'refunded' ? '#1565c0' : '#ef6c00'
+                    }}>
+                      {order.payment_status || 'unpaid'}
+                    </span>
+                  </td>
+                  <td style={{ padding: '12px' }}>
+                    <span style={{ 
+                      padding: '4px 10px', 
+                      borderRadius: '20px', 
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      textTransform: 'capitalize',
+                      backgroundColor: order.status === 'completed' ? '#e8f5e9' : order.status === 'cancelled' ? '#ffebee' : order.status === 'processing' ? '#e3f2fd' : order.status === 'confirmed' ? '#f3e5f5' : '#fff3e0',
+                      color: order.status === 'completed' ? '#2e7d32' : order.status === 'cancelled' ? '#c62828' : order.status === 'processing' ? '#1565c0' : order.status === 'confirmed' ? '#7b1fa2' : '#ef6c00'
+                    }}>
+                      {order.status || 'pending'}
+                    </span>
+                    {order.samagri_status && (
+                      <div style={{ fontSize: '10px', color: '#888', marginTop: '4px' }}>
+                        Samagri: {order.samagri_status}
+                      </div>
+                    )}
+                  </td>
+                  <td style={{ padding: '12px', fontSize: '13px', color: '#666' }}>
+                    {order.date ? (
+                      <div>
+                        <div>{order.date}</div>
+                        {order.time && <div style={{ fontSize: '11px', color: '#999' }}>{order.time}</div>}
+                      </div>
+                    ) : '-'}
+                  </td>
+                  <td style={{ padding: '12px', fontSize: '12px', color: '#666', maxWidth: '150px' }}>
+                    <div style={{ 
+                      overflow: 'hidden', 
+                      textOverflow: 'ellipsis', 
+                      whiteSpace: 'nowrap',
+                      maxWidth: '150px'
+                    }} title={order.remark || ''}>
+                      {order.remark || '-'}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {offlineOrders.length > offlineOrdersPageSize && (
+        <Pagination
+          currentPage={offlineOrdersPage}
+          totalItems={offlineOrders.length}
+          pageSize={offlineOrdersPageSize}
+          onPageChange={setOfflineOrdersPage}
+        />
+      )}
+    </div>
+  )
+
+  const renderAiPredictionsSection = () => (
+    <div className="react-account-section">
+      <div className="react-section-header">
+        <h2>AI Predictions</h2>
+        <p>View your AI-powered astrology predictions</p>
+      </div>
+
+      {loadingAiPredictions ? (
+        <div className="react-loading">Loading predictions...</div>
+      ) : aiPredictions.length === 0 ? (
+        <div className="react-no-data">
+          <i className="fas fa-robot"></i>
+          <p>No AI predictions found</p>
+        </div>
+      ) : (
+        <>
+          <div className="react-predictions-list" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {aiPredictions.map((prediction) => (
+              <div key={prediction.id} style={{ 
+                backgroundColor: '#fff', 
+                borderRadius: '12px', 
+                boxShadow: '0 2px 8px rgba(0,0,0,0.08)', 
+                border: '1px solid #eee',
+                overflow: 'hidden'
+              }}>
+                {/* Header */}
+                <div style={{ 
+                  padding: '16px', 
+                  backgroundColor: '#f8f9fa', 
+                  borderBottom: '1px solid #eee',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '10px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ 
+                      width: '40px', 
+                      height: '40px', 
+                      borderRadius: '50%', 
+                      backgroundColor: '#6366f1', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center' 
+                    }}>
+                      <i className="fas fa-robot" style={{ color: '#fff', fontSize: '18px' }}></i>
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: '600', color: '#333', fontSize: '14px' }}>
+                        Order: {prediction.order_id}
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#888' }}>
+                        {prediction.created_at}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <span style={{ 
+                      padding: '4px 10px', 
+                      borderRadius: '20px', 
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      textTransform: 'capitalize',
+                      backgroundColor: prediction.message_type === 'text' ? '#e3f2fd' : '#f3e5f5',
+                      color: prediction.message_type === 'text' ? '#1565c0' : '#7b1fa2'
+                    }}>
+                      {prediction.message_type}
+                    </span>
+                    {prediction.total_amount > 0 && (
+                      <span style={{ 
+                        padding: '4px 10px', 
+                        borderRadius: '20px', 
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        backgroundColor: '#e8f5e9',
+                        color: '#2e7d32'
+                      }}>
+                        ₹{prediction.total_amount}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Question */}
+                {prediction.question && (
+                  <div style={{ padding: '16px', borderBottom: '1px solid #f0f0f0' }}>
+                    <div style={{ fontSize: '11px', color: '#888', marginBottom: '6px', textTransform: 'uppercase', fontWeight: '600' }}>
+                      <i className="fas fa-question-circle" style={{ marginRight: '6px' }}></i>Your Question
+                    </div>
+                    <p style={{ margin: 0, fontSize: '14px', color: '#333', lineHeight: '1.5' }}>
+                      {prediction.question.length > 200 ? `${prediction.question.substring(0, 200)}...` : prediction.question}
+                    </p>
+                  </div>
+                )}
+                
+                {/* AI Response Preview */}
+                <div style={{ padding: '16px' }}>
+                  <div style={{ fontSize: '11px', color: '#888', marginBottom: '6px', textTransform: 'uppercase', fontWeight: '600' }}>
+                    <i className="fas fa-magic" style={{ marginRight: '6px', color: '#6366f1' }}></i>AI Response
+                  </div>
+                  {prediction.open_ai_response ? (
+                    <p style={{ 
+                      margin: 0, 
+                      fontSize: '14px', 
+                      color: '#555', 
+                      lineHeight: '1.6',
+                      backgroundColor: '#f8f9fa',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      maxHeight: selectedPrediction === prediction.id ? 'none' : '100px',
+                      overflow: 'hidden'
+                    }}>
+                      {selectedPrediction === prediction.id ? prediction.open_ai_response : 
+                        (prediction.open_ai_response.length > 300 ? `${prediction.open_ai_response.substring(0, 300)}...` : prediction.open_ai_response)
+                      }
+                    </p>
+                  ) : (
+                    <p style={{ margin: 0, fontSize: '13px', color: '#999', fontStyle: 'italic' }}>No response available</p>
+                  )}
+                  
+                  {prediction.open_ai_response && prediction.open_ai_response.length > 300 && (
+                    <button
+                      onClick={() => setSelectedPrediction(selectedPrediction === prediction.id ? null : prediction.id)}
+                      style={{
+                        marginTop: '10px',
+                        padding: '6px 14px',
+                        backgroundColor: 'transparent',
+                        border: '1px solid #6366f1',
+                        color: '#6366f1',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                        fontWeight: '500'
+                      }}
+                    >
+                      {selectedPrediction === prediction.id ? 'Show Less' : 'Read More'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {aiPredictions.length > aiPredictionsPageSize && (
+        <Pagination
+          currentPage={aiPredictionsPage}
+          totalItems={aiPredictions.length}
+          pageSize={aiPredictionsPageSize}
+          onPageChange={setAiPredictionsPage}
+        />
+      )}
+    </div>
+  )
+
+  const renderAiProfilesSection = () => (
+    <div className="react-account-section">
+      <div className="react-section-header">
+        <h2>AI Profiles</h2>
+        <p>Manage your birth profiles for AI predictions</p>
+      </div>
+
+      {loadingAiProfiles ? (
+        <div className="react-loading">Loading profiles...</div>
+      ) : aiProfiles.length === 0 ? (
+        <div className="react-no-data">
+          <i className="fas fa-user-astronaut"></i>
+          <p>No AI profiles found</p>
+        </div>
+      ) : (
+        <div className="react-profiles-grid" style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
+          gap: '16px' 
+        }}>
+          {aiProfiles.map((profile) => (
+            <div key={profile.id} style={{ 
+              backgroundColor: '#fff', 
+              borderRadius: '12px', 
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)', 
+              border: profile.is_selected ? '2px solid #6366f1' : '1px solid #eee',
+              overflow: 'hidden',
+              position: 'relative'
+            }}>
+              {/* Selected Badge */}
+              {profile.is_selected === 1 && (
+                <div style={{ 
+                  position: 'absolute', 
+                  top: '10px', 
+                  right: '10px',
+                  backgroundColor: '#6366f1',
+                  color: '#fff',
+                  padding: '4px 10px',
+                  borderRadius: '20px',
+                  fontSize: '10px',
+                  fontWeight: '600'
+                }}>
+                  <i className="fas fa-check" style={{ marginRight: '4px' }}></i>Selected
+                </div>
+              )}
+              
+              {/* Header */}
+              <div style={{ 
+                padding: '16px', 
+                backgroundColor: profile.is_self_profile === 1 ? '#f0f4ff' : '#f8f9fa', 
+                borderBottom: '1px solid #eee',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px'
+              }}>
+                <div style={{ 
+                  width: '50px', 
+                  height: '50px', 
+                  borderRadius: '50%', 
+                  backgroundColor: profile.gender === 'male' ? '#e3f2fd' : profile.gender === 'female' ? '#fce4ec' : '#f5f5f5', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center' 
+                }}>
+                  <i className={`fas ${profile.gender === 'male' ? 'fa-mars' : profile.gender === 'female' ? 'fa-venus' : 'fa-user'}`} 
+                     style={{ color: profile.gender === 'male' ? '#1976d2' : profile.gender === 'female' ? '#c2185b' : '#666', fontSize: '22px' }}></i>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: '600', color: '#333', fontSize: '16px' }}>
+                    {profile.name || 'Unnamed Profile'}
+                  </div>
+                  {profile.is_self_profile === 1 && (
+                    <span style={{ 
+                      fontSize: '10px', 
+                      backgroundColor: '#e8f5e9', 
+                      color: '#2e7d32', 
+                      padding: '2px 8px', 
+                      borderRadius: '10px',
+                      fontWeight: '600'
+                    }}>Self Profile</span>
+                  )}
+                </div>
+              </div>
+              
+              {/* Details */}
+              <div style={{ padding: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  {/* DOB */}
+                  <div>
+                    <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', fontWeight: '600', marginBottom: '4px' }}>
+                      <i className="fas fa-birthday-cake" style={{ marginRight: '4px' }}></i>Date of Birth
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#333' }}>{profile.dob || '-'}</div>
+                  </div>
+                  
+                  {/* TOB */}
+                  <div>
+                    <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', fontWeight: '600', marginBottom: '4px' }}>
+                      <i className="fas fa-clock" style={{ marginRight: '4px' }}></i>Time of Birth
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#333' }}>{profile.tob || '-'}</div>
+                  </div>
+                  
+                  {/* POB */}
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', fontWeight: '600', marginBottom: '4px' }}>
+                      <i className="fas fa-map-marker-alt" style={{ marginRight: '4px' }}></i>Place of Birth
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#333' }}>{profile.pob || '-'}</div>
+                  </div>
+                  
+                  {/* Language */}
+                  {profile.lang && (
+                    <div>
+                      <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', fontWeight: '600', marginBottom: '4px' }}>
+                        <i className="fas fa-language" style={{ marginRight: '4px' }}></i>Language
+                      </div>
+                      <div style={{ fontSize: '13px', color: '#333', textTransform: 'capitalize' }}>{profile.lang}</div>
+                    </div>
+                  )}
+                  
+                  {/* Coordinates */}
+                  {(profile.lat || profile.lon) && (
+                    <div>
+                      <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', fontWeight: '600', marginBottom: '4px' }}>
+                        <i className="fas fa-globe" style={{ marginRight: '4px' }}></i>Coordinates
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#666', fontFamily: 'monospace' }}>
+                        {profile.lat && `${profile.lat}`}{profile.lat && profile.lon && ', '}{profile.lon && `${profile.lon}`}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Created Date */}
+                <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #f0f0f0', fontSize: '11px', color: '#999' }}>
+                  Created: {profile.created_at || '-'}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {aiProfiles.length > aiProfilesPageSize && (
+        <Pagination
+          currentPage={aiProfilesPage}
+          totalItems={aiProfiles.length}
+          pageSize={aiProfilesPageSize}
+          onPageChange={setAiProfilesPage}
+        />
+      )}
+    </div>
+  )
+
+  const renderOurServicesSection = () => (
+    <div className="react-account-section">
+      <div className="react-section-header">
+        <h2>Our Services</h2>
+        <p>Explore our available services</p>
+      </div>
+
+      {loadingOurServices ? (
+        <div className="react-loading">Loading services...</div>
+      ) : ourServices.length === 0 ? (
+        <div className="react-no-data">
+          <i className="fas fa-th-large"></i>
+          <p>No services available</p>
+        </div>
+      ) : (
+        <div className="react-services-grid" style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
+          gap: '20px' 
+        }}>
+          {ourServices.map((service) => (
+            <div key={service.id} style={{ 
+              backgroundColor: '#fff', 
+              borderRadius: '16px', 
+              boxShadow: '0 4px 15px rgba(0,0,0,0.08)', 
+              overflow: 'hidden',
+              border: '1px solid #eee',
+              transition: 'transform 0.3s, box-shadow 0.3s',
+              cursor: 'pointer'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = 'translateY(-5px)'
+              e.currentTarget.style.boxShadow = '0 12px 30px rgba(0,0,0,0.15)'
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.08)'
+            }}
+            >
+              {/* Image */}
+              <div style={{ 
+                height: '180px', 
+                backgroundColor: '#f5f5f5',
+                overflow: 'hidden',
+                position: 'relative'
+              }}>
+                {service.image ? (
+                  <img 
+                    src={service.image} 
+                    alt={service.title} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => {
+                      e.target.style.display = 'none'
+                      e.target.parentElement.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);"><i class="fas fa-concierge-bell" style="font-size:50px;color:rgba(255,255,255,0.8);"></i></div>'
+                    }}
+                  />
+                ) : (
+                  <div style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+                  }}>
+                    <i className="fas fa-concierge-bell" style={{ fontSize: '50px', color: 'rgba(255,255,255,0.8)' }}></i>
+                  </div>
+                )}
+              </div>
+              
+              {/* Content */}
+              <div style={{ padding: '20px' }}>
+                <h3 style={{ 
+                  margin: '0 0 10px 0', 
+                  fontSize: '18px', 
+                  fontWeight: '600', 
+                  color: '#333',
+                  lineHeight: '1.3'
+                }}>
+                  {service.title}
+                </h3>
+                
+                {service.content && (
+                  <p style={{ 
+                    margin: '0 0 15px 0', 
+                    fontSize: '14px', 
+                    color: '#666',
+                    lineHeight: '1.6',
+                    maxHeight: '63px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}
+                  dangerouslySetInnerHTML={{ 
+                    __html: service.content.length > 150 
+                      ? service.content.substring(0, 150).replace(/<[^>]*>/g, '') + '...' 
+                      : service.content.replace(/<[^>]*>/g, '')
+                  }}
+                  />
+                )}
+                
+                {/* Meta Info */}
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  paddingTop: '15px',
+                  borderTop: '1px solid #f0f0f0'
+                }}>
+                  <span style={{ 
+                    fontSize: '12px', 
+                    color: '#888',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px'
+                  }}>
+                    <i className="fas fa-link"></i>
+                    {service.slug}
+                  </span>
+                  <button style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#6366f1',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'background 0.2s'
+                  }}>
+                    Learn More
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {ourServices.length > ourServicesPageSize && (
+        <Pagination
+          currentPage={ourServicesPage}
+          totalItems={ourServices.length}
+          pageSize={ourServicesPageSize}
+          onPageChange={setOurServicesPage}
+        />
+      )}
+    </div>
+  )
+
+  const renderPackagesSection = () => (
+    <div className="react-account-section">
+      <div className="react-section-header">
+        <h2>Packages</h2>
+        <p>Browse available packages and plans</p>
+      </div>
+
+      {loadingPackages ? (
+        <div className="react-loading">Loading packages...</div>
+      ) : packages.length === 0 ? (
+        <div className="react-no-data">
+          <i className="fas fa-box-open"></i>
+          <p>No packages available</p>
+        </div>
+      ) : (
+        <div className="react-packages-grid" style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
+          gap: '20px' 
+        }}>
+          {packages.map((pkg) => (
+            <div key={pkg.id} style={{ 
+              backgroundColor: '#fff', 
+              borderRadius: '16px', 
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08)', 
+              overflow: 'hidden',
+              border: '1px solid #eee',
+              transition: 'transform 0.3s, box-shadow 0.3s',
+              position: 'relative'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = 'translateY(-5px)'
+              e.currentTarget.style.boxShadow = '0 12px 35px rgba(0,0,0,0.12)'
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)'
+            }}
+            >
+              {/* Header with gradient */}
+              <div style={{ 
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                padding: '24px 20px',
+                textAlign: 'center',
+                position: 'relative'
+              }}>
+                {/* Package Type Badge */}
+                {pkg.package_type && (
+                  <span style={{
+                    position: 'absolute',
+                    top: '12px',
+                    right: '12px',
+                    backgroundColor: 'rgba(255,255,255,0.2)',
+                    color: '#fff',
+                    padding: '4px 12px',
+                    borderRadius: '20px',
+                    fontSize: '10px',
+                    fontWeight: '600',
+                    textTransform: 'uppercase'
+                  }}>
+                    {pkg.package_type}
+                  </span>
+                )}
+                
+                <h3 style={{ 
+                  margin: '0 0 8px 0', 
+                  fontSize: '20px', 
+                  fontWeight: '700', 
+                  color: '#fff'
+                }}>
+                  {pkg.name}
+                </h3>
+                
+                <div style={{ 
+                  fontSize: '36px', 
+                  fontWeight: '800', 
+                  color: '#fff',
+                  lineHeight: '1'
+                }}>
+                  ₹{pkg.price}
+                </div>
+                
+                <div style={{ 
+                  fontSize: '13px', 
+                  color: 'rgba(255,255,255,0.8)',
+                  marginTop: '8px'
+                }}>
+                  <i className="fas fa-clock" style={{ marginRight: '6px' }}></i>
+                  {pkg.duration}
+                </div>
+              </div>
+              
+              {/* Content */}
+              <div style={{ padding: '20px' }}>
+                {pkg.description && (
+                  <p style={{ 
+                    margin: '0 0 20px 0', 
+                    fontSize: '14px', 
+                    color: '#666',
+                    lineHeight: '1.6',
+                    textAlign: 'center'
+                  }}>
+                    {pkg.description}
+                  </p>
+                )}
+                
+                <button style={{
+                  width: '100%',
+                  padding: '12px 20px',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '10px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'opacity 0.2s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
+                onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+                >
+                  <i className="fas fa-shopping-cart" style={{ marginRight: '8px' }}></i>
+                  Get Started
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {packages.length > packagesPageSize && (
+        <Pagination
+          currentPage={packagesPage}
+          totalItems={packages.length}
+          pageSize={packagesPageSize}
+          onPageChange={setPackagesPage}
+        />
+      )}
+    </div>
+  )
+
   const renderSupportSection = () => (
     <div className="react-account-section">
       <div className="react-section-header">
@@ -5947,11 +8473,13 @@ const My_Account = () => {
       case 'addresses': return renderAddressSection()
       case 'orders': return renderOrdersSection()
       case 'service-orders': return renderServiceOrdersSection()
+      case 'puja-bookings': return renderPujaBookingsSection()
       case 'ask-questions': return renderAskQuestionsSection()
       case 'appointments': return renderAppointmentsSection()
       case 'architect-rooms': return renderArchitectRoomsSection()
       case 'architect-service-orders': return renderArchitectServiceOrdersSection()
       case 'kundlis': return renderKundlisSection()
+      case 'intakes': return renderIntakesSection()
       case 'chat-history': return renderChatHistorySection()
       case 'admin-chats': return isAdmin ? renderAdminChatChannelsSection() : renderProfileSection()
       case 'admin-chat-history': return isAdmin ? renderAdminChatHistorySection() : renderProfileSection()
@@ -5961,6 +8489,15 @@ const My_Account = () => {
       case 'support': return renderSupportSection()
       case 'courses': return renderCoursesSection()
       case 'refunds': return renderRefundsSection()
+      case 'offers': return renderOffersSection()
+      case 'offline-services': return renderOfflineServicesSection()
+      case 'service-assigns': return renderServiceAssignsSection()
+      case 'service-gallery': return renderServiceGallerySection()
+      case 'offline-orders': return renderOfflineOrdersSection()
+      case 'ai-predictions': return renderAiPredictionsSection()
+      case 'ai-profiles': return renderAiProfilesSection()
+      case 'our-services': return renderOurServicesSection()
+      case 'packages': return renderPackagesSection()
       default: return renderProfileSection()
     }
   }

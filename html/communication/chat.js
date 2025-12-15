@@ -36,7 +36,8 @@ import {
   declineCallRequest,
   declineChatRequest,
   declineVideoCallRequest,
-  cronRefreshCall
+  cronRefreshCall,
+  getUserChatHistories
 } from "../_helpers/common.js";
 import { constants,imagePath } from "../_config/constants.js";
 import multer from "multer";
@@ -1698,7 +1699,50 @@ router.post("/getAdminChatChannelHistory", upload.none(), async (req, res) => {
   }
 });
 
+// Get User Chat Histories (all chat channel histories for a user)
+router.post("/getUserChatHistories", upload.none(), async (req, res) => {
+  const schema = Joi.object({
+    api_key: Joi.string().required(),
+    user_uni_id: Joi.string().required(),
+    channel_name: Joi.string().optional().allow('', null),
+    offset: Joi.number().integer().min(0).optional().default(0),
+    limit: Joi.number().integer().min(1).max(100).optional().default(20)
+  });
 
+  const { error, value } = schema.validate(req.body, { abortEarly: false });
+
+  if (error) {
+    const messages = error.details.map(e => e.message);
+    return res.status(400).json({
+      status: 0,
+      error_code: 400,
+      msg: messages.join(', ')
+    });
+  }
+
+  const { api_key, user_uni_id, channel_name, offset, limit } = value;
+
+  const isValidUser = await checkUserApiKey(api_key, user_uni_id);
+  if (!isValidUser) {
+    return res.status(401).json({
+      status: 0,
+      error_code: 101,
+      msg: 'Unauthorized User... Please login again'
+    });
+  }
+
+  try {
+    const result = await getUserChatHistories(user_uni_id, offset, limit, channel_name);
+    return res.json(result);
+  } catch (err) {
+    console.error("Error fetching user chat histories:", err);
+    return res.json({
+      status: 0,
+      msg: "Something went wrong",
+      error: err.message,
+    });
+  }
+});
 
 export default router;
 

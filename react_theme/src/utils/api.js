@@ -377,6 +377,275 @@ export const fetchPublicCityList = async (stateId) => {
 }
 
 /**
+ * Fetch video sections
+ * Endpoint: POST /api/videoSections (Welcome service - port 8005)
+ */
+export const fetchVideoSections = async (offset = 0) => {
+  try {
+    const url = `${WELCOME_API}/videoSections`
+    const requestBody = {
+      offset: offset
+    }
+    console.log('[API] Fetching video sections from:', url)
+
+    const response = await fetch(url, getFetchConfig('POST', requestBody))
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] Video Sections API HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Video Sections response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching video sections:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Fetch languages list
+ * Endpoint: POST /api/languageList (Welcome service - port 8005)
+ */
+export const fetchLanguages = async () => {
+  try {
+    const url = `${WELCOME_API}/languageList`
+    console.log('[API] Fetching languages from:', url)
+
+    const response = await fetch(url, getFetchConfig('POST', {}))
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] Languages API HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Languages response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching languages:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Fetch live schedules (upcoming live astrologers)
+ * Endpoint: POST /api/upcomingLiveAstrologer (Communication service - port 8006)
+ */
+export const fetchLiveSchedules = async (offset = 0) => {
+  try {
+    const user = getCurrentUser()
+    const url = `${COMMUNICATION_API}/upcomingLiveAstrologer`
+    const requestBody = {
+      offset: offset,
+      user_uni_id: user?.user_uni_id || ''
+    }
+    console.log('[API] Fetching live schedules from:', url)
+
+    const response = await fetch(url, getFetchConfig('POST', requestBody))
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] Live Schedules API HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Live Schedules response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching live schedules:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Fetch live temple darshans
+ * Endpoint: POST /api/liveTempleDarshanList (Welcome service - port 8005)
+ */
+export const fetchLiveTempleDarshans = async (offset = 0, isLive = null, city = '') => {
+  try {
+    const url = `${WELCOME_API}/liveTempleDarshanList`
+    const requestBody = {
+      offset: offset
+    }
+    
+    if (isLive !== null) {
+      requestBody.is_live = isLive
+    }
+    if (city) {
+      requestBody.city = city
+    }
+    
+    console.log('[API] Fetching live temple darshans from:', url)
+
+    const response = await fetch(url, getFetchConfig('POST', requestBody))
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] Live Temple Darshans API HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Live Temple Darshans response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching live temple darshans:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Fetch menus list
+ * Endpoint: POST /api/menuList (Welcome service - port 8005)
+ */
+export const fetchMenus = async (offset = 0, menuType = '', parentId = null) => {
+  try {
+    const url = `${WELCOME_API}/menuList`
+    const requestBody = {
+      offset: offset
+    }
+    
+    if (menuType) {
+      requestBody.menu_type = menuType
+    }
+    if (parentId !== null) {
+      requestBody.parent_id = parentId
+    }
+    
+    console.log('[API] Fetching menus from:', url)
+
+    const response = await fetch(url, getFetchConfig('POST', requestBody))
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] Menus API HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Menus response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching menus:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Fetch migrations list
+ * Endpoint: POST /api/migrationList (Welcome service - port 8005)
+ */
+export const fetchMigrations = async (offset = 0, status = '', batch = null) => {
+  try {
+    const url = `${WELCOME_API}/migrationList`
+    const requestBody = {
+      offset: offset
+    }
+    
+    if (status) {
+      requestBody.status = status
+    }
+    if (batch !== null) {
+      requestBody.batch = batch
+    }
+    
+    console.log('[API] Fetching migrations from:', url)
+
+    const response = await fetch(url, getFetchConfig('POST', requestBody))
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] Migrations API HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Migrations response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching migrations:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Fetch modules list
+ * Endpoint: POST /api/moduleList (Welcome service - port 8005)
+ */
+export const fetchModules = async (offset = 0, moduleType = '', isActive = null, parentId = null) => {
+  try {
+    const url = `${WELCOME_API}/moduleList`
+    const requestBody = {
+      offset: offset
+    }
+    
+    if (moduleType) {
+      requestBody.module_type = moduleType
+    }
+    if (isActive !== null) {
+      requestBody.is_active = isActive
+    }
+    if (parentId !== null) {
+      requestBody.parent_id = parentId
+    }
+    
+    console.log('[API] Fetching modules from:', url)
+
+    const response = await fetch(url, getFetchConfig('POST', requestBody))
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] Modules API HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Modules response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching modules:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Fetch module accesses list
+ * Endpoint: POST /api/moduleAccessList (Welcome service - port 8005)
+ */
+export const fetchModuleAccesses = async (offset = 0, userId = null, userType = '', accessType = '') => {
+  try {
+    const url = `${WELCOME_API}/moduleAccessList`
+    const requestBody = {
+      offset: offset
+    }
+    
+    if (userId !== null) {
+      requestBody.user_id = userId
+    }
+    if (userType) {
+      requestBody.user_type = userType
+    }
+    if (accessType) {
+      requestBody.access_type = accessType
+    }
+    
+    console.log('[API] Fetching module accesses from:', url)
+
+    const response = await fetch(url, getFetchConfig('POST', requestBody))
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] Module Accesses API HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Module Accesses response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching module accesses:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
  * Fetch city list by state_id
  * Endpoint: POST /api/cityList (Welcome service - port 8005)
  */
@@ -3344,6 +3613,111 @@ export const saveIntake = async (intakeData) => {
       }
     }
     return { status: 0, msg: error.message || 'An error occurred while saving intake data' }
+  }
+}
+
+/**
+ * Fetch user intakes list
+ * Endpoint: POST /api/getIntakes (Communication service - port 8006)
+ */
+export const fetchIntakes = async (offset = 0, limit = 20) => {
+  try {
+    const user = getCurrentUser()
+    if (!user || !user.api_key || !user.user_uni_id) {
+      return { status: 0, data: [], msg: 'User not logged in' }
+    }
+
+    const url = `${COMMUNICATION_API}/getIntakes`
+    const requestBody = {
+      api_key: user.api_key,
+      user_uni_id: user.user_uni_id,
+      offset,
+      limit
+    }
+
+    console.log('[API] Fetching intakes:', { url, offset, limit })
+    const response = await fetch(url, getFetchConfig('POST', requestBody))
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] Fetch Intakes HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Fetch Intakes response:', { count: data.data?.length || 0, total: data.total })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching intakes:', error)
+    const errorMessage = error.message || String(error) || ''
+    const isConnectionError = errorMessage.includes('Failed to fetch') || 
+                             errorMessage.includes('ERR_CONNECTION_REFUSED') ||
+                             errorMessage.includes('NetworkError') ||
+                             errorMessage.includes('Network request failed') ||
+                             error.name === 'TypeError' && errorMessage.includes('fetch')
+    
+    if (isConnectionError) {
+      return { 
+        status: 0, 
+        data: [], 
+        msg: 'Communication service is not available.',
+        error_code: 'SERVICE_UNAVAILABLE'
+      }
+    }
+    return { status: 0, data: [], msg: error.message || 'An error occurred while fetching intakes' }
+  }
+}
+
+/**
+ * Fetch user chat histories (chat_channel_histories table)
+ * Endpoint: POST /api/getUserChatHistories (Communication service - port 8006)
+ */
+export const fetchUserChatHistories = async (offset = 0, limit = 20, channelName = '') => {
+  try {
+    const user = getCurrentUser()
+    if (!user || !user.api_key || !user.user_uni_id) {
+      return { status: 0, data: [], msg: 'User not logged in' }
+    }
+
+    const url = `${COMMUNICATION_API}/getUserChatHistories`
+    const requestBody = {
+      api_key: user.api_key,
+      user_uni_id: user.user_uni_id,
+      offset,
+      limit,
+      channel_name: channelName
+    }
+
+    console.log('[API] Fetching user chat histories:', { url, offset, limit, channelName })
+    const response = await fetch(url, getFetchConfig('POST', requestBody))
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] Fetch Chat Histories HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Fetch Chat Histories response:', { count: data.data?.length || 0, total: data.total })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching chat histories:', error)
+    const errorMessage = error.message || String(error) || ''
+    const isConnectionError = errorMessage.includes('Failed to fetch') || 
+                             errorMessage.includes('ERR_CONNECTION_REFUSED') ||
+                             errorMessage.includes('NetworkError') ||
+                             errorMessage.includes('Network request failed') ||
+                             error.name === 'TypeError' && errorMessage.includes('fetch')
+    
+    if (isConnectionError) {
+      return { 
+        status: 0, 
+        data: [], 
+        msg: 'Communication service is not available.',
+        error_code: 'SERVICE_UNAVAILABLE'
+      }
+    }
+    return { status: 0, data: [], msg: error.message || 'An error occurred while fetching chat histories' }
   }
 }
 
@@ -6847,6 +7221,82 @@ export const fetchOffers = async (filters = {}) => {
 }
 
 // ============================================
+// PAID KUNDLI ORDERS APIs (Port 8007)
+// ============================================
+
+/**
+ * Fetch paid kundli orders list
+ * Endpoint: POST /api/paidKundliOrderList (Product service - port 8007)
+ */
+export const fetchPaidKundliOrders = async (orderFor = '') => {
+  try {
+    const user = getCurrentUser()
+    if (!user || !user.api_key || !user.user_uni_id) {
+      return { status: 0, data: [], msg: 'User not logged in' }
+    }
+
+    const url = `${PRODUCT_API}/paidKundliOrderList`
+    const requestBody = {
+      api_key: user.api_key,
+      user_uni_id: user.user_uni_id,
+      order_for: orderFor
+    }
+
+    console.log('[API] Fetching paid kundli orders:', { url, orderFor })
+    const response = await fetch(url, getFetchConfig('POST', requestBody))
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] Fetch Paid Kundli Orders HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Fetch Paid Kundli Orders response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching paid kundli orders:', error)
+    return { status: 0, data: [], msg: error.message || 'An error occurred while fetching paid kundli orders' }
+  }
+}
+
+/**
+ * Fetch paid kundli manual orders list
+ * Endpoint: POST /api/paidKundliManualOrderList (Product service - port 8007)
+ */
+export const fetchPaidKundliManualOrders = async (orderFor = '') => {
+  try {
+    const user = getCurrentUser()
+    if (!user || !user.api_key || !user.user_uni_id) {
+      return { status: 0, data: [], msg: 'User not logged in' }
+    }
+
+    const url = `${PRODUCT_API}/paidKundliManualOrderList`
+    const requestBody = {
+      api_key: user.api_key,
+      user_uni_id: user.user_uni_id,
+      order_for: orderFor
+    }
+
+    console.log('[API] Fetching paid kundli manual orders:', { url, orderFor })
+    const response = await fetch(url, getFetchConfig('POST', requestBody))
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] Fetch Paid Kundli Manual Orders HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Fetch Paid Kundli Manual Orders response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching paid kundli manual orders:', error)
+    return { status: 0, data: [], msg: error.message || 'An error occurred while fetching paid kundli manual orders' }
+  }
+}
+
+// ============================================
 // QUOTES APIs (Port 8007)
 // ============================================
 
@@ -6913,6 +7363,357 @@ export const fetchNotifications = async (offset = 0) => {
     return data
   } catch (error) {
     console.error('[API] fetchNotifications error:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Fetch notify logs from backend
+ * Endpoint: POST /api/notifyLogList (Welcome service - port 8005)
+ */
+export const fetchNotifyLogs = async (offset = 0, type = '', status = '') => {
+  try {
+    const user = getCurrentUser()
+    const apiKey = getUserApiKey(user)
+    const userId = user?.user_uni_id || user?.customer_uni_id || ''
+
+    const requestBody = {
+      api_key: apiKey || '',
+      user_uni_id: userId || '',
+      offset: offset
+    }
+
+    if (type) {
+      requestBody.type = type
+    }
+    if (status) {
+      requestBody.status = status
+    }
+
+    console.log('[API] Fetching notify logs from:', `${WELCOME_API}/notifyLogList`)
+
+    const response = await fetch(`${WELCOME_API}/notifyLogList`, getFetchConfig('POST', requestBody))
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('[API] Notify logs response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] fetchNotifyLogs error:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Fetch offline service categories from backend
+ * Endpoint: POST /api/offlineServiceCategoryList (Welcome service - port 8005)
+ */
+export const fetchOfflineServiceCategories = async (offset = 0, parentId = null, search = '') => {
+  try {
+    const requestBody = {
+      offset: offset
+    }
+
+    if (parentId !== null) {
+      requestBody.parent_id = parentId
+    }
+    if (search) {
+      requestBody.search = search
+    }
+
+    console.log('[API] Fetching offline service categories from:', `${WELCOME_API}/offlineServiceCategoryList`)
+
+    const response = await fetch(`${WELCOME_API}/offlineServiceCategoryList`, getFetchConfig('POST', requestBody))
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('[API] Offline service categories response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] fetchOfflineServiceCategories error:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Fetch offline service assigns from backend
+ * Endpoint: POST /api/offlineServiceAssignList (Welcome service - port 8005)
+ */
+export const fetchOfflineServiceAssigns = async (offset = 0, categoryId = null, astrologerUniId = '') => {
+  try {
+    const requestBody = {
+      offset: offset
+    }
+
+    if (categoryId !== null) {
+      requestBody.offline_service_category_id = categoryId
+    }
+    if (astrologerUniId) {
+      requestBody.astrologer_uni_id = astrologerUniId
+    }
+
+    console.log('[API] Fetching offline service assigns from:', `${WELCOME_API}/offlineServiceAssignList`)
+
+    const response = await fetch(`${WELCOME_API}/offlineServiceAssignList`, getFetchConfig('POST', requestBody))
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('[API] Offline service assigns response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] fetchOfflineServiceAssigns error:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Fetch offline service galleries from backend
+ * Endpoint: POST /api/offlineServiceGalleryList (Welcome service - port 8005)
+ */
+export const fetchOfflineServiceGalleries = async (offset = 0, offlineServiceId = null) => {
+  try {
+    const requestBody = {
+      offset: offset
+    }
+
+    if (offlineServiceId !== null) {
+      requestBody.offline_service_id = offlineServiceId
+    }
+
+    console.log('[API] Fetching offline service galleries from:', `${WELCOME_API}/offlineServiceGalleryList`)
+
+    const response = await fetch(`${WELCOME_API}/offlineServiceGalleryList`, getFetchConfig('POST', requestBody))
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('[API] Offline service galleries response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] fetchOfflineServiceGalleries error:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Fetch offline service orders from backend
+ * Endpoint: POST /api/offlineServiceOrderList (Welcome service - port 8005)
+ */
+export const fetchOfflineServiceOrders = async (offset = 0, orderStatus = '', paymentStatus = '') => {
+  try {
+    const user = getCurrentUser()
+    const apiKey = getUserApiKey(user)
+    const userId = user?.user_uni_id || user?.customer_uni_id || ''
+
+    const requestBody = {
+      api_key: apiKey || '',
+      user_uni_id: userId || '',
+      offset: offset
+    }
+
+    if (orderStatus) {
+      requestBody.order_status = orderStatus
+    }
+    if (paymentStatus) {
+      requestBody.payment_status = paymentStatus
+    }
+
+    console.log('[API] Fetching offline service orders from:', `${WELCOME_API}/offlineServiceOrderList`)
+
+    const response = await fetch(`${WELCOME_API}/offlineServiceOrderList`, getFetchConfig('POST', requestBody))
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('[API] Offline service orders response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] fetchOfflineServiceOrders error:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Fetch OpenAI predictions from backend
+ * Endpoint: POST /api/openAiPredictionList (Welcome service - port 8005)
+ */
+export const fetchOpenAiPredictions = async (offset = 0, messageType = '') => {
+  try {
+    const user = getCurrentUser()
+    const apiKey = getUserApiKey(user)
+    const userId = user?.user_uni_id || user?.customer_uni_id || ''
+
+    const requestBody = {
+      api_key: apiKey || '',
+      user_uni_id: userId || '',
+      offset: offset
+    }
+
+    if (messageType) {
+      requestBody.message_type = messageType
+    }
+
+    console.log('[API] Fetching OpenAI predictions from:', `${WELCOME_API}/openAiPredictionList`)
+
+    const response = await fetch(`${WELCOME_API}/openAiPredictionList`, getFetchConfig('POST', requestBody))
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('[API] OpenAI predictions response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] fetchOpenAiPredictions error:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Fetch OpenAI profiles from backend
+ * Endpoint: POST /api/openAiProfileList (Welcome service - port 8005)
+ */
+export const fetchOpenAiProfiles = async (offset = 0) => {
+  try {
+    const user = getCurrentUser()
+    const apiKey = getUserApiKey(user)
+    const userId = user?.user_uni_id || user?.customer_uni_id || ''
+
+    const requestBody = {
+      api_key: apiKey || '',
+      user_uni_id: userId || '',
+      offset: offset
+    }
+
+    console.log('[API] Fetching OpenAI profiles from:', `${WELCOME_API}/openAiProfileList`)
+
+    const response = await fetch(`${WELCOME_API}/openAiProfileList`, getFetchConfig('POST', requestBody))
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('[API] OpenAI profiles response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] fetchOpenAiProfiles error:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Fetch orders from backend
+ * Endpoint: POST /api/orderList (Welcome service - port 8005)
+ */
+export const fetchOrders = async (offset = 0, status = '', paymentStatus = '') => {
+  try {
+    const user = getCurrentUser()
+    const apiKey = getUserApiKey(user)
+    const userId = user?.user_uni_id || user?.customer_uni_id || ''
+
+    const requestBody = {
+      api_key: apiKey || '',
+      user_uni_id: userId || '',
+      offset: offset
+    }
+
+    if (status) {
+      requestBody.status = status
+    }
+    if (paymentStatus) {
+      requestBody.payment_status = paymentStatus
+    }
+
+    console.log('[API] Fetching orders from:', `${WELCOME_API}/orderList`)
+
+    const response = await fetch(`${WELCOME_API}/orderList`, getFetchConfig('POST', requestBody))
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('[API] Orders response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] fetchOrders error:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Fetch our services from backend
+ * Endpoint: POST /api/ourServiceList (Welcome service - port 8005)
+ */
+export const fetchOurServices = async (offset = 0, slug = '') => {
+  try {
+    const requestBody = {
+      offset: offset
+    }
+
+    if (slug) {
+      requestBody.slug = slug
+    }
+
+    console.log('[API] Fetching our services from:', `${WELCOME_API}/ourServiceList`)
+
+    const response = await fetch(`${WELCOME_API}/ourServiceList`, getFetchConfig('POST', requestBody))
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('[API] Our services response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] fetchOurServices error:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Fetch packages from backend
+ * Endpoint: POST /api/packageList (Welcome service - port 8005)
+ */
+export const fetchPackages = async (offset = 0, packageType = '') => {
+  try {
+    const requestBody = {
+      offset: offset
+    }
+
+    if (packageType) {
+      requestBody.package_type = packageType
+    }
+
+    console.log('[API] Fetching packages from:', `${WELCOME_API}/packageList`)
+
+    const response = await fetch(`${WELCOME_API}/packageList`, getFetchConfig('POST', requestBody))
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('[API] Packages response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] fetchPackages error:', error)
     return { status: 0, data: [], msg: error.message }
   }
 }

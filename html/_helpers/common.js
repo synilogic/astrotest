@@ -9103,9 +9103,80 @@ export const saveIntake = async (attributes) => {
   }
 };
 
+export const getIntakes = async (user_uni_id, offset = 0, limit = 20) => {
+  try {
+    const intakes = await Intake.findAndCountAll({
+      where: { 
+        user_uni_id: user_uni_id,
+        status: 1 
+      },
+      order: [['created_at', 'DESC']],
+      offset: parseInt(offset),
+      limit: parseInt(limit)
+    });
 
+    return {
+      status: 1,
+      data: intakes.rows,
+      total: intakes.count,
+      offset: parseInt(offset) + intakes.rows.length,
+      msg: "Intakes fetched successfully"
+    };
+  } catch (err) {
+    console.error("Error in getIntakes:", err);
+    return {
+      status: 0,
+      data: [],
+      total: 0,
+      msg: "Something went wrong while fetching intakes"
+    };
+  }
+};
 
+export const getUserChatHistories = async (user_uni_id, offset = 0, limit = 20, channel_name = '') => {
+  try {
+    const ChatChannelHistory = (await import('../_models/chatChannelHistoryModel.js')).default;
+    
+    const whereCondition = { 
+      user_uni_id: user_uni_id,
+      trash: 0
+    };
+    
+    // If channel_name is provided, filter by it
+    if (channel_name && channel_name.trim() !== '') {
+      whereCondition.channel_name = channel_name;
+    }
 
+    const histories = await ChatChannelHistory.findAndCountAll({
+      where: whereCondition,
+      order: [['created_at', 'DESC']],
+      offset: parseInt(offset),
+      limit: parseInt(limit),
+      attributes: [
+        'id', 'parent_id', 'channel_name', 'user_uni_id', 'uniqeid',
+        'message', 'selected_text', 'selected_type', 'file_url',
+        'call_type', 'message_type', 'is_assistant_chat', 'status',
+        'created_at', 'updated_at'
+      ]
+    });
+
+    return {
+      status: 1,
+      data: histories.rows,
+      total: histories.count,
+      offset: parseInt(offset) + histories.rows.length,
+      msg: "Chat histories fetched successfully"
+    };
+  } catch (err) {
+    console.error("Error in getUserChatHistories:", err);
+    return {
+      status: 0,
+      data: [],
+      total: 0,
+      msg: "Something went wrong while fetching chat histories"
+    };
+  }
+};
 
 export const cronRefreshCall = async () => {
   try {
