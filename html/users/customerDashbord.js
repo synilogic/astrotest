@@ -82,6 +82,7 @@ router.post("/customerEdit", upload.any(), async (req, res) => {
       longitude: Joi.string().optional().allow(null, ""),
       gender: Joi.string().required(),
       customer_img: Joi.string().optional().allow(null, ""),
+      cover_img: Joi.string().optional().allow(null, ""),
       city: Joi.string().optional().allow(null, ""),
       state: Joi.string().optional().allow(null, ""),
       country: Joi.string().optional().allow(null, ""),
@@ -285,6 +286,7 @@ router.post("/customerEdit", upload.any(), async (req, res) => {
       longitude: attributes.longitude || "",
       time_zone: attributes.time_zone || "",
       customer_img: attributes.customer_img || customer?.customer_img || "https://astro.synilogictech.com/uploads/offlne_service_category/1724738665-image.jpeg",
+      cover_img: attributes.cover_img || customer?.cover_img || "",
     };
 
     // Safely check process_status (handle null/undefined)
@@ -400,6 +402,7 @@ router.post("/customerEdit", upload.any(), async (req, res) => {
        customer_img: data.customer_img
   ? `${req.protocol}://${req.get("host")}/uploads/customers/${data.customer_img}`
   : "https://karmleela.com/assets/img/customer.png",
+        cover_img: data.cover_img || "",
         longitude: data.longitude || "",
         birth_place: data.birth_place || "",
         birth_time: data.birth_time,
@@ -791,7 +794,8 @@ if (userUniId) {
        birth_place: customer.birth_place || '',
        customer_img: customer.customer_img
          ? `${basePath}${customerImgPath}${customer.customer_img}`
-         : `${basePath}${defaultCustomerImgPath}`
+         : `${basePath}${defaultCustomerImgPath}`,
+       cover_img: customer.cover_img || ''
      };
    }
  } catch (err) {
@@ -824,6 +828,95 @@ if (userUniId) {
       status: 0,
       msg: "Something went wrong",
       error: error.message || 'Unknown error',
+    });
+  }
+});
+
+/**
+ * Get Connected Users for a customer
+ * Returns list of astrologers/users the customer has connected with
+ */
+router.post("/getConnectedUsers", upload.none(), async (req, res) => {
+  const schema = Joi.object({
+    api_key: Joi.string().required(),
+    user_uni_id: Joi.string().required(),
+    offset: Joi.number().optional().default(0),
+    limit: Joi.number().optional().default(20),
+  });
+
+  const { error, value } = schema.validate(req.body);
+
+  if (error) {
+    return res.json({
+      status: 0,
+      errors: error.details,
+      msg: error.details.map((d) => d.message).join("\n"),
+    });
+  }
+
+  const { api_key, user_uni_id, offset, limit } = value;
+
+  if (!(await checkUserApiKey(api_key, user_uni_id))) {
+    return res.json({
+      status: 0,
+      error_code: 101,
+      msg: "Unauthorized User... Please login again",
+    });
+  }
+
+  try {
+    const { default: ConnectedUsers } = await import("../_models/connectedUsers.js");
+    const { default: Astrologer } = await import("../_models/astrologers.js");
+
+    const connectedUsers = await ConnectedUsers.findAll({
+      where: { user_id: user_uni_id },
+      order: [['updated_at', 'DESC']],
+      offset: parseInt(offset),
+      limit: parseInt(limit),
+    });
+
+    // Get astrologer details for each connected user
+    const connectedWithDetails = await Promise.all(
+      connectedUsers.map(async (cu) => {
+        const astrologer = await Astrologer.findOne({
+          where: { astrologer_uni_id: cu.astrologer_uni_id },
+          attributes: ['id', 'astrologer_uni_id', 'display_name', 'profile_img', 'experience', 'ratings'],
+        });
+        return {
+          id: cu.id,
+          astrologer_uni_id: cu.astrologer_uni_id,
+          user_id: cu.user_id,
+          status: cu.status,
+          created_at: cu.created_at,
+          updated_at: cu.updated_at,
+          astrologer: astrologer ? {
+            display_name: astrologer.display_name,
+            profile_img: astrologer.profile_img,
+            experience: astrologer.experience,
+            ratings: astrologer.ratings,
+          } : null,
+        };
+      })
+    );
+
+    const totalCount = await ConnectedUsers.count({
+      where: { user_id: user_uni_id },
+    });
+
+    return res.json({
+      status: 1,
+      msg: "Connected users fetched successfully",
+      data: connectedWithDetails,
+      total: totalCount,
+      offset: offset,
+      limit: limit,
+    });
+  } catch (error) {
+    console.error("getConnectedUsers error:", error);
+    return res.status(500).json({
+      status: 0,
+      msg: "Something went wrong",
+      error: error.message,
     });
   }
 });

@@ -5022,6 +5022,541 @@ export const getFileOnCall = async (uniqeid) => {
 }
 
 /**
+ * Get connected users for a customer
+ * Returns list of astrologers the customer has connected with
+ * Endpoint: POST /api/getConnectedUsers (Users service - port 8001)
+ */
+export const getConnectedUsers = async (offset = 0, limit = 20) => {
+  try {
+    const user = getCurrentUser()
+    if (!user || !user.user_uni_id) {
+      return { status: 0, data: [], msg: 'User not logged in' }
+    }
+
+    const apiKey = getUserApiKey(user)
+    if (!apiKey) {
+      console.error('[API] getConnectedUsers: Failed to get API key')
+      return { status: 0, data: [], msg: 'Authentication error' }
+    }
+
+    const url = `${API_BASE_URL}/getConnectedUsers`
+    const requestBody = {
+      api_key: apiKey,
+      user_uni_id: user.user_uni_id,
+      offset,
+      limit
+    }
+
+    console.log('[API] Fetching connected users:', { offset, limit })
+    const response = await fetch(url, getFetchConfig('POST', requestBody))
+    
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] getConnectedUsers HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Connected users response:', { status: data.status, count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching connected users:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Submit Contact Form
+ * Public API - No authentication required
+ * Endpoint: POST /api/submitContact (Welcome service - port 8005)
+ */
+export const submitContactForm = async (contactData) => {
+  try {
+    const { name, email, number, subject, message } = contactData
+
+    if (!name || !email || !subject || !message) {
+      return { status: 0, msg: 'Please fill all required fields' }
+    }
+
+    const url = `${WELCOME_API}/submitContact`
+    const requestBody = {
+      name,
+      email,
+      number: number || '',
+      subject,
+      message
+    }
+
+    console.log('[API] Submitting contact form:', { name, email, subject })
+    const response = await fetch(url, getFetchConfig('POST', requestBody))
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] submitContactForm HTTP error:', response.status, errorText)
+      return { status: 0, msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Contact form response:', data)
+    return data
+  } catch (error) {
+    console.error('[API] Error submitting contact form:', error)
+    return { status: 0, msg: error.message }
+  }
+}
+
+/**
+ * Get Contact Departments
+ * Public API - No authentication required
+ * Endpoint: POST /api/getContactDepartments (Welcome service - port 8005)
+ */
+export const getContactDepartments = async () => {
+  try {
+    const url = `${WELCOME_API}/getContactDepartments`
+
+    const response = await fetch(url, getFetchConfig('POST', {}))
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] getContactDepartments HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Contact departments response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching contact departments:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Get Cover Images
+ * Public API - No authentication required
+ * Endpoint: POST /api/getCoverImages (Welcome service - port 8005)
+ */
+export const getCoverImages = async () => {
+  try {
+    const url = `${WELCOME_API}/getCoverImages`
+
+    const response = await fetch(url, getFetchConfig('POST', {}))
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] getCoverImages HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Cover images response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching cover images:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Get Currencies List
+ * Public API - No authentication required
+ * Endpoint: POST /api/getCurrencies (Welcome service - port 8005)
+ */
+export const getCurrencies = async () => {
+  try {
+    const url = `${WELCOME_API}/getCurrencies`
+
+    const response = await fetch(url, getFetchConfig('POST', {}))
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] getCurrencies HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Currencies response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching currencies:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Get Customer Refunds
+ * Requires authentication
+ * Endpoint: POST /api/getCustomerRefunds (Welcome service - port 8005)
+ */
+export const getCustomerRefunds = async (offset = 0, limit = 20) => {
+  try {
+    const user = getCurrentUser()
+    if (!user || !user.user_uni_id) {
+      return { status: 0, data: [], msg: 'User not logged in' }
+    }
+
+    const apiKey = getUserApiKey(user)
+    if (!apiKey) {
+      return { status: 0, data: [], msg: 'API key not found for user' }
+    }
+
+    const url = `${WELCOME_API}/getCustomerRefunds`
+    const requestBody = {
+      api_key: apiKey,
+      user_uni_id: user.user_uni_id,
+      offset,
+      limit
+    }
+
+    const response = await fetch(url, getFetchConfig('POST', requestBody))
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] getCustomerRefunds HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Customer refunds response:', { count: data.data?.length || 0, total: data.total })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching customer refunds:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Get Departments List
+ * Public API - No authentication required
+ * Endpoint: POST /api/getDepartments (Welcome service - port 8005)
+ */
+export const getDepartments = async () => {
+  try {
+    const url = `${WELCOME_API}/getDepartments`
+
+    const response = await fetch(url, getFetchConfig('POST', {}))
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] getDepartments HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Departments response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching departments:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Get Email Templates List
+ * Public API - No authentication required
+ * Endpoint: POST /api/getEmailTemplates (Welcome service - port 8005)
+ */
+export const getEmailTemplates = async () => {
+  try {
+    const url = `${WELCOME_API}/getEmailTemplates`
+
+    const response = await fetch(url, getFetchConfig('POST', {}))
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] getEmailTemplates HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Email templates response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching email templates:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Get FAQs List
+ * Public API - No authentication required
+ * Endpoint: POST /api/getFaqs (Welcome service - port 8005)
+ */
+export const getFaqs = async (faqCategoryId = null) => {
+  try {
+    const url = `${WELCOME_API}/getFaqs`
+    const requestBody = {}
+    if (faqCategoryId) {
+      requestBody.faq_category_id = faqCategoryId
+    }
+
+    const response = await fetch(url, getFetchConfig('POST', requestBody))
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] getFaqs HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] FAQs response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching FAQs:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Get FAQ Categories List
+ * Public API - No authentication required
+ * Endpoint: POST /api/getFaqCategories (Welcome service - port 8005)
+ */
+export const getFaqCategories = async () => {
+  try {
+    const url = `${WELCOME_API}/getFaqCategories`
+
+    const response = await fetch(url, getFetchConfig('POST', {}))
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] getFaqCategories HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] FAQ categories response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching FAQ categories:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Get Followers List
+ * Requires authentication
+ * Endpoint: POST /api/getFollowers (Welcome service - port 8005)
+ */
+export const getFollowers = async (page = 1, limit = 20) => {
+  try {
+    const user = getCurrentUser()
+    if (!user || !user.user_uni_id) {
+      return { status: 0, data: [], msg: 'User not logged in' }
+    }
+
+    const apiKey = getUserApiKey(user)
+    if (!apiKey) {
+      return { status: 0, data: [], msg: 'API key not found for user' }
+    }
+
+    const url = `${WELCOME_API}/getFollowers`
+    const requestBody = {
+      api_key: apiKey,
+      user_uni_id: user.user_uni_id,
+      page,
+      page_limit: limit
+    }
+
+    const response = await fetch(url, getFetchConfig('POST', requestBody))
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] getFollowers HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Followers response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching followers:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Get Gifts List (Gift Items available for sending)
+ * Requires authentication
+ * Endpoint: POST /api/giftItem (Astrologer service - port 8002)
+ */
+export const getGifts = async () => {
+  try {
+    const user = getCurrentUser()
+    if (!user || !user.user_uni_id) {
+      return { status: 0, data: [], msg: 'User not logged in' }
+    }
+
+    const apiKey = getUserApiKey(user)
+    if (!apiKey) {
+      return { status: 0, data: [], msg: 'API key not found for user' }
+    }
+
+    const url = `${API_BASE_URL}/giftItem`
+    const requestBody = {
+      api_key: apiKey,
+      user_uni_id: user.user_uni_id
+    }
+
+    const response = await fetch(url, getFetchConfig('POST', requestBody))
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] getGifts HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Gifts response:', { count: data.data?.length || 0, wallet_balance: data.wallet_balance })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching gifts:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Get Group Pujas List
+ * Public API - No authentication required
+ * Endpoint: POST /api/getGroupPujas (Welcome service - port 8005)
+ */
+export const getGroupPujas = async (categoryId = null, page = 1, limit = 20) => {
+  try {
+    const url = `${WELCOME_API}/getGroupPujas`
+    const requestBody = { page, limit }
+    if (categoryId) {
+      requestBody.group_puja_category_id = categoryId
+    }
+
+    const response = await fetch(url, getFetchConfig('POST', requestBody))
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] getGroupPujas HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Group pujas response:', { count: data.data?.length || 0, total: data.total })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching group pujas:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Get Group Puja Assignments
+ * Public API - No authentication required
+ * Endpoint: POST /api/getGroupPujaAssigns (Welcome service - port 8005)
+ */
+export const getGroupPujaAssigns = async (filters = {}) => {
+  try {
+    const url = `${WELCOME_API}/getGroupPujaAssigns`
+    const requestBody = {
+      page: filters.page || 1,
+      limit: filters.limit || 20
+    }
+    if (filters.group_puja_id) {
+      requestBody.group_puja_id = filters.group_puja_id
+    }
+    if (filters.astrologer_uni_id) {
+      requestBody.astrologer_uni_id = filters.astrologer_uni_id
+    }
+
+    const response = await fetch(url, getFetchConfig('POST', requestBody))
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] getGroupPujaAssigns HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Group puja assigns response:', { count: data.data?.length || 0, total: data.total })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching group puja assigns:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Get Group Puja Categories
+ * Public API - No authentication required
+ * Endpoint: POST /api/getGroupPujaCategories (Welcome service - port 8005)
+ */
+export const getGroupPujaCategories = async (parentId = null) => {
+  try {
+    const url = `${WELCOME_API}/getGroupPujaCategories`
+    const requestBody = {}
+    if (parentId !== null) {
+      requestBody.parent_id = parentId
+    }
+
+    const response = await fetch(url, getFetchConfig('POST', requestBody))
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] getGroupPujaCategories HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Group puja categories response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching group puja categories:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Get Group Puja Orders (Customer's puja bookings)
+ * Requires authentication
+ * Endpoint: POST /api/getGroupPujaOrders (Welcome service - port 8005)
+ */
+export const getGroupPujaOrders = async (filters = {}) => {
+  try {
+    const user = getCurrentUser()
+    if (!user || !user.user_uni_id) {
+      return { status: 0, data: [], msg: 'User not logged in' }
+    }
+
+    const apiKey = getUserApiKey(user)
+    if (!apiKey) {
+      return { status: 0, data: [], msg: 'API key not found for user' }
+    }
+
+    const url = `${WELCOME_API}/getGroupPujaOrders`
+    const requestBody = {
+      api_key: apiKey,
+      user_uni_id: user.user_uni_id,
+      page: filters.page || 1,
+      limit: filters.limit || 20
+    }
+    if (filters.status) {
+      requestBody.status = filters.status
+    }
+
+    const response = await fetch(url, getFetchConfig('POST', requestBody))
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] getGroupPujaOrders HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Group puja orders response:', { count: data.data?.length || 0, total: data.total })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching group puja orders:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
  * Get product calculation details (price breakdown, GST, wallet deduction, etc.)
  * Endpoint: POST /api/productCalculation (Product service - port 8007)
  */

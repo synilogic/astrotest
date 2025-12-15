@@ -39,6 +39,10 @@ const CustomerModel = sequelize.define('customers', {
     type: DataTypes.STRING(255),
     allowNull: true
   },
+  cover_img: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  },
   longitude: {
     type: DataTypes.STRING(50),
     allowNull: true

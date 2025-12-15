@@ -5318,6 +5318,479 @@ object-fit: contain;
   transform: none;
 }
 
+/* Contact Form Alert Messages */
+.react-contact-alert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.react-contact-alert i {
+  font-size: 1.2rem;
+}
+
+.react-contact-alert-success {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+  border: 1px solid #10b981;
+  color: #059669;
+}
+
+.react-contact-alert-error {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+  border: 1px solid #ef4444;
+  color: #dc2626;
+}
+
+/* Contact Form Select Dropdown */
+.react-contact-select {
+  width: 100%;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: inherit;
+  background: white;
+  color: #1e293b;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  transition: all 0.2s ease;
+}
+
+.react-contact-select:focus {
+  outline: none;
+  border-color: var(--react-primary);
+  box-shadow: 0 0 0 3px rgba(238, 90, 36, 0.1);
+}
+
+.react-contact-select:disabled {
+  background-color: #f1f5f9;
+  cursor: not-allowed;
+}
+
+.react-contact-select-label {
+  position: absolute;
+  top: -10px;
+  left: 12px;
+  background: white;
+  padding: 0 6px;
+  font-size: 0.85rem;
+  color: var(--react-primary);
+  font-weight: 500;
+}
+
+/* Courses Grid Styles */
+.react-courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem 0;
+}
+
+.react-course-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.react-course-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+}
+
+.react-course-image {
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.react-course-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.react-course-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 3rem;
+}
+
+.react-course-content {
+  padding: 1.25rem;
+}
+
+.react-course-content h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.react-course-description {
+  font-size: 0.9rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  min-height: 45px;
+}
+
+.react-course-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.react-course-price {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--react-primary, #ee5a24);
+  margin-right: auto;
+}
+
+.react-course-video-btn,
+.react-course-whatsapp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.react-course-video-btn {
+  background: linear-gradient(135deg, #ee5a24, #f39c12);
+  color: white;
+}
+
+.react-course-video-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(238, 90, 36, 0.4);
+}
+
+.react-course-whatsapp-btn {
+  background: #25d366;
+  color: white;
+}
+
+.react-course-whatsapp-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+}
+
+@media (max-width: 768px) {
+  .react-courses-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .react-course-image {
+    height: 150px;
+  }
+}
+
+/* Courses Toggle Buttons */
+.react-courses-toggle {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.react-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  color: #64748b;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.react-toggle-btn:hover {
+  border-color: var(--react-primary, #ee5a24);
+  color: var(--react-primary, #ee5a24);
+}
+
+.react-toggle-btn.active {
+  background: linear-gradient(135deg, #ee5a24, #f39c12);
+  border-color: #ee5a24;
+  color: white;
+}
+
+.react-toggle-btn i {
+  font-size: 1rem;
+}
+
+/* Order ID Badge */
+.react-order-id {
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 0.85rem;
+  background: #f1f5f9;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+/* Discount Style */
+.react-discount {
+  color: #10b981;
+  font-weight: 500;
+}
+
+/* Total Amount Style */
+.react-total-amount {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* Status Badge */
+.react-status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.react-status-badge.success {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.react-status-badge.pending {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.react-status-badge.failed {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* Primary Button */
+.react-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #ee5a24, #f39c12);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 1rem;
+}
+
+.react-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(238, 90, 36, 0.4);
+}
+
+/* Type Badge */
+.react-type-badge {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+/* Message Cell */
+.react-message-cell {
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Profile Cover Image Styles */
+.react-user-profile-header-wrapper {
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.react-profile-cover {
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 12px 12px 0 0;
+  position: relative;
+}
+
+.react-cover-change-btn {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.react-cover-change-btn:hover {
+  background: rgba(0, 0, 0, 0.8);
+  transform: scale(1.05);
+}
+
+.react-cover-selector {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.react-cover-selector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.react-cover-selector-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #1e293b;
+}
+
+.react-close-btn {
+  background: #f1f5f9;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.react-close-btn:hover {
+  background: #e2e8f0;
+}
+
+.react-cover-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.react-cover-option {
+  position: relative;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.react-cover-option:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.react-cover-option.selected {
+  border-color: var(--react-primary, #ee5a24);
+}
+
+.react-cover-option img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.react-cover-selected-badge {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 24px;
+  height: 24px;
+  background: var(--react-primary, #ee5a24);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.75rem;
+}
+
+.react-no-covers {
+  text-align: center;
+  color: #64748b;
+  padding: 2rem;
+}
+
+.react-user-profile-header-wrapper .react-user-profile-header {
+  background: white;
+  border-radius: 0 0 12px 12px;
+  margin-top: -40px;
+  margin-left: 20px;
+  margin-right: 20px;
+  padding: 1.5rem;
+  position: relative;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .react-profile-cover {
+    height: 150px;
+  }
+  
+  .react-cover-change-btn span {
+    display: none;
+  }
+  
+  .react-cover-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+  
+  .react-cover-option {
+    height: 60px;
+  }
+}
+
 /* Desktop optimized responsive design */
 @media (max-width: 768px) {
   .react-contact-contact-wrapper {
@@ -6398,21 +6871,20 @@ object-fit: contain;
   margin-top: 0.5rem;
 }
 
-/* Tab Navigation */
+/* Tab Navigation - Grid Layout for All Tabs Visible */
 .react-tab-navigation {
   background: var(--react-card-bg);
   border-radius: 12px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   margin-bottom: 2rem;
-  overflow: hidden;
+  padding: 1rem;
 }
 
 .react-tab-container {
   display: flex;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  -webkit-overflow-scrolling: touch;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-start;
 }
 
 .react-tab-container::-webkit-scrollbar {
@@ -6423,32 +6895,36 @@ object-fit: contain;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1rem 1.5rem;
-  border: none;
-  border-top-left-radius: 5px;
-  border-top-right-radius: 5px;
-  background: none;
-  color: var(--react-text-secondary);
+  justify-content: center;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #64748b;
   font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
-  transition: var(--react-transition);
+  transition: all 0.2s ease;
   position: relative;
-  min-height: var(--react-mobile-touch-target);
-  -webkit-tap-highlight-color: transparent;
-  white-space: nowrap;
-  flex-shrink: 0;
-  min-width: 80px;
+  min-height: 70px;
+  min-width: 90px;
+  flex: 0 0 auto;
 }
 
 .react-tab-item:hover {
-  background: var(--react-muted);
-  color: var(--react-text-primary);
+  background: linear-gradient(135deg, #ee5a24, #f39c12);
+  color: white;
+  border-color: #ee5a24;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(238, 90, 36, 0.3);
 }
 
 .react-tab-item.active {
-  background: linear-gradient(135deg, var(--react-primary), var(--react-astro-indigo));
+  background: linear-gradient(135deg, #ee5a24, #8b5cf6);
   color: white;
+  border-color: #ee5a24;
+  box-shadow: 0 4px 15px rgba(238, 90, 36, 0.4);
+  transform: translateY(-1px);
 }
 
 /* .react-tab-item.active::after {
@@ -6462,15 +6938,23 @@ object-fit: contain;
 } */
 
 .react-tab-item i {
-  font-size: 1.25rem;
-  margin-bottom: 0.25rem;
+  font-size: 1.2rem;
+  margin-bottom: 0.35rem;
+  transition: transform 0.2s ease;
+}
+
+.react-tab-item:hover i {
+  transform: scale(1.1);
 }
 
 .react-tab-label {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 600;
   text-align: center;
   line-height: 1.2;
+  max-width: 80px;
+  word-wrap: break-word;
+  white-space: normal;
 }
 
 /* Main Content Styles */
@@ -7343,11 +7827,17 @@ object-fit: contain;
   
   .react-tab-navigation {
     margin-bottom: 1rem;
+    padding: 0.75rem;
+  }
+  
+  .react-tab-container {
+    gap: 0.4rem;
   }
   
   .react-tab-item {
-    padding: 0.75rem 1rem;
+    padding: 0.6rem 0.75rem;
     min-width: 70px;
+    min-height: 60px;
   }
   
   .react-tab-item i {
@@ -7355,7 +7845,7 @@ object-fit: contain;
   }
   
   .react-tab-label {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
   }
   
   .react-account-content {
@@ -7474,17 +7964,22 @@ object-fit: contain;
     padding: 0.2rem 0.5rem;
   }
   
+  .react-tab-container {
+    gap: 0.35rem;
+  }
+  
   .react-tab-item {
-    padding: 0.6rem 0.75rem;
-    min-width: 60px;
+    padding: 0.5rem 0.6rem;
+    min-width: 55px;
+    min-height: 55px;
   }
   
   .react-tab-item i {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
   
   .react-tab-label {
-    font-size: 0.6rem;
+    font-size: 0.55rem;
   }
   
   .react-account-content {
@@ -7656,17 +8151,27 @@ object-fit: contain;
     font-size: 0.7rem;
   }
   
+  .react-tab-navigation {
+    padding: 0.5rem;
+  }
+  
+  .react-tab-container {
+    gap: 0.3rem;
+  }
+  
   .react-tab-item {
-    padding: 0.5rem 0.5rem;
-    min-width: 50px;
+    padding: 0.4rem 0.5rem;
+    min-width: 48px;
+    min-height: 50px;
   }
   
   .react-tab-item i {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
+    margin-bottom: 0.2rem;
   }
   
   .react-tab-label {
-    font-size: 0.55rem;
+    font-size: 0.5rem;
   }
   
   .react-account-content {

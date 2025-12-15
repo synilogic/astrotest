@@ -4819,5 +4819,721 @@ router.post('/astrologerServiceOrder', upload.none(), async (req, res) => {
   }
 });
 
+/**
+ * Submit Contact Form
+ * Public API - No authentication required
+ */
+router.post("/submitContact", upload.none(), async (req, res) => {
+  const schema = Joi.object({
+    name: Joi.string().required().max(255).messages({
+      'string.empty': 'Name is required',
+      'any.required': 'Name is required'
+    }),
+    email: Joi.string().email().required().max(255).messages({
+      'string.email': 'Please enter a valid email address',
+      'string.empty': 'Email is required',
+      'any.required': 'Email is required'
+    }),
+    number: Joi.string().optional().allow('').max(255),
+    subject: Joi.string().required().max(255).messages({
+      'string.empty': 'Subject is required',
+      'any.required': 'Subject is required'
+    }),
+    message: Joi.string().required().messages({
+      'string.empty': 'Message is required',
+      'any.required': 'Message is required'
+    }),
+  });
+
+  const { error, value } = schema.validate(req.body);
+
+  if (error) {
+    return res.json({
+      status: 0,
+      errors: error.details,
+      msg: error.details.map((d) => d.message).join("\n"),
+    });
+  }
+
+  const { name, email, number, subject, message } = value;
+
+  try {
+    const { default: Contact } = await import("../_models/contacts.js");
+
+    const newContact = await Contact.create({
+      name,
+      email,
+      number: number || null,
+      subject,
+      message,
+      status: 1,
+      created_at: new Date(),
+      updated_at: new Date(),
+    });
+
+    console.log('[submitContact] Contact form submitted:', { id: newContact.id, name, email, subject });
+
+    return res.json({
+      status: 1,
+      msg: "Thank you for contacting us! We will get back to you soon.",
+      data: {
+        id: newContact.id,
+        name: newContact.name,
+        email: newContact.email,
+      },
+    });
+  } catch (err) {
+    console.error("submitContact error:", err);
+    return res.json({
+      status: 0,
+      msg: "Something went wrong. Please try again later.",
+      error: err.message,
+    });
+  }
+});
+
+/**
+ * Get Contact Departments
+ * Public API - No authentication required
+ * Returns list of departments for contact form dropdown
+ */
+router.post("/getContactDepartments", upload.none(), async (req, res) => {
+  try {
+    const { default: ContactDepartment } = await import("../_models/contactDepartments.js");
+
+    const departments = await ContactDepartment.findAll({
+      attributes: ['id', 'title', 'email_id'],
+      order: [['title', 'ASC']],
+    });
+
+    return res.json({
+      status: 1,
+      msg: "Contact departments fetched successfully",
+      data: departments,
+    });
+  } catch (err) {
+    console.error("getContactDepartments error:", err);
+    return res.json({
+      status: 0,
+      msg: "Something went wrong",
+      data: [],
+      error: err.message,
+    });
+  }
+});
+
+/**
+ * Get Cover Images
+ * Public API - No authentication required
+ * Returns list of cover images for profile/background selection
+ */
+router.post("/getCoverImages", upload.none(), async (req, res) => {
+  try {
+    const { default: CoverImage } = await import("../_models/coverImages.js");
+
+    const coverImages = await CoverImage.findAll({
+      where: { status: '1' },
+      attributes: ['id', 'cover_img'],
+      order: [['id', 'DESC']],
+    });
+
+    return res.json({
+      status: 1,
+      msg: "Cover images fetched successfully",
+      data: coverImages,
+    });
+  } catch (err) {
+    console.error("getCoverImages error:", err);
+    return res.json({
+      status: 0,
+      msg: "Something went wrong",
+      data: [],
+      error: err.message,
+    });
+  }
+});
+
+/**
+ * Get Currencies List
+ * Public API - No authentication required
+ * Returns list of active currencies with exchange rates
+ */
+router.post("/getCurrencies", upload.none(), async (req, res) => {
+  try {
+    const { default: CurrencyModel } = await import("../_models/currencies.js");
+
+    const currencies = await CurrencyModel.findAll({
+      where: { status: 1 },
+      attributes: ['id', 'title', 'currency_code', 'currency_symbol', 'country_code', 'exchange_rate', 'default_status'],
+      order: [['default_status', 'DESC'], ['title', 'ASC']],
+    });
+
+    return res.json({
+      status: 1,
+      msg: "Currencies fetched successfully",
+      data: currencies,
+    });
+  } catch (err) {
+    console.error("getCurrencies error:", err);
+    return res.json({
+      status: 0,
+      msg: "Something went wrong",
+      data: [],
+      error: err.message,
+    });
+  }
+});
+
+/**
+ * Get Customer Refunds
+ * Requires authentication
+ * Returns list of refund requests for a user
+ */
+router.post("/getCustomerRefunds", upload.none(), async (req, res) => {
+  const schema = Joi.object({
+    api_key: Joi.string().required(),
+    user_uni_id: Joi.string().required(),
+    offset: Joi.number().optional().default(0),
+    limit: Joi.number().optional().default(20),
+  });
+
+  const { error, value } = schema.validate(req.body);
+
+  if (error) {
+    return res.json({
+      status: 0,
+      errors: error.details,
+      message: "Validation error",
+      msg: error.details.map((d) => d.message).join("\n"),
+    });
+  }
+
+  const { api_key, user_uni_id, offset, limit } = value;
+
+  if (!(await checkUserApiKey(api_key, user_uni_id))) {
+    return res.json({
+      status: 0,
+      error_code: 101,
+      msg: "Unauthorized User... Please login again",
+    });
+  }
+
+  try {
+    const { default: CustomerRefund } = await import("../_models/customerRefunds.js");
+
+    const refunds = await CustomerRefund.findAndCountAll({
+      where: { user_id: user_uni_id },
+      limit,
+      offset,
+      order: [['created_at', 'DESC']],
+    });
+
+    return res.json({
+      status: 1,
+      msg: "Customer refunds fetched successfully",
+      data: refunds.rows,
+      total: refunds.count,
+      offset,
+      limit,
+    });
+  } catch (err) {
+    console.error("getCustomerRefunds error:", err);
+    return res.json({
+      status: 0,
+      msg: "Something went wrong",
+      data: [],
+      error: err.message,
+    });
+  }
+});
+
+/**
+ * Get Departments List
+ * Public API - No authentication required
+ * Returns list of active departments
+ */
+router.post("/getDepartments", upload.none(), async (req, res) => {
+  try {
+    const { default: Department } = await import("../_models/departments.js");
+
+    const departments = await Department.findAll({
+      where: { status: 1 },
+      attributes: ['id', 'title', 'description'],
+      order: [['title', 'ASC']],
+    });
+
+    return res.json({
+      status: 1,
+      msg: "Departments fetched successfully",
+      data: departments,
+    });
+  } catch (err) {
+    console.error("getDepartments error:", err);
+    return res.json({
+      status: 0,
+      msg: "Something went wrong",
+      data: [],
+      error: err.message,
+    });
+  }
+});
+
+/**
+ * Get Email Templates List
+ * Public API - No authentication required
+ * Returns list of active email templates
+ */
+router.post("/getEmailTemplates", upload.none(), async (req, res) => {
+  try {
+    const { default: EmailTemplate } = await import("../_models/emailTemplates.js");
+
+    const templates = await EmailTemplate.findAll({
+      where: { status: 1 },
+      attributes: ['id', 'title', 'template_code', 'content'],
+      order: [['title', 'ASC']],
+    });
+
+    return res.json({
+      status: 1,
+      msg: "Email templates fetched successfully",
+      data: templates,
+    });
+  } catch (err) {
+    console.error("getEmailTemplates error:", err);
+    return res.json({
+      status: 0,
+      msg: "Something went wrong",
+      data: [],
+      error: err.message,
+    });
+  }
+});
+
+/**
+ * Get FAQs List
+ * Public API - No authentication required
+ * Returns list of active FAQs
+ */
+router.post("/getFaqs", upload.none(), async (req, res) => {
+  const schema = Joi.object({
+    faq_category_id: Joi.string().optional().allow('', null),
+  });
+
+  const { error, value } = schema.validate(req.body);
+
+  if (error) {
+    return res.json({
+      status: 0,
+      errors: error.details,
+      msg: error.details.map((d) => d.message).join("\n"),
+    });
+  }
+
+  try {
+    const { default: Faq } = await import("../_models/faqs.js");
+
+    const whereClause = { status: 1 };
+    if (value.faq_category_id) {
+      whereClause.faq_category_id = value.faq_category_id;
+    }
+
+    const faqs = await Faq.findAll({
+      where: whereClause,
+      attributes: ['id', 'faq_category_id', 'question', 'answer'],
+      order: [['id', 'ASC']],
+    });
+
+    return res.json({
+      status: 1,
+      msg: "FAQs fetched successfully",
+      data: faqs,
+    });
+  } catch (err) {
+    console.error("getFaqs error:", err);
+    return res.json({
+      status: 0,
+      msg: "Something went wrong",
+      data: [],
+      error: err.message,
+    });
+  }
+});
+
+/**
+ * Get FAQ Categories List
+ * Public API - No authentication required
+ * Returns list of active FAQ categories
+ */
+router.post("/getFaqCategories", upload.none(), async (req, res) => {
+  try {
+    const { default: FaqCategory } = await import("../_models/faqCategories.js");
+
+    const categories = await FaqCategory.findAll({
+      where: { status: 1 },
+      attributes: ['id', 'title'],
+      order: [['title', 'ASC']],
+    });
+
+    return res.json({
+      status: 1,
+      msg: "FAQ categories fetched successfully",
+      data: categories,
+    });
+  } catch (err) {
+    console.error("getFaqCategories error:", err);
+    return res.json({
+      status: 0,
+      msg: "Something went wrong",
+      data: [],
+      error: err.message,
+    });
+  }
+});
+
+/**
+ * Get Group Pujas List
+ * Public API - No authentication required
+ * Returns list of active group pujas
+ */
+router.post("/getGroupPujas", upload.none(), async (req, res) => {
+  const schema = Joi.object({
+    group_puja_category_id: Joi.number().optional().allow(null),
+    page: Joi.number().optional().default(1),
+    limit: Joi.number().optional().default(20),
+  });
+
+  const { error, value } = schema.validate(req.body);
+
+  if (error) {
+    return res.json({
+      status: 0,
+      errors: error.details,
+      msg: error.details.map((d) => d.message).join("\n"),
+    });
+  }
+
+  try {
+    const { default: GroupPujaModel } = await import("../_models/GroupPujaModel.js");
+
+    const whereClause = { status: 1 };
+    if (value.group_puja_category_id) {
+      whereClause.group_puja_category_id = value.group_puja_category_id;
+    }
+
+    const offset = (value.page - 1) * value.limit;
+    const hostUrl = `${req.protocol}://${req.get("host")}/`;
+    const imagePath = constants?.group_puja_image_path || 'uploads/group_pujas/';
+
+    const { count, rows: pujas } = await GroupPujaModel.findAndCountAll({
+      where: whereClause,
+      attributes: ['id', 'group_puja_category_id', 'group_puja_name', 'slug', 'group_puja_image', 'group_puja_description', 'meta_title', 'meta_description'],
+      order: [['created_at', 'DESC']],
+      limit: value.limit,
+      offset,
+    });
+
+    const transformedPujas = pujas.map(puja => ({
+      ...puja.get({ plain: true }),
+      group_puja_image: puja.group_puja_image ? `${hostUrl}${imagePath}${puja.group_puja_image}` : ''
+    }));
+
+    return res.json({
+      status: 1,
+      msg: "Group pujas fetched successfully",
+      data: transformedPujas,
+      total: count,
+      page: value.page,
+      limit: value.limit,
+    });
+  } catch (err) {
+    console.error("getGroupPujas error:", err);
+    return res.json({
+      status: 0,
+      msg: "Something went wrong",
+      data: [],
+      error: err.message,
+    });
+  }
+});
+
+/**
+ * Get Group Puja Assignments
+ * Public API - No authentication required
+ * Returns list of active group puja assignments with astrologer and puja details
+ */
+router.post("/getGroupPujaAssigns", upload.none(), async (req, res) => {
+  const schema = Joi.object({
+    group_puja_id: Joi.number().optional().allow(null),
+    astrologer_uni_id: Joi.string().optional().allow('', null),
+    page: Joi.number().optional().default(1),
+    limit: Joi.number().optional().default(20),
+  });
+
+  const { error, value } = schema.validate(req.body);
+
+  if (error) {
+    return res.json({
+      status: 0,
+      errors: error.details,
+      msg: error.details.map((d) => d.message).join("\n"),
+    });
+  }
+
+  try {
+    const { default: GroupPujaAssignModel } = await import("../_models/GroupPujaAssignModel.js");
+    const { default: GroupPujaModel } = await import("../_models/GroupPujaModel.js");
+
+    const whereClause = { status: 1 };
+    if (value.group_puja_id) {
+      whereClause.group_puja_id = value.group_puja_id;
+    }
+    if (value.astrologer_uni_id) {
+      whereClause.astrologer_uni_id = value.astrologer_uni_id;
+    }
+
+    const offset = (value.page - 1) * value.limit;
+    const hostUrl = `${req.protocol}://${req.get("host")}/`;
+    const pujaImagePath = constants?.group_puja_image_path || 'uploads/group_pujas/';
+    const astrologerImagePath = constants?.astrologer_image_path || 'uploads/astrologers/';
+
+    const { count, rows: assigns } = await GroupPujaAssignModel.findAndCountAll({
+      where: whereClause,
+      order: [['group_puja_date', 'ASC'], ['group_puja_time', 'ASC']],
+      limit: value.limit,
+      offset,
+    });
+
+    // Get puja details for each assignment
+    const pujaIds = [...new Set(assigns.map(a => a.group_puja_id))];
+    const pujas = await GroupPujaModel.findAll({
+      where: { id: pujaIds },
+      attributes: ['id', 'group_puja_name', 'group_puja_image', 'slug'],
+    });
+    const pujaMap = {};
+    pujas.forEach(p => {
+      pujaMap[p.id] = p.get({ plain: true });
+    });
+
+    // Get astrologer details
+    const astrologerIds = [...new Set(assigns.map(a => a.astrologer_uni_id))];
+    const astrologers = await Astrologer.findAll({
+      where: { astrologer_uni_id: astrologerIds },
+      attributes: ['astrologer_uni_id', 'display_name', 'profile_img'],
+    });
+    const astrologerMap = {};
+    astrologers.forEach(a => {
+      astrologerMap[a.astrologer_uni_id] = a.get({ plain: true });
+    });
+
+    const transformedAssigns = assigns.map(assign => {
+      const puja = pujaMap[assign.group_puja_id] || {};
+      const astrologer = astrologerMap[assign.astrologer_uni_id] || {};
+      return {
+        ...assign.get({ plain: true }),
+        group_puja_name: puja.group_puja_name || '',
+        group_puja_image: puja.group_puja_image ? `${hostUrl}${pujaImagePath}${puja.group_puja_image}` : '',
+        group_puja_slug: puja.slug || '',
+        astrologer_name: astrologer.display_name || '',
+        astrologer_image: astrologer.profile_img ? `${hostUrl}${astrologerImagePath}${astrologer.profile_img}` : '',
+      };
+    });
+
+    return res.json({
+      status: 1,
+      msg: "Group puja assignments fetched successfully",
+      data: transformedAssigns,
+      total: count,
+      page: value.page,
+      limit: value.limit,
+    });
+  } catch (err) {
+    console.error("getGroupPujaAssigns error:", err);
+    return res.json({
+      status: 0,
+      msg: "Something went wrong",
+      data: [],
+      error: err.message,
+    });
+  }
+});
+
+/**
+ * Get Group Puja Categories
+ * Public API - No authentication required
+ * Returns list of active group puja categories
+ */
+router.post("/getGroupPujaCategories", upload.none(), async (req, res) => {
+  const schema = Joi.object({
+    parent_id: Joi.number().optional().allow(null),
+  });
+
+  const { error, value } = schema.validate(req.body);
+
+  if (error) {
+    return res.json({
+      status: 0,
+      errors: error.details,
+      msg: error.details.map((d) => d.message).join("\n"),
+    });
+  }
+
+  try {
+    const { default: GroupPujaCategory } = await import("../_models/groupPujaCategory.js");
+
+    const whereClause = { status: 1 };
+    if (value.parent_id !== undefined && value.parent_id !== null) {
+      whereClause.parent_id = value.parent_id;
+    }
+
+    const hostUrl = `${req.protocol}://${req.get("host")}/`;
+    const imagePath = constants?.group_puja_category_image_path || 'uploads/group_puja_category/';
+
+    const categories = await GroupPujaCategory.findAll({
+      where: whereClause,
+      attributes: ['id', 'parent_id', 'title', 'slug', 'description', 'image', 'meta_title', 'meta_description'],
+      order: [['title', 'ASC']],
+    });
+
+    const transformedCategories = categories.map(cat => ({
+      ...cat.get({ plain: true }),
+      image: cat.image ? `${hostUrl}${imagePath}${cat.image}` : ''
+    }));
+
+    return res.json({
+      status: 1,
+      msg: "Group puja categories fetched successfully",
+      data: transformedCategories,
+    });
+  } catch (err) {
+    console.error("getGroupPujaCategories error:", err);
+    return res.json({
+      status: 0,
+      msg: "Something went wrong",
+      data: [],
+      error: err.message,
+    });
+  }
+});
+
+/**
+ * Get Group Puja Orders (Customer's puja bookings)
+ * Requires authentication
+ * Returns list of customer's group puja orders
+ */
+router.post("/getGroupPujaOrders", upload.none(), async (req, res) => {
+  const schema = Joi.object({
+    api_key: Joi.string().required(),
+    user_uni_id: Joi.string().required(),
+    page: Joi.number().optional().default(1),
+    limit: Joi.number().optional().default(20),
+    status: Joi.string().optional().allow('', null),
+  });
+
+  const { error, value } = schema.validate(req.body);
+
+  if (error) {
+    return res.json({
+      status: 0,
+      errors: error.details,
+      msg: error.details.map((d) => d.message).join("\n"),
+    });
+  }
+
+  const { api_key, user_uni_id, page, limit, status } = value;
+
+  if (!(await checkUserApiKey(api_key, user_uni_id))) {
+    return res.json({
+      status: 0,
+      error_code: 101,
+      msg: "Unauthorized User... Please login again",
+    });
+  }
+
+  try {
+    const { default: GroupPujaOrder } = await import("../_models/groupPujaOrders.js");
+    const { default: GroupPujaAssignModel } = await import("../_models/GroupPujaAssignModel.js");
+    const { default: GroupPujaModel } = await import("../_models/GroupPujaModel.js");
+
+    const whereClause = { customer_uni_id: user_uni_id };
+    if (status) {
+      whereClause.status = status;
+    }
+
+    const offset = (page - 1) * limit;
+    const hostUrl = `${req.protocol}://${req.get("host")}/`;
+    const pujaImagePath = constants?.group_puja_image_path || 'uploads/group_pujas/';
+    const astrologerImagePath = constants?.astrologer_image_path || 'uploads/astrologers/';
+
+    const { count, rows: orders } = await GroupPujaOrder.findAndCountAll({
+      where: whereClause,
+      order: [['created_at', 'DESC']],
+      limit,
+      offset,
+    });
+
+    // Get assignment and puja details
+    const assignIds = [...new Set(orders.map(o => o.group_puja_assign_id))];
+    const assigns = await GroupPujaAssignModel.findAll({
+      where: { id: assignIds },
+      attributes: ['id', 'group_puja_id'],
+    });
+    const assignMap = {};
+    assigns.forEach(a => {
+      assignMap[a.id] = a.get({ plain: true });
+    });
+
+    const pujaIds = [...new Set(assigns.map(a => a.group_puja_id))];
+    const pujas = await GroupPujaModel.findAll({
+      where: { id: pujaIds },
+      attributes: ['id', 'group_puja_name', 'group_puja_image', 'slug'],
+    });
+    const pujaMap = {};
+    pujas.forEach(p => {
+      pujaMap[p.id] = p.get({ plain: true });
+    });
+
+    // Get astrologer details
+    const astrologerIds = [...new Set(orders.map(o => o.astrologer_uni_id))];
+    const astrologers = await Astrologer.findAll({
+      where: { astrologer_uni_id: astrologerIds },
+      attributes: ['astrologer_uni_id', 'display_name', 'profile_img'],
+    });
+    const astrologerMap = {};
+    astrologers.forEach(a => {
+      astrologerMap[a.astrologer_uni_id] = a.get({ plain: true });
+    });
+
+    const transformedOrders = orders.map(order => {
+      const assign = assignMap[order.group_puja_assign_id] || {};
+      const puja = pujaMap[assign.group_puja_id] || {};
+      const astrologer = astrologerMap[order.astrologer_uni_id] || {};
+      return {
+        ...order.get({ plain: true }),
+        group_puja_name: puja.group_puja_name || '',
+        group_puja_image: puja.group_puja_image ? `${hostUrl}${pujaImagePath}${puja.group_puja_image}` : '',
+        group_puja_slug: puja.slug || '',
+        astrologer_name: astrologer.display_name || '',
+        astrologer_image: astrologer.profile_img ? `${hostUrl}${astrologerImagePath}${astrologer.profile_img}` : '',
+      };
+    });
+
+    return res.json({
+      status: 1,
+      msg: "Group puja orders fetched successfully",
+      data: transformedOrders,
+      total: count,
+      page,
+      limit,
+    });
+  } catch (err) {
+    console.error("getGroupPujaOrders error:", err);
+    return res.json({
+      status: 0,
+      msg: "Something went wrong",
+      data: [],
+      error: err.message,
+    });
+  }
+});
 
 export default router;

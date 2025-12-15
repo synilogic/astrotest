@@ -4,7 +4,7 @@ import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import Pagination from '../components/Pagination'
 import Modal from '../components/Modal'
-import { getCurrentUser, getCustomerDashboard, getWalletBalance, updateCustomerProfile, fetchUserKundaliRequests, getKundaliChart, getWalletTransactions, fetchUserCallHistory, getChatChannels, getRechargeVouchers, proceedPaymentRequest, updateOnlinePayment, fetchWelcomeData, getUserAddresses, addUserAddress, updateUserAddress, deleteUserAddress, fetchPublicCountryList, fetchPublicStateList, fetchPublicCityList, fetchProductOrders, getCustomerServiceOrders, fetchAskQuestionsList, getAdminChatChannels, getAdminChatChannelHistory, getAppointmentDurations, fetchAppointmentOrders, fetchArchitectRooms, fetchArchitectServiceOrders, fetchUserGiftHistory, getUserApiKey, getFileOnCall } from '../utils/api'
+import { getCurrentUser, getCustomerDashboard, getWalletBalance, updateCustomerProfile, fetchUserKundaliRequests, getKundaliChart, getWalletTransactions, fetchUserCallHistory, getChatChannels, getRechargeVouchers, proceedPaymentRequest, updateOnlinePayment, fetchWelcomeData, getUserAddresses, addUserAddress, updateUserAddress, deleteUserAddress, fetchPublicCountryList, fetchPublicStateList, fetchPublicCityList, fetchProductOrders, getCustomerServiceOrders, fetchAskQuestionsList, getAdminChatChannels, getAdminChatChannelHistory, getAppointmentDurations, fetchAppointmentOrders, fetchArchitectRooms, fetchArchitectServiceOrders, fetchUserGiftHistory, getUserApiKey, getFileOnCall, fetchCourses, fetchMyCourses, getCustomerRefunds, getCoverImages } from '../utils/api'
 
 // Helper function to convert date to YYYY-MM-DD format (for HTML5 date input)
 const formatDateForInput = (dateStr) => {
@@ -139,6 +139,32 @@ const My_Account = () => {
   const [loadingGiftHistory, setLoadingGiftHistory] = useState(false)
   const [giftPage, setGiftPage] = useState(1)
   const giftPageSize = 10
+  
+  // State for courses
+  const [courses, setCourses] = useState([])
+  const [loadingCourses, setLoadingCourses] = useState(false)
+  const [coursesPage, setCoursesPage] = useState(1)
+  const coursesPageSize = 10
+  
+  // State for purchased courses (course orders)
+  const [purchasedCourses, setPurchasedCourses] = useState([])
+  const [loadingPurchasedCourses, setLoadingPurchasedCourses] = useState(false)
+  const [purchasedCoursesPage, setPurchasedCoursesPage] = useState(1)
+  const purchasedCoursesPageSize = 10
+  const [coursesViewMode, setCoursesViewMode] = useState('purchased') // 'purchased' or 'all'
+  
+  // State for refunds
+  const [refunds, setRefunds] = useState([])
+  const [loadingRefunds, setLoadingRefunds] = useState(false)
+  const [refundsPage, setRefundsPage] = useState(1)
+  const refundsPageSize = 10
+  const [refundsTotal, setRefundsTotal] = useState(0)
+  
+  // State for cover images
+  const [coverImages, setCoverImages] = useState([])
+  const [loadingCoverImages, setLoadingCoverImages] = useState(false)
+  const [selectedCoverImage, setSelectedCoverImage] = useState('')
+  const [showCoverSelector, setShowCoverSelector] = useState(false)
   
   // State for orders (fetched from backend)
   const [orders, setOrders] = useState([])
@@ -1245,7 +1271,9 @@ const My_Account = () => {
     { id: 'waiting-list', label: 'My Waiting List', icon: 'fa-clock' },
     { id: 'call-history', label: 'My Call History', icon: 'fa-phone' },
     { id: 'horoscope', label: 'My Daily Horoscope', icon: 'fa-sun' },
-    { id: 'support', label: 'My Support Ticket', icon: 'fa-ticket-alt' }
+    { id: 'support', label: 'My Support Ticket', icon: 'fa-ticket-alt' },
+    { id: 'courses', label: 'My Courses', icon: 'fa-graduation-cap' },
+    { id: 'refunds', label: 'My Refunds', icon: 'fa-undo-alt' }
   ]
 
   // Check if user is admin (role_id === 1 typically means admin)
@@ -2165,6 +2193,122 @@ const My_Account = () => {
     }
   }, [activeTab, giftPage, fetchGiftHistory])
 
+  // Fetch courses function
+  const loadCourses = useCallback(async () => {
+    setLoadingCourses(true)
+    try {
+      const result = await fetchCourses({
+        page: coursesPage,
+        limit: coursesPageSize,
+        offset: (coursesPage - 1) * coursesPageSize
+      })
+      if (result.status === 1 && Array.isArray(result.data)) {
+        setCourses(result.data)
+      } else {
+        setCourses([])
+      }
+    } catch (err) {
+      console.error('[Customer Dashboard] Error fetching courses:', err)
+      setCourses([])
+    } finally {
+      setLoadingCourses(false)
+    }
+  }, [coursesPage, coursesPageSize])
+
+  // Fetch courses when courses tab becomes active or page changes
+  useEffect(() => {
+    if (activeTab === 'courses' && coursesViewMode === 'all') {
+      loadCourses()
+    }
+  }, [activeTab, coursesPage, loadCourses, coursesViewMode])
+
+  // Fetch purchased courses function
+  const loadPurchasedCourses = useCallback(async () => {
+    setLoadingPurchasedCourses(true)
+    try {
+      const offset = (purchasedCoursesPage - 1) * purchasedCoursesPageSize
+      const result = await fetchMyCourses(offset)
+      if (result.status === 1 && Array.isArray(result.data)) {
+        setPurchasedCourses(result.data)
+      } else {
+        setPurchasedCourses([])
+      }
+    } catch (err) {
+      console.error('[Customer Dashboard] Error fetching purchased courses:', err)
+      setPurchasedCourses([])
+    } finally {
+      setLoadingPurchasedCourses(false)
+    }
+  }, [purchasedCoursesPage, purchasedCoursesPageSize])
+
+  // Fetch purchased courses when courses tab becomes active
+  useEffect(() => {
+    if (activeTab === 'courses' && coursesViewMode === 'purchased') {
+      loadPurchasedCourses()
+    }
+  }, [activeTab, purchasedCoursesPage, loadPurchasedCourses, coursesViewMode])
+
+  // Fetch refunds function
+  const loadRefunds = useCallback(async () => {
+    setLoadingRefunds(true)
+    try {
+      const offset = (refundsPage - 1) * refundsPageSize
+      const result = await getCustomerRefunds(offset, refundsPageSize)
+      if (result.status === 1 && Array.isArray(result.data)) {
+        setRefunds(result.data)
+        setRefundsTotal(result.total || result.data.length)
+      } else {
+        setRefunds([])
+        setRefundsTotal(0)
+      }
+    } catch (err) {
+      console.error('[Customer Dashboard] Error fetching refunds:', err)
+      setRefunds([])
+      setRefundsTotal(0)
+    } finally {
+      setLoadingRefunds(false)
+    }
+  }, [refundsPage, refundsPageSize])
+
+  // Fetch refunds when refunds tab becomes active
+  useEffect(() => {
+    if (activeTab === 'refunds') {
+      loadRefunds()
+    }
+  }, [activeTab, refundsPage, loadRefunds])
+
+  // Fetch cover images function
+  const loadCoverImages = useCallback(async () => {
+    setLoadingCoverImages(true)
+    try {
+      const result = await getCoverImages()
+      if (result.status === 1 && Array.isArray(result.data)) {
+        setCoverImages(result.data)
+      } else {
+        setCoverImages([])
+      }
+    } catch (err) {
+      console.error('[Customer Dashboard] Error fetching cover images:', err)
+      setCoverImages([])
+    } finally {
+      setLoadingCoverImages(false)
+    }
+  }, [])
+
+  // Load cover images when profile tab is active and selector is shown
+  useEffect(() => {
+    if (showCoverSelector && coverImages.length === 0) {
+      loadCoverImages()
+    }
+  }, [showCoverSelector, coverImages.length, loadCoverImages])
+
+  // Set selected cover image from user data
+  useEffect(() => {
+    if (userData?.cover_img) {
+      setSelectedCoverImage(userData.cover_img)
+    }
+  }, [userData?.cover_img])
+
   const handleProfileUpdate = async (e) => {
     e.preventDefault()
     try {
@@ -2210,7 +2354,8 @@ const My_Account = () => {
         birth_date: profileData.birthDate,
         birth_time: formattedBirthTime, // HH:mm:ss format
         birth_place: safeTrim(profileData.placeOfBirth),
-        profileImage: selectedProfileImage // Add selected image file
+        profileImage: selectedProfileImage, // Add selected image file
+        cover_img: selectedCoverImage // Add selected cover image
       }
 
       // CRITICAL: Verify user is actually a customer before calling customer endpoint
@@ -5530,6 +5675,218 @@ const My_Account = () => {
     )
   }
 
+  const renderCoursesSection = () => (
+    <div className="react-account-section">
+      <div className="react-section-header">
+        <h2>My Courses</h2>
+        <p>View your purchased courses and browse available courses</p>
+      </div>
+
+      {/* Toggle Buttons */}
+      <div className="react-courses-toggle">
+        <button 
+          className={`react-toggle-btn ${coursesViewMode === 'purchased' ? 'active' : ''}`}
+          onClick={() => setCoursesViewMode('purchased')}
+        >
+          <i className="fas fa-shopping-bag"></i> My Purchased Courses
+        </button>
+        <button 
+          className={`react-toggle-btn ${coursesViewMode === 'all' ? 'active' : ''}`}
+          onClick={() => setCoursesViewMode('all')}
+        >
+          <i className="fas fa-book-open"></i> All Courses
+        </button>
+      </div>
+
+      {/* Purchased Courses View */}
+      {coursesViewMode === 'purchased' && (
+        <>
+          {loadingPurchasedCourses ? (
+            <div className="react-loading">Loading your purchased courses...</div>
+          ) : purchasedCourses.length === 0 ? (
+            <div className="react-no-data">
+              <i className="fas fa-shopping-cart"></i>
+              <p>You haven't purchased any courses yet</p>
+              <button className="react-btn-primary" onClick={() => setCoursesViewMode('all')}>
+                Browse Courses
+              </button>
+            </div>
+          ) : (
+            <div className="react-table-container">
+              <table className="react-data-table">
+                <thead>
+                  <tr>
+                    <th>S.No</th>
+                    <th>Order ID</th>
+                    <th>Course</th>
+                    <th>Subtotal</th>
+                    <th>Discount</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {purchasedCourses.map((order, idx) => (
+                    <tr key={order.id}>
+                      <td>{(purchasedCoursesPage - 1) * purchasedCoursesPageSize + idx + 1}</td>
+                      <td><span className="react-order-id">{order.order_id}</span></td>
+                      <td>{order.course_title || order.course?.title || `Course #${order.course_id}`}</td>
+                      <td>₹{parseFloat(order.subtotal || 0).toFixed(2)}</td>
+                      <td className="react-discount">
+                        {order.offer_percent > 0 ? (
+                          <span>-{order.offer_percent}% (₹{parseFloat(order.offer_amount || 0).toFixed(2)})</span>
+                        ) : '-'}
+                      </td>
+                      <td className="react-total-amount">₹{parseFloat(order.total_amount || 0).toFixed(2)}</td>
+                      <td>
+                        <span className={`react-status-badge ${order.status === 1 ? 'success' : order.status === 0 ? 'pending' : 'failed'}`}>
+                          {order.status === 1 ? 'Completed' : order.status === 0 ? 'Pending' : 'Failed'}
+                        </span>
+                      </td>
+                      <td>{order.created_at ? new Date(order.created_at).toLocaleDateString('en-IN') : '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {purchasedCourses.length > 0 && (
+            <Pagination
+              currentPage={purchasedCoursesPage}
+              totalItems={purchasedCourses.length}
+              pageSize={purchasedCoursesPageSize}
+              onPageChange={setPurchasedCoursesPage}
+            />
+          )}
+        </>
+      )}
+
+      {/* All Courses View */}
+      {coursesViewMode === 'all' && (
+        <>
+          {loadingCourses ? (
+            <div className="react-loading">Loading courses...</div>
+          ) : courses.length === 0 ? (
+            <div className="react-no-data">
+              <i className="fas fa-graduation-cap"></i>
+              <p>No courses available</p>
+            </div>
+          ) : (
+            <div className="react-courses-grid">
+              {courses.map((course) => (
+                <div key={course.id} className="react-course-card">
+                  <div className="react-course-image">
+                    {course.course_image ? (
+                      <img 
+                        src={course.course_image.startsWith('http') ? course.course_image : `${import.meta.env.VITE_WELCOME_API?.replace('/api', '') || 'http://localhost:8005'}/${course.course_image}`}
+                        alt={course.title}
+                        onError={(e) => {
+                          e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect fill="%23ddd" width="300" height="200"/><text fill="%23999" font-size="20" x="50%" y="50%" text-anchor="middle" dy=".3em">No Image</text></svg>'
+                        }}
+                      />
+                    ) : (
+                      <div className="react-course-placeholder">
+                        <i className="fas fa-book"></i>
+                      </div>
+                    )}
+                  </div>
+                  <div className="react-course-content">
+                    <h3>{course.title}</h3>
+                    <p className="react-course-description">{course.description?.substring(0, 100)}{course.description?.length > 100 ? '...' : ''}</p>
+                    <div className="react-course-footer">
+                      <span className="react-course-price">₹{parseFloat(course.price || 0).toFixed(2)}</span>
+                      {course.video_url && (
+                        <a href={course.video_url} target="_blank" rel="noopener noreferrer" className="react-course-video-btn">
+                          <i className="fas fa-play-circle"></i> Watch
+                        </a>
+                      )}
+                      {course.whatsapp_group_link && (
+                        <a href={course.whatsapp_group_link} target="_blank" rel="noopener noreferrer" className="react-course-whatsapp-btn">
+                          <i className="fab fa-whatsapp"></i> Join
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {courses.length > 0 && (
+            <Pagination
+              currentPage={coursesPage}
+              totalItems={courses.length}
+              pageSize={coursesPageSize}
+              onPageChange={setCoursesPage}
+            />
+          )}
+        </>
+      )}
+    </div>
+  )
+
+  const renderRefundsSection = () => (
+    <div className="react-account-section">
+      <div className="react-section-header">
+        <h2>My Refunds</h2>
+        <p>View your refund requests and their status</p>
+      </div>
+
+      {loadingRefunds ? (
+        <div className="react-loading">Loading refunds...</div>
+      ) : refunds.length === 0 ? (
+        <div className="react-no-data">
+          <i className="fas fa-undo-alt"></i>
+          <p>No refund requests found</p>
+        </div>
+      ) : (
+        <div className="react-table-container">
+          <table className="react-data-table">
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Refund ID</th>
+                <th>Type</th>
+                <th>Title</th>
+                <th>Message</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {refunds.map((refund, idx) => (
+                <tr key={refund.id}>
+                  <td>{(refundsPage - 1) * refundsPageSize + idx + 1}</td>
+                  <td><span className="react-order-id">{refund.unique_id}</span></td>
+                  <td><span className="react-type-badge">{refund.type}</span></td>
+                  <td>{refund.title}</td>
+                  <td className="react-message-cell">{refund.message}</td>
+                  <td>
+                    <span className={`react-status-badge ${refund.status === '1' || refund.status === 1 ? 'success' : refund.status === '0' || refund.status === 0 ? 'pending' : 'failed'}`}>
+                      {refund.status === '1' || refund.status === 1 ? 'Approved' : refund.status === '0' || refund.status === 0 ? 'Pending' : 'Rejected'}
+                    </span>
+                  </td>
+                  <td>{refund.created_at ? new Date(refund.created_at).toLocaleDateString('en-IN') : '-'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {refundsTotal > refundsPageSize && (
+        <Pagination
+          currentPage={refundsPage}
+          totalItems={refundsTotal}
+          pageSize={refundsPageSize}
+          onPageChange={setRefundsPage}
+        />
+      )}
+    </div>
+  )
+
   const renderSupportSection = () => (
     <div className="react-account-section">
       <div className="react-section-header">
@@ -5602,6 +5959,8 @@ const My_Account = () => {
       case 'waiting-list': return renderWaitingListSection()
       case 'call-history': return renderCallHistorySection()
       case 'support': return renderSupportSection()
+      case 'courses': return renderCoursesSection()
+      case 'refunds': return renderRefundsSection()
       default: return renderProfileSection()
     }
   }
@@ -5640,36 +5999,100 @@ const My_Account = () => {
               </div>
             </div>
           ) : userData ? (
-          <div className="react-user-profile-header">
-            <div className="react-profile-avatar">
-                <img 
-                  key={`header-avatar-${imageRefreshKey}-${userData?.customer_img || 'default'}`}
-                  src={(() => {
-                    const imgUrl = userData?.customer_img
-                    if (imgUrl) {
-                      const finalUrl = getCustomerImageUrl(imgUrl, userData?.name, imageRefreshKey > 0)
-                      console.log('[Customer Dashboard] Header avatar using:', {
-                        original: imgUrl,
-                        final: finalUrl.substring(0, 100) + (finalUrl.length > 100 ? '...' : ''),
-                        isSvg: finalUrl.startsWith('data:image/svg')
-                      })
-                      return finalUrl
-                    }
-                    console.log('[Customer Dashboard] Header avatar: No image, using SVG')
-                    return getCustomerImageUrl(null, userData?.name)
-                  })()}
-                  alt="User"
-                  onError={(e) => {
-                    console.error('[Customer Dashboard] Header avatar load error:', e.target.src)
-                    handleImageError(e, userData?.name)
-                  }}
-                />
+          <div className="react-user-profile-header-wrapper">
+            {/* Cover Image */}
+            <div 
+              className="react-profile-cover"
+              style={{
+                backgroundImage: selectedCoverImage 
+                  ? `url(${selectedCoverImage.startsWith('http') ? selectedCoverImage : `${import.meta.env.VITE_WELCOME_API?.replace('/api', '') || 'http://localhost:8005'}/${selectedCoverImage}`})`
+                  : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+              }}
+            >
+              <button 
+                className="react-cover-change-btn"
+                onClick={() => setShowCoverSelector(!showCoverSelector)}
+              >
+                <i className="fas fa-camera"></i>
+                <span>Change Cover</span>
+              </button>
             </div>
-            <div className="react-profile-info">
-                <h2>{userData.name || 'User'}</h2>
-                <p>{userData.email || ''}</p>
-                <p>{userData.phone || userData.mobile || ''}</p>
-                <p className="react-customer-id">{userData.user_uni_id || userData.customer_uni_id || ''}</p>
+            
+            {/* Cover Image Selector Modal */}
+            {showCoverSelector && (
+              <div className="react-cover-selector">
+                <div className="react-cover-selector-header">
+                  <h3>Select Cover Image</h3>
+                  <button onClick={() => setShowCoverSelector(false)} className="react-close-btn">
+                    <i className="fas fa-times"></i>
+                  </button>
+                </div>
+                {loadingCoverImages ? (
+                  <div className="react-loading">Loading cover images...</div>
+                ) : coverImages.length === 0 ? (
+                  <p className="react-no-covers">No cover images available</p>
+                ) : (
+                  <div className="react-cover-grid">
+                    {coverImages.map((cover) => (
+                      <div 
+                        key={cover.id}
+                        className={`react-cover-option ${selectedCoverImage === cover.cover_img ? 'selected' : ''}`}
+                        onClick={() => {
+                          setSelectedCoverImage(cover.cover_img)
+                          setShowCoverSelector(false)
+                        }}
+                      >
+                        <img 
+                          src={cover.cover_img.startsWith('http') ? cover.cover_img : `${import.meta.env.VITE_WELCOME_API?.replace('/api', '') || 'http://localhost:8005'}/${cover.cover_img}`}
+                          alt="Cover option"
+                          onError={(e) => {
+                            e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 200 100"><rect fill="%23ddd" width="200" height="100"/></svg>'
+                          }}
+                        />
+                        {selectedCoverImage === cover.cover_img && (
+                          <div className="react-cover-selected-badge">
+                            <i className="fas fa-check"></i>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Profile Info */}
+            <div className="react-user-profile-header">
+              <div className="react-profile-avatar">
+                  <img 
+                    key={`header-avatar-${imageRefreshKey}-${userData?.customer_img || 'default'}`}
+                    src={(() => {
+                      const imgUrl = userData?.customer_img
+                      if (imgUrl) {
+                        const finalUrl = getCustomerImageUrl(imgUrl, userData?.name, imageRefreshKey > 0)
+                        console.log('[Customer Dashboard] Header avatar using:', {
+                          original: imgUrl,
+                          final: finalUrl.substring(0, 100) + (finalUrl.length > 100 ? '...' : ''),
+                          isSvg: finalUrl.startsWith('data:image/svg')
+                        })
+                        return finalUrl
+                      }
+                      console.log('[Customer Dashboard] Header avatar: No image, using SVG')
+                      return getCustomerImageUrl(null, userData?.name)
+                    })()}
+                    alt="User"
+                    onError={(e) => {
+                      console.error('[Customer Dashboard] Header avatar load error:', e.target.src)
+                      handleImageError(e, userData?.name)
+                    }}
+                  />
+              </div>
+              <div className="react-profile-info">
+                  <h2>{userData.name || 'User'}</h2>
+                  <p>{userData.email || ''}</p>
+                  <p>{userData.phone || userData.mobile || ''}</p>
+                  <p className="react-customer-id">{userData.user_uni_id || userData.customer_uni_id || ''}</p>
+              </div>
             </div>
           </div>
           ) : null}
