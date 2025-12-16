@@ -7,7 +7,8 @@ import 'swiper/css/pagination'
 import 'swiper/css/effect-fade'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
-import usePageTitle from './hooks/usePageTitle'
+import VideoSections from './components/VideoSections'
+import usePageTitle from './hooks/usePageTitle'  
 import { fetchBanners, fetchBannerCategories, fetchServices, fetchTopAstrologers, fetchBlogs, fetchProductCategories, fetchReviews, fetchWelcomeData } from './utils/api'
 import { Link } from 'react-router-dom'
 
@@ -742,6 +743,7 @@ const Landing = () => {
           </div>
         </div>
       </section>
+
 
       <section id="services" className="free-section react-cosmos-bg">
         <div className="container">

@@ -386,21 +386,34 @@ export const fetchVideoSections = async (offset = 0) => {
     const requestBody = {
       offset: offset
     }
-    console.log('[API] Fetching video sections from:', url)
+    console.log('[API] 🎬 Fetching video sections from:', url)
+    console.log('[API] 🎬 Request body:', requestBody)
+    console.log('[API] 🎬 WELCOME_API base URL:', WELCOME_API)
 
     const response = await fetch(url, getFetchConfig('POST', requestBody))
+    console.log('[API] 🎬 Response status:', response.status, response.statusText)
+    
     if (!response.ok) {
       const errorText = await response.text()
-      console.error('[API] Video Sections API HTTP error:', response.status, errorText)
-      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+      console.error('[API] ❌ Video Sections API HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}`, error: errorText }
     }
 
     const data = await response.json()
-    console.log('[API] Video Sections response:', { count: data.data?.length || 0 })
+    console.log('[API] 🎬 Video Sections raw response:', JSON.stringify(data, null, 2))
+    console.log('[API] 🎬 Video Sections response status:', data.status, typeof data.status)
+    console.log('[API] 🎬 Video Sections data type:', typeof data.data, Array.isArray(data.data))
+    console.log('[API] 🎬 Video Sections data length:', data.data?.length || 0)
+    
+    if (data.data && data.data.length > 0) {
+      console.log('[API] 🎬 First video sample:', data.data[0])
+    }
+    
     return data
   } catch (error) {
-    console.error('[API] Error fetching video sections:', error)
-    return { status: 0, data: [], msg: error.message }
+    console.error('[API] ❌ Error fetching video sections:', error)
+    console.error('[API] ❌ Error stack:', error.stack)
+    return { status: 0, data: [], msg: error.message, error: error.toString() }
   }
 }
 
@@ -4476,6 +4489,96 @@ export const getVendorWithdrawalRequests = async (filters = {}) => {
 }
 
 /**
+ * Fetch withdrawal requests for any user (general function)
+ * Endpoint: POST /api/getWithdrawalRequest (Wallets service - port 8004)
+ * Returns: { status: 1, data: formattedRecords, offset, income: {...}, msg: 'Withdrawal Request list' }
+ * Can be used by customers, vendors, or astrologers
+ */
+export const fetchWithdrawalRequests = async (filters = {}) => {
+  try {
+    const user = getCurrentUser()
+    if (!user) {
+      return { status: 0, data: [], offset: 0, income: null, msg: 'User not logged in' }
+    }
+
+    const apiKey = getUserApiKey(user)
+    const userId = user.user_uni_id || user.customer_uni_id || user.astrologer_uni_id
+
+    if (!apiKey || !userId) {
+      return { status: 0, data: [], offset: 0, income: null, msg: 'User missing required credentials. Please login again.' }
+    }
+
+    const url = `${WALLETS_API}/getWithdrawalRequest`
+    const requestBody = {
+      api_key: apiKey,
+      astrologer_uni_id: userId, // Backend uses astrologer_uni_id for all user types
+      offset: filters.offset || 0,
+      search: filters.search || '',
+      status: filters.status !== undefined && filters.status !== null ? String(filters.status) : ''
+    }
+
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 15000) // 15 second timeout
+
+    try {
+      const response = await fetch(url, {
+        ...getFetchConfig('POST', requestBody),
+        signal: controller.signal
+      })
+
+      clearTimeout(timeoutId)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        return { status: 0, data: [], offset: 0, income: null, msg: `HTTP error! status: ${response.status}, message: ${errorText}` }
+      }
+
+      const data = await response.json()
+
+      // Ensure all backend fields are properly returned
+      if (data.status === 1) {
+        return {
+          status: 1,
+          data: Array.isArray(data.data) ? data.data.map(record => ({
+            id: record.id || 0,
+            user_uni_id: record.user_uni_id || '',
+            request_amount: parseFloat(record.request_amount) || 0,
+            request_message: record.request_message || '',
+            send_message: record.send_message || '',
+            send_amount: parseFloat(record.send_amount) || 0,
+            transaction_number: record.transaction_number || '',
+            status: record.status || '0', // '0' = pending, '1' = approved, '2' = rejected
+            proof_img: record.proof_img || '',
+            created_at: record.created_at || '',
+            updated_at: record.updated_at || ''
+          })) : [],
+          offset: data.offset || 0,
+          income: data.income ? {
+            today_earning: parseFloat(data.income.today_earning) || 0,
+            yesterday_earning: parseFloat(data.income.yesterday_earning) || 0,
+            total_earning: parseFloat(data.income.total_earning) || 0,
+            total_balance: parseFloat(data.income.total_balance) || 0,
+            this_month_earning: parseFloat(data.income.this_month_earning) || 0,
+            last_month_earning: parseFloat(data.income.last_month_earning) || 0
+          } : null,
+          msg: data.msg || 'Withdrawal Request list'
+        }
+      }
+
+      return data
+    } catch (fetchError) {
+      clearTimeout(timeoutId)
+      if (fetchError.name === 'AbortError') {
+        return { status: 0, data: [], offset: 0, income: null, msg: 'Request timeout. Please try again.' }
+      }
+      throw fetchError
+    }
+  } catch (error) {
+    return { status: 0, data: [], offset: 0, income: null, msg: error.message || 'An error occurred while fetching withdrawal requests' }
+  }
+}
+
+/**
  * Add withdrawal request
  * Endpoint: POST /api/addWithdrawalRequest (Wallets service - port 8004)
  * Required: request_amount (positive number), request_message (string)
@@ -7296,6 +7399,37 @@ export const fetchPaidKundliManualOrders = async (orderFor = '') => {
   }
 }
 
+/**
+ * Fetch paid kundli manual list
+ * Endpoint: POST /api/paidKundliManualList (Product service - port 8007)
+ */
+export const fetchPaidKundliManuals = async (offset = 0, search = '', report_type = '') => {
+  try {
+    const requestBody = { offset }
+    if (search) requestBody.search = search
+    if (report_type) requestBody.report_type = report_type
+
+    const url = `${PRODUCT_API}/paidKundliManualList`
+
+    console.log('[API] Fetching paid kundli manuals from:', url, requestBody)
+    const response = await fetch(url, getFetchConfig('POST', requestBody))
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[API] Fetch Paid Kundli Manual List HTTP error:', response.status, errorText)
+      return { status: 0, data: [], msg: `HTTP error! status: ${response.status}` }
+    }
+
+    const data = await response.json()
+    console.log('[API] Fetch Paid Kundli Manuals response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] Error fetching paid kundli manuals:', error)
+    return { status: 0, data: [], msg: error.message || 'An error occurred while fetching paid kundli manuals' }
+  }
+}
+
+
 // ============================================
 // QUOTES APIs (Port 8007)
 // ============================================
@@ -7714,6 +7848,179 @@ export const fetchPackages = async (offset = 0, packageType = '') => {
     return data
   } catch (error) {
     console.error('[API] fetchPackages error:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Fetch package selecteds from backend
+ * Endpoint: POST /api/packageSelectedList (Welcome service - port 8005)
+ */
+export const fetchPackageSelecteds = async (offset = 0, customerUniId = '', userId = '', packageUniId = '') => {
+  try {
+    const requestBody = {
+      offset: offset
+    }
+
+    if (customerUniId) {
+      requestBody.customer_uni_id = customerUniId
+    }
+
+    if (userId) {
+      requestBody.user_id = userId
+    }
+
+    if (packageUniId) {
+      requestBody.package_uni_id = packageUniId
+    }
+
+    console.log('[API] Fetching package selecteds from:', `${WELCOME_API}/packageSelectedList`)
+
+    const response = await fetch(`${WELCOME_API}/packageSelectedList`, getFetchConfig('POST', requestBody))
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('[API] Package selecteds response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] fetchPackageSelecteds error:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Fetch wallets list from backend
+ * Endpoint: POST /api/walletList (Wallets service - port 8004)
+ * Returns: { status: 1, data: walletRecords, offset, msg: 'Wallet list' }
+ * Can filter by: user_uni_id, status, main_type, payment_method, date range, search
+ */
+export const fetchWallets = async (filters = {}) => {
+  try {
+    const requestBody = {
+      offset: filters.offset || 0
+    }
+
+    // Add optional filters
+    if (filters.user_uni_id) {
+      requestBody.user_uni_id = filters.user_uni_id
+    }
+
+    if (filters.api_key) {
+      requestBody.api_key = filters.api_key
+    }
+
+    if (filters.limit) {
+      requestBody.limit = filters.limit
+    }
+
+    if (filters.status !== undefined && filters.status !== null) {
+      requestBody.status = filters.status
+    }
+
+    if (filters.main_type) {
+      requestBody.main_type = filters.main_type // 'cr' or 'dr'
+    }
+
+    if (filters.payment_method) {
+      requestBody.payment_method = filters.payment_method
+    }
+
+    if (filters.from_date) {
+      requestBody.from_date = filters.from_date // YYYY-MM-DD
+    }
+
+    if (filters.to_date) {
+      requestBody.to_date = filters.to_date // YYYY-MM-DD
+    }
+
+    if (filters.search) {
+      requestBody.search = filters.search
+    }
+
+    console.log('[API] Fetching wallets from:', `${WALLETS_API}/walletList`)
+
+    const response = await fetch(`${WALLETS_API}/walletList`, getFetchConfig('POST', requestBody))
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('[API] Wallets response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] fetchWallets error:', error)
+    return { status: 0, data: [], offset: 0, msg: error.message }
+  }
+}
+
+/**
+ * Fetch pages from backend
+ * Endpoint: POST /api/pageList (Welcome service - port 8005)
+ */
+export const fetchPages = async (offset = 0, pageSlug = '', defaultPage = '') => {
+  try {
+    const requestBody = {
+      offset: offset
+    }
+
+    if (pageSlug) {
+      requestBody.page_slug = pageSlug
+    }
+
+    if (defaultPage) {
+      requestBody.default_page = defaultPage
+    }
+
+    console.log('[API] Fetching pages from:', `${WELCOME_API}/pageList`)
+
+    const response = await fetch(`${WELCOME_API}/pageList`, getFetchConfig('POST', requestBody))
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('[API] Pages response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] fetchPages error:', error)
+    return { status: 0, data: [], msg: error.message }
+  }
+}
+
+/**
+ * Fetch modules for a package
+ * Endpoint: POST /api/packageModuleList (Welcome service - port 8005)
+ */
+export const fetchPackageModules = async (packageId = null, packageUniId = '') => {
+  try {
+    const requestBody = {}
+
+    if (packageId) {
+      requestBody.package_id = packageId
+    } else if (packageUniId) {
+      requestBody.package_uni_id = packageUniId
+    } else {
+      return { status: 0, data: [], msg: 'packageId or packageUniId is required' }
+    }
+
+    console.log('[API] Fetching package modules from:', `${WELCOME_API}/packageModuleList`)
+
+    const response = await fetch(`${WELCOME_API}/packageModuleList`, getFetchConfig('POST', requestBody))
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('[API] Package modules response:', { count: data.data?.length || 0 })
+    return data
+  } catch (error) {
+    console.error('[API] fetchPackageModules error:', error)
     return { status: 0, data: [], msg: error.message }
   }
 }

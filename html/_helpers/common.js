@@ -821,10 +821,20 @@ export async function checkUserApiKey(user_api_key, user_uni_id) {
       api_key_type: typeof user_api_key,
       api_key_preview: user_api_key ? `${String(user_api_key).substring(0, 10)}...${String(user_api_key).substring(String(user_api_key).length - 10)}` : 'MISSING'
     });
-    
-    // Ensure api_key is a string
-    const apiKeyStr = String(user_api_key || '').trim();
-    
+
+    // Normalize api key: accept full JWT or signature-only values
+    let apiKeyStr = String(user_api_key || '').trim();
+    if (!apiKeyStr) {
+      console.error('[checkUserApiKey] ❌ Missing api key');
+      return false;
+    }
+
+    // If a full JWT token was passed, extract the signature (3rd) part
+    if (apiKeyStr.split('.').length === 3) {
+      apiKeyStr = apiKeyStr.split('.')[2];
+      console.log('[checkUserApiKey] Detected full JWT token, using signature part only');
+    }
+
     const apiKey = await ApiKeyModel.findOne({
       where: {
         api_key: apiKeyStr,
@@ -854,15 +864,44 @@ export async function checkUserApiKey(user_api_key, user_uni_id) {
     }
 
     const now = Math.floor(Date.now() / 1000);
-    const isExpired = apiKey.expires_at < now;
-    
+
+    // Parse and normalize expires_at into seconds since epoch (number)
+    const rawExpires = apiKey.expires_at;
+    let parsedExpires = 0;
+
+    if (typeof rawExpires === 'number') {
+      parsedExpires = Math.floor(rawExpires);
+    } else if (/^\d+$/.test(String(rawExpires).trim())) {
+      // Numeric string - could be seconds or milliseconds
+      const n = Number(rawExpires);
+      parsedExpires = n > 1e12 ? Math.floor(n / 1000) : n; // ms -> s if necessary
+    } else {
+      // Try parsing common date formats using dayjs
+      const parsed = dayjs(String(rawExpires));
+      if (parsed.isValid()) {
+        parsedExpires = parsed.unix();
+      } else {
+        parsedExpires = 0; // unknown format
+      }
+    }
+
+    const isExpired = parsedExpires > 0 ? (parsedExpires < now) : false;
+
     console.log('[checkUserApiKey] Expiry check:', {
-      expires_at: apiKey.expires_at,
+      expires_at_raw: rawExpires,
+      parsed_expires_at: parsedExpires,
       now: now,
       isExpired: isExpired,
-      timeRemaining: isExpired ? 0 : (apiKey.expires_at - now)
+      timeRemaining: isExpired ? 0 : (parsedExpires > 0 ? (parsedExpires - now) : 'unknown')
     });
-    
+
+    if (parsedExpires === 0) {
+      // Backwards compatibility: if we cannot parse expiry, don't reject the key but log a warning
+      console.warn('[checkUserApiKey] ⚠️ Could not parse expires_at; treating API key as non-expiring for compatibility');
+      console.log('[checkUserApiKey] ✅ API key is valid (no-expiry)');
+      return true;
+    }
+
     if (isExpired) {
       console.error('[checkUserApiKey] ❌ API key is expired');
       return false; // Token is expired

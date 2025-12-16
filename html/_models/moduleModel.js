@@ -91,5 +91,3 @@ const Module = sequelize.define('modules', {
 
 export default Module;
 
-
-

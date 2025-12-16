@@ -4,7 +4,7 @@ import useBreadStars from '../hooks/useBreadStars'
 import usePageTitle from '../hooks/usePageTitle'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import { fetchServices, fetchServiceCategories } from '../utils/api'
+import { fetchServices, fetchServiceCategories, fetchOurServices } from '../utils/api'
 
 const Services = () => {
   useBreadStars()
@@ -19,6 +19,9 @@ const Services = () => {
   const [categories, setCategories] = useState([])
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [failedImages, setFailedImages] = useState(new Set())
+  const [ourServices, setOurServices] = useState([])
+  const [loadingOurServices, setLoadingOurServices] = useState(false)
+  const [showOurServices, setShowOurServices] = useState(false)
 
   // Helper function to strip HTML tags and decode entities
   const stripHtml = (html) => {
@@ -125,6 +128,30 @@ const Services = () => {
     loadServices()
   }, [selectedCategory])
 
+  // Fetch our_services data
+  useEffect(() => {
+    const loadOurServices = async () => {
+      setLoadingOurServices(true)
+      try {
+        const result = await fetchOurServices(0)
+        if (result && result.status === 1 && Array.isArray(result.data)) {
+          setOurServices(result.data)
+          console.log('[Services] Our Services loaded:', result.data.length)
+        } else {
+          console.warn('[Services] Our Services response invalid:', result)
+          setOurServices([])
+        }
+      } catch (error) {
+        console.error('[Services] Error fetching our services:', error)
+        setOurServices([])
+      } finally {
+        setLoadingOurServices(false)
+      }
+    }
+
+    loadOurServices()
+  }, [])
+
   // Handle image errors
   const handleImageError = (e, originalSrc) => {
     if (originalSrc && e.target.src !== 'https://images.unsplash.com/photo-1598751337726-3c8577d00bd3?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80') {
@@ -172,12 +199,49 @@ const Services = () => {
 
       {/* Main */}
       <div className="container">
-        <div className="react-services-container">
-          <div className="react-services-sidebar">
-            <div className="react-services-sidebar-header">
-              <h2>Categories</h2>
-              <p className="react-services-sidebar-subtitle">Explore our astrology services</p>
-            </div>
+        {/* Toggle buttons for Services and Our Services */}
+        <div style={{ marginBottom: '30px', display: 'flex', gap: '10px', justifyContent: 'center' }}>
+          <button
+            onClick={() => setShowOurServices(false)}
+            style={{
+              padding: '12px 30px',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              backgroundColor: !showOurServices ? '#8B5CF6' : '#f0f0f0',
+              color: !showOurServices ? '#fff' : '#333',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            Services
+          </button>
+          <button
+            onClick={() => setShowOurServices(true)}
+            style={{
+              padding: '12px 30px',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              backgroundColor: showOurServices ? '#8B5CF6' : '#f0f0f0',
+              color: showOurServices ? '#fff' : '#333',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            Our Services
+          </button>
+        </div>
+
+        {!showOurServices ? (
+          <div className="react-services-container">
+            <div className="react-services-sidebar">
+              <div className="react-services-sidebar-header">
+                <h2>Categories</h2>
+                <p className="react-services-sidebar-subtitle">Explore our astrology services</p>
+              </div>
             <div className="react-services-sidebar-content">
               {categories.length > 0 ? (
                 <ul className="react-services-category-list">
@@ -251,6 +315,76 @@ const Services = () => {
             )}
           </div>
         </div>
+        ) : (
+          <div className="react-services-container">
+            <div style={{ width: '100%' }}>
+              <h2 style={{ marginBottom: '30px', textAlign: 'center', color: '#333' }}>Our Services</h2>
+              {loadingOurServices ? (
+                <div style={{ textAlign: 'center', padding: '40px' }}>
+                  <p style={{ fontSize: '18px', color: '#666' }}>Loading our services...</p>
+                </div>
+              ) : ourServices.length > 0 ? (
+                <div className="react-services-services-grid">
+                  {ourServices.map((service) => {
+                    const fallback = 'https://images.unsplash.com/photo-1598751337726-3c8577d00bd3?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
+                    const originalSrc = service.image
+                    const hasHtmlContent = originalSrc && typeof originalSrc === 'string' && /<[^>]+>/.test(originalSrc)
+                    const safeImageUrl = !originalSrc || hasHtmlContent || failedImages.has(originalSrc) 
+                      ? fallback 
+                      : originalSrc
+                    const cleanContent = stripHtml(service.content || '')
+                    
+                    return (
+                      <div key={service.id} className="react-services-service-card">
+                        <div className="react-services-card-image">
+                          <img 
+                            src={safeImageUrl} 
+                            alt={service.title || 'Service'} 
+                            onError={(e) => {
+                              if (originalSrc && e.target.src !== fallback) {
+                                setFailedImages(prev => new Set(prev).add(originalSrc))
+                                e.target.src = fallback
+                                e.target.onerror = null
+                              }
+                            }}
+                            loading="lazy"
+                            style={{ width: '100%', height: '200px', objectFit: 'cover' }}
+                          />
+                        </div>
+                        <div className="react-services-card-content">
+                          <h3 className="react-services-card-title">
+                            {service.title || 'Service'}
+                          </h3>
+                          <p className="react-services-card-description">
+                            {cleanContent || 'Explore our professional astrology service for guidance and solutions.'}
+                          </p>
+                          {service.slug && (
+                            <Link 
+                              to={`/service/${service.slug}`}
+                              style={{
+                                marginTop: '15px',
+                                display: 'inline-block',
+                                color: '#8B5CF6',
+                                textDecoration: 'none',
+                                fontWeight: 'bold'
+                              }}
+                            >
+                              Read More →
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '40px' }}>
+                  <p style={{ fontSize: '18px', color: '#666' }}>No services available.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <Footer />

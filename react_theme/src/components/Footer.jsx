@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { fetchWelcomeData } from '../utils/api'
+import { fetchWelcomeData, fetchPages } from '../utils/api'
 
 // Get base URL for pages (remove /api from WELCOME_API)
 const getPagesBaseUrl = () => {
@@ -11,6 +11,7 @@ const getPagesBaseUrl = () => {
 const Footer = () => {
   const [footerData, setFooterData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [pages, setPages] = useState([])
 
   useEffect(() => {
     const loadFooterData = async () => {
@@ -27,6 +28,22 @@ const Footer = () => {
     }
 
     loadFooterData()
+  }, [])
+
+  // Fetch pages data
+  useEffect(() => {
+    const loadPages = async () => {
+      try {
+        const pagesRes = await fetchPages(0)
+        if (pagesRes && pagesRes.status === 1 && Array.isArray(pagesRes.data)) {
+          setPages(pagesRes.data)
+        }
+      } catch (error) {
+        console.error('[Footer] Error fetching pages:', error)
+      }
+    }
+
+    loadPages()
   }, [])
 
   // Use backend data if available, otherwise use fallback values
@@ -95,9 +112,32 @@ const Footer = () => {
             <div className="react-new-footer-section">
               <h4 className="react-new-section-title">About</h4>
               <ul className="react-new-footer-links">
-                <li><a href={`${getPagesBaseUrl()}/page_app/about-us`} target="_blank" rel="noopener noreferrer">About</a></li>
+                {pages.length > 0 ? (
+                  pages.filter(page => 
+                    !page.default_page?.includes('terms') && 
+                    !page.default_page?.includes('privacy') && 
+                    !page.default_page?.includes('refund') && 
+                    !page.default_page?.includes('deletion') &&
+                    !page.default_page?.includes('cancellation') &&
+                    (page.default_page === 'about-us' || 
+                     page.page_slug === 'about-us' ||
+                     page.page_slug?.includes('about') ||
+                     page.default_page === 'faq' ||
+                     page.page_slug === 'faq')
+                  ).map(page => (
+                    <li key={page.id}>
+                      <a href={`${getPagesBaseUrl()}/page_app/${page.page_slug || page.default_page}`} target="_blank" rel="noopener noreferrer">
+                        {page.page_name}
+                      </a>
+                    </li>
+                  ))
+                ) : (
+                  <>
+                    <li><a href={`${getPagesBaseUrl()}/page_app/about-us`} target="_blank" rel="noopener noreferrer">About</a></li>
+                    <li><a href={`${getPagesBaseUrl()}/page_app/faq`} target="_blank" rel="noopener noreferrer">FAQ</a></li>
+                  </>
+                )}
                 <li><Link to="/contact">Contact Us</Link></li>
-                <li><a href={`${getPagesBaseUrl()}/page_app/faq`} target="_blank" rel="noopener noreferrer">FAQ</a></li>
                 <li><Link to="/vendor-registration">Vendor Registration</Link></li>
                 <li><a href="#vendor-login" className="react-vendor-BTn"><span style={{marginRight: '5px'}}><i className="fa-solid fa-right-to-bracket"></i></span> Vendor Login</a></li>
               </ul>
@@ -105,10 +145,33 @@ const Footer = () => {
             <div className="react-new-footer-section">
               <h4 className="react-new-section-title">Legal</h4>
               <ul className="react-new-footer-links">
-                <li><a href={`${getPagesBaseUrl()}/page_app/terms-condition`} target="_blank" rel="noopener noreferrer">Terms & Conditions</a></li>
-                <li><a href={`${getPagesBaseUrl()}/page_app/privacy-policy`} target="_blank" rel="noopener noreferrer">Privacy Policy</a></li>
-                <li><a href={`${getPagesBaseUrl()}/page_app/refund-and-cancellation-policy`} target="_blank" rel="noopener noreferrer">Refund & Cancellation Policy</a></li>
-                <li><a href={`${getPagesBaseUrl()}/page_app/deletion-instruction`} target="_blank" rel="noopener noreferrer">Deletion Instructions</a></li>
+                {pages.length > 0 ? (
+                  pages.filter(page => 
+                    page.default_page?.includes('terms') || 
+                    page.default_page?.includes('privacy') || 
+                    page.default_page?.includes('refund') || 
+                    page.default_page?.includes('deletion') ||
+                    page.default_page?.includes('cancellation') ||
+                    page.page_slug?.includes('terms') ||
+                    page.page_slug?.includes('privacy') ||
+                    page.page_slug?.includes('refund') ||
+                    page.page_slug?.includes('deletion') ||
+                    page.page_slug?.includes('cancellation')
+                  ).map(page => (
+                    <li key={page.id}>
+                      <a href={`${getPagesBaseUrl()}/page_app/${page.page_slug || page.default_page}`} target="_blank" rel="noopener noreferrer">
+                        {page.page_name}
+                      </a>
+                    </li>
+                  ))
+                ) : (
+                  <>
+                    <li><a href={`${getPagesBaseUrl()}/page_app/terms-condition`} target="_blank" rel="noopener noreferrer">Terms & Conditions</a></li>
+                    <li><a href={`${getPagesBaseUrl()}/page_app/privacy-policy`} target="_blank" rel="noopener noreferrer">Privacy Policy</a></li>
+                    <li><a href={`${getPagesBaseUrl()}/page_app/refund-and-cancellation-policy`} target="_blank" rel="noopener noreferrer">Refund & Cancellation Policy</a></li>
+                    <li><a href={`${getPagesBaseUrl()}/page_app/deletion-instruction`} target="_blank" rel="noopener noreferrer">Deletion Instructions</a></li>
+                  </>
+                )}
               </ul>
             </div>
             <div className="react-new-footer-section">

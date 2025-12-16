@@ -674,14 +674,45 @@ function astrologerListShuffle(astrologers) {
 
 export async function checkUserApiKey(user_api_key, user_uni_id) {
   try {
-    const count = await ApiKeyModel.count({
+    // Normalize api key: accept full JWT or signature-only values
+    let apiKeyStr = String(user_api_key || '').trim();
+    if (!apiKeyStr) {
+      console.error('[checkUserApiKey] ❌ Missing api key');
+      return false;
+    }
+
+    if (apiKeyStr.split('.').length === 3) {
+      apiKeyStr = apiKeyStr.split('.')[2];
+    }
+
+    const apiKey = await ApiKeyModel.findOne({
       where: {
-        api_key: user_api_key,
+        api_key: apiKeyStr,
         user_uni_id: user_uni_id,
       },
     });
 
-    return count > 0;
+    if (!apiKey) return false;
+
+    const now = Math.floor(Date.now() / 1000);
+    const rawExpires = apiKey.expires_at;
+    let parsedExpires = 0;
+
+    if (typeof rawExpires === 'number') {
+      parsedExpires = Math.floor(rawExpires);
+    } else if (/^\d+$/.test(String(rawExpires).trim())) {
+      const n = Number(rawExpires);
+      parsedExpires = n > 1e12 ? Math.floor(n / 1000) : n;
+    } else {
+      const parsed = dayjs(String(rawExpires));
+      if (parsed.isValid()) parsedExpires = parsed.unix();
+      else parsedExpires = 0;
+    }
+
+    // If expiry couldn't be parsed, treat as non-expiring (backwards compatibility)
+    if (parsedExpires === 0) return true;
+
+    return parsedExpires > now ? true : false;
   } catch (error) {
     console.error("Error checking API key:", error);
     return false;

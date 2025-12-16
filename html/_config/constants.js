@@ -191,7 +191,7 @@ export const configData = {
   default_otp: process.env.DEFAULT_OTP_CODE || '666331',
   custom_sms_url: process.env.CUSTOM_SMS_URL || 'https://2factor.in/API/V1/b254aaa6-e486-11ef-8b17-0200cd936042/SMS/#MOBILENO#/#MESSAGE#/OTP1',
   custom_sms_message: process.env.CUSTOM_SMS_MESSAGE || '#OTP#'
-}
+};
 
 export const CURRENCY = {
   default_currency_code: "INR",

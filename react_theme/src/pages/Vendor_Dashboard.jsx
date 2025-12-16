@@ -3621,7 +3621,6 @@ const Vendor_Dashboard = () => {
                 alignItems: 'flex-start',
                 gap: '15px',
                 padding: '15px',
-                backgroundColor: '#fff', 
                 borderRadius: '10px', 
                 boxShadow: '0 2px 6px rgba(0,0,0,0.08)', 
                 border: notification.status === 0 ? '1px solid #e3f2fd' : '1px solid #eee',

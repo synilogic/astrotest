@@ -56,9 +56,10 @@ import OfflineServiceGallery from "../_models/offlineServiceGallery.js";
 import OfflineServiceOrder from "../_models/offlineServiceOrder.js";
 import OpenAiPrediction from "../_models/openAiPrediction.js";
 import OpenAiProfile from "../_models/openAiProfile.js";
-import Order from "../_models/order.js";
 import OurService from "../_models/ourService.js";
 import Package from "../_models/package.js";
+import PackageModule from "../_models/packageModule.js";
+import PackageSelected from "../_models/packageSelected.js";
 
 
 const upload = multer();
@@ -2169,47 +2170,67 @@ router.post("/videoSections", upload.none(), async (req, res) => {
     return res.json(result);
   }
 
-  const offset = 0;
-  let attributes;
+  const offset = req.body.offset ? Number(req.body.offset) : 0;
+  const limit = constants.api_page_limit || 20;
 
-  const limit = constants.api_page_limit;
-
-  attributes = {
-    ...req.body,
+  const attributes = {
     status: 1,
-    offset: Number(offset),
-    limit
+    offset: offset,
+    limit: limit
   };
 
-  if(req.body) {
-   let { offset } = req.body;
-   attributes = {
-    ...req.body,
-    status: 1,
-    offset: Number(offset),
-    limit
-  };
-  }
   try {
+    console.log('[videoSections] Fetching with attributes:', JSON.stringify(attributes, null, 2));
+    
+    // First, let's check total count in database
+    const totalCountInt = await VideoSection.count({ where: { status: 1 } });
+    console.log('[videoSections] Total videos with status=1 (integer) in database:', totalCountInt);
+    
+    // Also check with string status
+    const totalCountString = await VideoSection.count({ where: { status: '1' } });
+    console.log('[videoSections] Total videos with status="1" (string) in database:', totalCountString);
+    
+    // Check all videos regardless of status
+    const totalAll = await VideoSection.count();
+    console.log('[videoSections] Total videos in database (all status):', totalAll);
+    
+    const videos = await getVideoSections(attributes);
+    console.log('[videoSections] Found videos after query:', videos.length);
 
-  const videos = await  getVideoSections(attributes)
-
-  for (const video of videos) {
-    video.embedd = embed(video.embedd)
-    video.embedd = video.embedd ? video.embedd
-: ""  }
+    // Process videos and add embed code
+    const processedVideos = videos.map((video) => {
+      const videoData = { ...video };
+      
+      // Try to embed the URL if embedd is not already set
+      if (videoData.url && (!videoData.embedd || videoData.embedd.trim() === '')) {
+        try {
+          videoData.embedd = embed(videoData.url);
+        } catch (e) {
+          console.warn('[videoSections] Embed failed for video:', videoData.id, e.message);
+          videoData.embedd = videoData.url;
+        }
+      }
+      
+      // If embedd is still empty, use URL
+      if (!videoData.embedd || videoData.embedd.trim() === '') {
+        videoData.embedd = videoData.url || '';
+      }
+      
+      return videoData;
+    });
 
   const result =
-      videos.length > 0
+      processedVideos.length > 0
         ? {
             status: 1,
             msg: "Result Found",
-            offset: attributes.offset + limit,
-            data: videos
+            offset: offset + limit,
+            data: processedVideos
           }
         : {
             status: 0,
-            msg: "No Record Found"
+            msg: "No Record Found",
+            data: []
           };
 
     // await updateApiLogs(api, result);
@@ -3877,6 +3898,233 @@ router.post("/packageList", upload.none(), async (req, res) => {
   }
 });
 
+router.post("/packageSelectedList", upload.none(), async (req, res) => {
+  try {
+    const body = req.body || {};
+
+    const schema = Joi.object({
+      offset: Joi.number().integer().min(0).optional(),
+      customer_uni_id: Joi.string().optional().allow(null, ''),
+      user_id: Joi.number().integer().optional().allow(null, ''),
+      package_uni_id: Joi.string().optional().allow(null, ''),
+      status: Joi.number().integer().optional().allow(null, ''),
+    });
+
+    const { error } = schema.validate(body);
+    if (error) {
+      return res.status(400).json({
+        status: 0,
+        errors: error.details,
+        message: 'Validation error',
+        msg: error.details.map(err => err.message).join('\n'),
+      });
+    }
+
+    const offset = parseInt(body.offset) || 0;
+    const pageLimit = constants.api_page_limit || 20;
+
+    const whereClause = {};
+    
+    if (body.customer_uni_id && body.customer_uni_id.trim() !== '') {
+      whereClause.customer_uni_id = body.customer_uni_id.trim();
+    }
+    
+    if (body.user_id !== undefined && body.user_id !== null && body.user_id !== '') {
+      whereClause.user_id = parseInt(body.user_id);
+    }
+    
+    if (body.package_uni_id && body.package_uni_id.trim() !== '') {
+      whereClause.package_uni_id = body.package_uni_id.trim();
+    }
+    
+    if (body.status !== undefined && body.status !== null && body.status !== '') {
+      whereClause.status = parseInt(body.status);
+    } else {
+      whereClause.status = 1; // Default to active
+    }
+
+    const records = await PackageSelected.findAll({
+      where: whereClause,
+      offset,
+      limit: pageLimit,
+      order: [['id', 'DESC']],
+    });
+
+    const formatted = records.map(record => ({
+      id: record.id,
+      user_id: record.user_id,
+      customer_uni_id: record.customer_uni_id,
+      package_id: record.package_id,
+      package_uni_id: record.package_uni_id,
+      status: record.status,
+      selected_at: record.selected_at ? dayjs(record.selected_at).format('YYYY-MM-DD HH:mm:ss') : null,
+      valid_date: record.valid_date ? dayjs(record.valid_date).format('YYYY-MM-DD') : null,
+      expiry_date: record.expiry_date ? dayjs(record.expiry_date).format('YYYY-MM-DD') : null,
+      created_at: record.created_at ? dayjs(record.created_at).format('YYYY-MM-DD HH:mm:ss') : null,
+      updated_at: record.updated_at ? dayjs(record.updated_at).format('YYYY-MM-DD HH:mm:ss') : null,
+    }));
+
+    return res.status(200).json({
+      status: 1,
+      msg: 'Package Selected List',
+      offset: offset + pageLimit,
+      data: formatted
+    });
+
+  } catch (err) {
+    console.error('Error in packageSelectedList:', err);
+    return res.status(500).json({
+      status: 0,
+      msg: 'Something went wrong.. Try Again',
+    });
+  }
+});
+
+router.post("/pageList", upload.none(), async (req, res) => {
+  try {
+    const body = req.body || {};
+
+    const schema = Joi.object({
+      offset: Joi.number().integer().min(0).optional(),
+      page_slug: Joi.string().optional().allow(null, ''),
+      default_page: Joi.string().optional().allow(null, ''),
+      status: Joi.string().optional().allow(null, ''),
+    });
+
+    const { error } = schema.validate(body);
+    if (error) {
+      return res.status(400).json({
+        status: 0,
+        errors: error.details,
+        message: 'Validation error',
+        msg: error.details.map(err => err.message).join('\n'),
+      });
+    }
+
+    const offset = parseInt(body.offset) || 0;
+    const pageLimit = constants.api_page_limit || 20;
+
+    const whereClause = {};
+    
+    if (body.page_slug && body.page_slug.trim() !== '') {
+      whereClause.page_slug = body.page_slug.trim();
+    }
+    
+    if (body.default_page && body.default_page.trim() !== '') {
+      whereClause.default_page = body.default_page.trim();
+    }
+    
+    if (body.status && body.status.trim() !== '') {
+      whereClause.status = body.status.trim();
+    } else {
+      whereClause.status = '1'; // Default to active
+    }
+
+    const records = await Pages.findAll({
+      where: whereClause,
+      offset,
+      limit: pageLimit,
+      order: [['id', 'DESC']],
+    });
+
+    const hostUrl = `${req.protocol}://${req.get("host")}/`;
+    const imagePath = 'uploads/pages/';
+
+    const formatted = records.map(record => ({
+      id: record.id,
+      page_name: record.page_name,
+      page_slug: record.page_slug,
+      default_page: record.default_page,
+      page_images: record.page_images ? `${hostUrl}${imagePath}${record.page_images}` : null,
+      page_description: record.page_description,
+      page_meta_key: record.page_meta_key,
+      page_meta_title: record.page_meta_title,
+      page_meta_description: record.page_meta_description,
+      status: record.status,
+      created_at: record.created_at ? dayjs(record.created_at).format('YYYY-MM-DD HH:mm:ss') : null,
+      updated_at: record.updated_at ? dayjs(record.updated_at).format('YYYY-MM-DD HH:mm:ss') : null,
+    }));
+
+    return res.status(200).json({
+      status: 1,
+      msg: 'Pages List',
+      offset: offset + pageLimit,
+      data: formatted
+    });
+
+  } catch (err) {
+    console.error('Error in pageList:', err);
+    return res.status(500).json({
+      status: 0,
+      msg: 'Something went wrong.. Try Again',
+    });
+  }
+});
+
+router.post("/packageModuleList", upload.none(), async (req, res) => {
+  try {
+    const body = req.body || {};
+
+    const schema = Joi.object({
+      package_id: Joi.number().integer().optional(),
+      package_uni_id: Joi.string().optional().allow(null, ''),
+      offset: Joi.number().integer().min(0).optional(),
+    }).or('package_id', 'package_uni_id');
+
+    const { error } = schema.validate(body);
+    if (error) {
+      return res.status(400).json({
+        status: 0,
+        errors: error.details,
+        message: 'Validation error',
+        msg: error.details.map(err => err.message).join('\n'),
+      });
+    }
+
+    let packageId = body.package_id;
+    if (!packageId && body.package_uni_id) {
+      const pack = await Package.findOne({ where: { package_uni_id: body.package_uni_id } });
+      if (!pack) {
+        return res.status(200).json({ status: 0, msg: 'Invalid package' });
+      }
+      packageId = pack.id;
+    }
+
+    if (!packageId) {
+      return res.status(400).json({ status: 0, msg: 'package_id or package_uni_id is required' });
+    }
+
+    const records = await PackageModule.findAll({ where: { package_id: packageId, status: 1 } });
+
+    const moduleIds = records.map(r => r.module_id);
+
+    if (moduleIds.length === 0) {
+      return res.status(200).json({ status: 1, msg: 'Package Modules List', data: [] });
+    }
+
+    const modulesFound = await Module.findAll({ where: { id: moduleIds, status: 1 }, order: [['module_order', 'ASC']] });
+
+    const formatted = modulesFound.map(m => ({
+      id: m.id,
+      module_name: m.module_name,
+      module_slug: m.module_slug,
+      module_key: m.module_key,
+      module_icon: m.module_icon,
+      module_image: m.module_image,
+      module_type: m.module_type,
+      parent_id: m.parent_id,
+      module_order: m.module_order,
+      is_active: m.is_active,
+    }));
+
+    return res.status(200).json({ status: 1, msg: 'Package Modules List', data: formatted });
+
+  } catch (err) {
+    console.error('Error in packageModuleList:', err);
+    return res.status(500).json({ status: 0, msg: 'Something went wrong.. Try Again' });
+  }
+});
+
 router.post("/productOrderList", upload.none(), async (req, res) => {
   // const apiLog = await saveApiLogs(req.body);
 
@@ -4589,7 +4837,7 @@ router.post("/editKundliData", upload.none(), async (req, res) => {
   const attributes = { ...value };
   const { api_key, user_uni_id, id, kundali_type } = attributes;
 
-  if (!checkUserApiKey(api_key, user_uni_id)) {
+  if (!(await checkUserApiKey(api_key, user_uni_id))) {
     const result = {
       status: 0,
       error_code: 101,
@@ -4721,7 +4969,7 @@ router.post("/deleteKundali", upload.none(), async (req, res) => {
   const { api_key, user_uni_id, id } = value;
 
   // 2. Authorization
-  if (!checkUserApiKey(api_key, user_uni_id)) {
+  if (!(await checkUserApiKey(api_key, user_uni_id))) {
     const result = {
       status: 0,
       error_code: 101,
@@ -5480,7 +5728,7 @@ router.post('/removeService', upload.none(), async (req, res) => {
 
   try {
     // Auth check
-    if (!checkUserApiKey(api_key, astrologer_uni_id)) {
+    if (!(await checkUserApiKey(api_key, astrologer_uni_id))) {
       const result = {
         status: 0,
         error_code: 101,
@@ -5552,7 +5800,7 @@ router.post('/astroGiftHistory', upload.none(), async (req, res) => {
 
   try {
     // Check API Key
-    if (!checkUserApiKey(api_key, astrologer_uni_id)) {
+    if (!(await checkUserApiKey(api_key, astrologer_uni_id))) {
       const result = {
         status: 0,
         error_code: 101,

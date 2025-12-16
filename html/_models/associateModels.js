@@ -13,13 +13,13 @@ import WalletModel from './wallet.js';
 import WithdrawalRequestModel from './WithdrawalRequest.js';
 import FollowersModel from './followers.js';
 
-import Reviews from './reviews.js'
+import Reviews from './reviews.js';
 import User from './users.js';
-import Customer from './customers.js'
+import Customer from './customers.js';
 import { Sanjeevini } from './Sanjeevini.js';
 import { SanjeeviniOrder } from './SanjeeviniOrder.js';
 import  SwitchWord  from './switchword.js';
-import { SwitchWordOrder } from './switchwordOrder.js'
+import { SwitchWordOrder } from './switchwordOrder.js';
 
 import { PdfBook } from './pdfBookModel.js';
 import { PdfBookOrder } from './pdfBookOrderModel.js';
@@ -278,14 +278,6 @@ export const associateModels = () => {
     foreignKey: "astrologer_uni_id",
     targetKey: "user_uni_id",
     as: "user"
-  });
-  CallHistory.findAll({
-    include: [
-      {
-        model: UserModel,
-        as: "user" // Ensure this matches the alias defined in the association
-      }
-    ]
   });
   CallHistory.belongsTo(Astrologer, {
     foreignKey: "astrologer_uni_id",

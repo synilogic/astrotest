@@ -897,37 +897,61 @@ export const getBlogs = async (filter) => {
 };
 
  export const getVideoSections = async (filter) => {
-  const where = { status: 1 };
+  // Handle status - can be 1, '1', or both
+  const where = {
+    [Op.or]: [
+      { status: 1 },
+      { status: '1' }
+    ]
+  };
 
   // Search filter
   if (filter.search && filter.search.trim() !== '') {
-    where.video_section = {
-      [Op.like]: `%${filter.search.trim()}%`
-    };
+    where[Op.and] = [
+      ...(where[Op.and] || []),
+      {
+        [Op.or]: [
+          { title: { [Op.like]: `%${filter.search.trim()}%` } },
+          { url: { [Op.like]: `%${filter.search.trim()}%` } }
+        ]
+      }
+    ];
   }
 
   // Pagination
   const offset = filter.offset && filter.offset > -1 ? filter.offset : 0;
-  const limit = constants.api_page_limit;
+  const limit = filter.limit || constants.api_page_limit || 20;
  
+  console.log('[getVideoSections] Query where clause:', JSON.stringify(where, null, 2));
+  console.log('[getVideoSections] Offset:', offset, 'Limit:', limit);
 
-  // Query the database
-  const videoSections = await VideoSection.findAll({
-    where,
-    order: [['id', 'DESC']],
-    offset,
-    limit,
-    attributes: ["id", "title", "video_type", "url"]
-  });
+  try {
+    // Query the database
+    const videoSections = await VideoSection.findAll({
+      where,
+      order: [['id', 'DESC']],
+      offset,
+      limit,
+      attributes: ["id", "title", "video_type", "url", "status"]
+    });
 
-  // Add embedded video field
-  const result = videoSections.map((item) => {
-    const data = item.toJSON();
-    data.embedd = data.url ;
-    return data;
-  });
+    console.log('[getVideoSections] Raw query result count:', videoSections.length);
 
-  return result;
+    // Add embedded video field
+    const result = videoSections.map((item) => {
+      const data = item.toJSON();
+      data.embedd = data.url || '';
+      console.log('[getVideoSections] Video item:', { id: data.id, title: data.title, url: data.url, status: data.status });
+      return data;
+    });
+
+    console.log('[getVideoSections] Final result count:', result.length);
+    return result;
+  } catch (error) {
+    console.error('[getVideoSections] Database query error:', error);
+    console.error('[getVideoSections] Error stack:', error.stack);
+    throw error;
+  }
 };
 
  export const getNoticeForApp = async () => {

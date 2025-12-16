@@ -6,6 +6,7 @@ import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import LoginPopup from '../components/LoginPopup'
 import { saveKundaliData, geocodePlace, getCurrentUser, fetchUserKundaliRequests } from '../utils/api'
+import UserKundaliList from '../components/UserKundaliList'
 
 const FreeKundali = () => {
   useBreadStars()
@@ -619,70 +620,9 @@ const FreeKundali = () => {
               )}
 
               {/* Saved Kundalis List */}
-              {user && savedKundalis.length > 0 && (
-                <div 
-                  id="saved-kundalis-list"
-                  style={{
-                    marginTop: '30px',
-                    padding: '20px',
-                    backgroundColor: '#f9f9f9',
-                    borderRadius: '12px',
-                    border: '1px solid #e0e0e0'
-                  }}
-                >
-                  <h3 style={{ marginBottom: '15px', color: '#333' }}>My Saved Kundalis</h3>
-                  {loadingKundalis ? (
-                    <p style={{ color: '#666' }}>Loading saved kundalis...</p>
-                  ) : (
-                    <div className="react-table-responsive">
-                      <table className="react-table" style={{ width: '100%', marginTop: '10px' }}>
-                        <thead>
-                          <tr>
-                            <th>S.N.</th>
-                            <th>Name</th>
-                            <th>Birth Date</th>
-                            <th>Birth Time</th>
-                            <th>Place</th>
-                            <th>Method</th>
-                            <th>Created</th>
-                            <th>Action</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {savedKundalis.map((kundli, index) => {
-                            let requestBody = {}
-                            try {
-                              requestBody = kundli.request_body ? JSON.parse(kundli.request_body) : {}
-                            } catch (e) {
-                              requestBody = {}
-                            }
-                            return (
-                              <tr key={kundli.id || index}>
-                                <td>{index + 1}</td>
-                                <td>{kundli.name || 'N/A'}</td>
-                                <td>{requestBody.dob || 'N/A'}</td>
-                                <td>{requestBody.tob || 'N/A'}</td>
-                                <td>{requestBody.place || 'N/A'}</td>
-                                <td>{kundli.kundali_method || 'd1'}</td>
-                                <td>{kundli.created_at ? new Date(kundli.created_at).toLocaleDateString() : 'N/A'}</td>
-                                <td>
-                                  <button 
-                                    className="react-btn react-btn-sm react-btn-outline"
-                                    onClick={() => {
-                                      // Navigate to customer dashboard with kundli view
-                                      navigate('/customer-dashboard', { state: { activeTab: 'kundlis' } })
-                                    }}
-                                  >
-                                    <i className="fas fa-eye"></i> View
-                                  </button>
-                                </td>
-                              </tr>
-                            )
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
+              {user && (
+                <div id="saved-kundalis-list" style={{ marginTop: '30px' }}>
+                  <UserKundaliList forId={user.user_uni_id || user.customer_uni_id} />
                 </div>
               )}
             </div>

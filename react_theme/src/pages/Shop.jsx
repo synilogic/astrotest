@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import usePageTitle from '../hooks/usePageTitle'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import { fetchProducts, fetchProductCategories, purchaseProduct, getUserAddresses, getCurrentUser, getProductCalculation } from '../utils/api'
+import { fetchProducts, fetchProductCategories, purchaseProduct, getUserAddresses, getCurrentUser, getProductCalculation } from '../utils/api' 
 
 const Shop = () => {
   usePageTitle('Shop - Astrology Theme')
